@@ -10,6 +10,10 @@
 <link rel="apple-touch-icon" href="icon-192.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+<script>window.DW_FB = {apiKey:"AIzaSyCHD7lbnLNOva0G70F5smdcV8h11kQY-PI", authDomain:"dragon-war-ff637.firebaseapp.com", databaseURL:"https://dragon-war-ff637-default-rtdb.europe-west1.firebasedatabase.app", projectId:"dragon-war-ff637", storageBucket:"dragon-war-ff637.firebasestorage.app", messagingSenderId:"90677831602", appId:"1:90677831602:web:1ecca1bd183989a063e6ab"};</script>
 <script>if ("serviceWorker" in navigator && location.protocol === "https:") addEventListener("load", () => navigator.serviceWorker.register("sw.js"));</script>
 
 <meta name="claude:viewport-fit-sides" content="cover">
@@ -216,6 +220,18 @@ body.inMenu .top, body.inMenu .hud{display:none}
 .fgRow.meRow{background:#ffe9a8}
 .onAct{display:flex;flex-direction:column;gap:8px;width:min(560px,100%);align-self:center}
 .onJoin{display:flex;gap:8px}
+.onJoin.frSearch input{letter-spacing:1px;text-transform:none;font-size:18px}
+.tabs2{grid-template-columns:1fr 1fr}
+.frRow{flex-wrap:wrap}
+.frRow .tx{flex:1;min-width:120px}
+.frAva{position:relative;width:36px;height:36px;flex:none;display:flex;align-items:center;justify-content:center;font-size:22px;border-radius:50%;background:var(--ink)}
+.frDot{position:absolute;right:-2px;bottom:-2px;width:12px;height:12px;border-radius:50%;background:#7a7a86;border:2px solid var(--ink)}
+.frDot.on{background:#4ade80}
+.frBtns{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end;margin-left:auto}
+.frBtns .upBtn{padding:6px 9px;font-size:15px}
+.frCode{font-weight:900;letter-spacing:1px;color:var(--evil)}
+.nameIn{font:400 22px var(--display);text-align:center;border:3px solid var(--ink);border-radius:12px;padding:8px;background:var(--parch);color:var(--ink);width:100%;box-sizing:border-box}
+.pickList{display:flex;flex-direction:column;gap:8px}
 .onJoin input{flex:1;min-width:0;font:400 22px var(--display);letter-spacing:6px;text-transform:uppercase;text-align:center;border:3px solid var(--ink);border-radius:12px;padding:6px;background:var(--parch);color:var(--ink)}
 .waitCode{font-family:var(--display);font-size:44px;letter-spacing:10px;text-align:center;color:var(--evil)}
 .ruby{display:inline-block;width:15px;height:15px;flex:none;background:linear-gradient(135deg,#ffb0bc,#e8304a 55%,#8a1028);clip-path:polygon(50% 0,100% 36%,80% 100%,20% 100%,0 36%);vertical-align:-2px}
@@ -380,7 +396,7 @@ button:focus-visible{outline:3px solid #5aa0ff;outline-offset:2px}
           <button class="mb" id="menuMiss"><svg viewBox="0 0 28 28" aria-hidden="true"><rect x="5" y="3" width="18" height="23" rx="3" fill="#f6e7c4" stroke="#1c1a24" stroke-width="2"/><path d="M9 10l2 2 4-4M9 17l2 2 4-4" stroke="#7b3fb3" stroke-width="2.4" fill="none" stroke-linecap="round" stroke-linejoin="round"/><path d="M17 11h3M17 18h3" stroke="#1c1a24" stroke-width="2" stroke-linecap="round"/></svg>Missioni<em class="dot" hidden>!</em></button>
           <button class="mb" id="menuWanted"><svg viewBox="0 0 28 28" aria-hidden="true"><rect x="5" y="3" width="18" height="23" rx="2.5" fill="#1c1a24" stroke="#f2b33d" stroke-width="2"/><path d="M5 7h-2M5 13h-2M5 19h-2" stroke="#f2b33d" stroke-width="2" stroke-linecap="round"/><path d="M10 9h9M10 14h9" stroke="#e6cf9c" stroke-width="1.8" stroke-linecap="round"/><path d="M10 18l6 5M16 18l-6 5" stroke="#e8453a" stroke-width="2.2" stroke-linecap="round"/></svg>Lista nera</button>
           <button class="mb" id="menuShop"><em class="dot" hidden>!</em><svg viewBox="0 0 28 28" aria-hidden="true"><path d="M5 10h18l-2 15H7z" fill="#f2b33d" stroke="#1c1a24" stroke-width="2" stroke-linejoin="round"/><path d="M10 10V8a4 4 0 0 1 8 0v2" stroke="#1c1a24" stroke-width="2" fill="none"/><circle cx="14" cy="17" r="3" fill="#ffe9a0" stroke="#1c1a24" stroke-width="1.6"/></svg>Negozio</button>
-          <button class="mb" id="menuFriends"><svg viewBox="0 0 28 28" aria-hidden="true"><circle cx="10" cy="10" r="4" fill="#b07be0" stroke="#1c1a24" stroke-width="2"/><circle cx="19" cy="11" r="3.5" fill="#5fae4c" stroke="#1c1a24" stroke-width="2"/><path d="M3 24c0-5 3-8 7-8s7 3 7 8z" fill="#b07be0" stroke="#1c1a24" stroke-width="2"/><path d="M15 24c0-4 2-7 5-7s5 3 5 7z" fill="#5fae4c" stroke="#1c1a24" stroke-width="2"/></svg>Amici</button>
+          <button class="mb" id="menuFriends"><em class="dot" id="frDot" hidden>1</em><svg viewBox="0 0 28 28" aria-hidden="true"><circle cx="10" cy="10" r="4" fill="#b07be0" stroke="#1c1a24" stroke-width="2"/><circle cx="19" cy="11" r="3.5" fill="#5fae4c" stroke="#1c1a24" stroke-width="2"/><path d="M3 24c0-5 3-8 7-8s7 3 7 8z" fill="#b07be0" stroke="#1c1a24" stroke-width="2"/><path d="M15 24c0-4 2-7 5-7s5 3 5 7z" fill="#5fae4c" stroke="#1c1a24" stroke-width="2"/></svg>Amici</button>
           <button class="mb" id="menuBoard"><svg viewBox="0 0 28 28" aria-hidden="true"><rect x="10" y="8" width="8" height="17" fill="#f2b33d" stroke="#1c1a24" stroke-width="2"/><rect x="2" y="14" width="8" height="11" fill="#c9ccd6" stroke="#1c1a24" stroke-width="2"/><rect x="18" y="17" width="8" height="8" fill="#c58a4a" stroke="#1c1a24" stroke-width="2"/><path d="M14 2l1.4 2.8 3 .4-2.2 2 .6 3-2.8-1.5-2.8 1.5.6-3-2.2-2 3-.4z" fill="#ffd35a" stroke="#1c1a24" stroke-width="1.2"/></svg>Classifica</button>
           <button class="mb" id="menuOnline"><svg viewBox="0 0 28 28" aria-hidden="true"><circle cx="14" cy="14" r="11" fill="#3d6fd1" stroke="#1c1a24" stroke-width="2"/><path d="M3 14h22M14 3c-4 4-4 18 0 22M14 3c4 4 4 18 0 22" stroke="#bfe0ff" stroke-width="1.8" fill="none"/></svg>Online</button>
         </div>
@@ -411,6 +427,11 @@ button:focus-visible{outline:3px solid #5aa0ff;outline-offset:2px}
     <div class="scr" id="online" hidden>
       <div class="scrHead"><button class="ib" id="onBack" aria-label="Torna al menu">‹</button><b>Online</b><div class="mGold2"><span class="coin"></span><span id="onGold">0</span></div></div>
       <div class="wList" id="onList"></div>
+    </div>
+
+    <div class="scr" id="friends" hidden>
+      <div class="scrHead"><button class="ib" id="frBack" aria-label="Torna al menu">‹</button><b>Amici</b><div class="mGold2"><span class="coin"></span><span id="frGold">0</span></div></div>
+      <div class="wList" id="frList"></div>
     </div>
 
     <div class="scr" id="board" hidden>
@@ -511,6 +532,23 @@ button:focus-visible{outline:3px solid #5aa0ff;outline-offset:2px}
         <p class="note" id="waitTxt">Aspetto…</p>
         <div class="waitCode" id="waitCode">----</div>
         <div class="pair"><button class="big alt" id="waitLeave">Esci</button></div>
+      </div>
+    </div>
+
+    <div class="ov" id="ovName" hidden>
+      <div class="card">
+        <h2>Il tuo nome</h2>
+        <input class="nameIn" id="nameIn" maxlength="14" autocomplete="off" placeholder="NomeCattivo">
+        <p class="note" id="nameErr"></p>
+        <div class="pair"><button class="big alt" id="nameNo">Annulla</button><button class="big" id="nameOk">Salva</button></div>
+      </div>
+    </div>
+
+    <div class="ov" id="ovPick" hidden>
+      <div class="card">
+        <h2 id="pickTitle">Scegli</h2>
+        <div class="pickList" id="pickList"></div>
+        <button class="big alt" id="pickNo">Annulla</button>
       </div>
     </div>
 
@@ -3510,7 +3548,7 @@ const crownHtml = n => [0, 1, 2].map(i => `<span class="star crown${i < n ? ' on
 function toScene() {                                                       // schermate fuori dalla battaglia: la scena viva resta dietro
   dragon.glasses = 1; dragon.sad = 0; dragon.rear = 0;
   inMenu = true; inStory = false; running = false; paused = false; ended = false; tutHide();
-  for (const id of ['story', 'menu', 'worlds', 'capr', 'miss', 'wanted', 'shop', 'map', 'squad', 'forge', 'ovPause', 'ovEnd', 'ovGift', 'ovEgg', 'ovOdds', 'online', 'board', 'bpick', 'ovWait', 'ovInvite']) $(id).hidden = true;
+  for (const id of ['story', 'menu', 'worlds', 'capr', 'miss', 'wanted', 'shop', 'map', 'squad', 'forge', 'ovPause', 'ovEnd', 'ovGift', 'ovEgg', 'ovOdds', 'online', 'board', 'bpick', 'ovWait', 'ovInvite', 'friends', 'ovName', 'ovPick']) $(id).hidden = true;
   document.body.classList.add('inMenu'); resize();
   s = DW.create(); particles = []; nums = []; bubbles = []; hooks = []; dragon.fireT = 0; dragon.phase = 'idle';
 }
@@ -3980,7 +4018,7 @@ function newBattle(world = curWorld, level = curLevel, opt = curOpt) {
   const cp = opt.cap != null ? DW.CAPRICCI[opt.cap] : null;
   const W0 = DW.WORLDS[world];
   inMenu = false; inStory = false; document.body.classList.remove('inMenu');
-  for (const id of ['story', 'menu', 'worlds', 'capr', 'miss', 'wanted', 'shop', 'map', 'squad', 'forge', 'ovPause', 'ovEnd', 'ovGift', 'ovEgg', 'ovOdds', 'online', 'board', 'bpick', 'ovWait', 'ovInvite']) $(id).hidden = true;
+  for (const id of ['story', 'menu', 'worlds', 'capr', 'miss', 'wanted', 'shop', 'map', 'squad', 'forge', 'ovPause', 'ovEnd', 'ovGift', 'ovEgg', 'ovOdds', 'online', 'board', 'bpick', 'ovWait', 'ovInvite', 'friends', 'ovName', 'ovPick']) $(id).hidden = true;
   const squad = cp && cp.squad ? cp.squad.slice() : (sqSel.length ? sqSel : save.squad).filter(isUnlocked).slice(0, cp && cp.pick || DW.DECK);
   tutHide(); tut = !save.tutorialDone && world === 0 && level === 0 && !cp && !opt.hard ? {i:0, shown:false, t:0} : null; resize();
   const secret = !cp && opt.hard && world === DW.WORLDS.length - 1 && level === W0.n - 1 && draculaReady(squad);   // la notte giusta, al Trono del Drago, arriva il Conte
@@ -4050,7 +4088,7 @@ function finish() {
 const backFromBattle = () => curOpt.cap != null ? showCapr() : showMap(curWorld, !!curOpt.hard);
 $('menuPlay').onclick = showWorlds; $('againBtn').onclick = () => NET.g ? mpRematch() : newBattle(); $('restartBtn').onclick = () => newBattle();
 $('menuBtn').onclick = () => NET.g ? leaveGame() : backFromBattle(); $('endMenuBtn').onclick = () => NET.g ? leaveGame() : backFromBattle();
-$('menuFriends').onclick = () => showOnline(true); $('menuOnline').onclick = () => showOnline(); $('menuBoard').onclick = showBoard;
+$('menuFriends').onclick = () => window.DW_FB ? showFriends() : showOnline(true); $('frBack').onclick = showMenu; $('pickNo').onclick = () => { $('ovPick').hidden = true; }; $('menuOnline').onclick = () => showOnline(); $('menuBoard').onclick = showBoard;
 $('onBack').onclick = showMenu; $('boardBack').onclick = showMenu; $('waitLeave').onclick = () => leaveGame(); $('caprBack').onclick = showWorlds;
 $('worldsBack').onclick = showMenu; $('mapBack').onclick = showWorlds; $('sqBack').onclick = () => sqOpt.cap != null ? showCapr() : showMap(sqWorld, !!sqOpt.hard);
 $('sqGo').onclick = () => { if (!sqSel.length) return; if (sqMax === DW.DECK) { save.squad = sqSel.slice(); persist(); } newBattle(sqWorld, sqLevel, sqOpt); };
@@ -4304,6 +4342,194 @@ $('sPlayBtn').onclick = () => storyEnd(false); $('sMenuBtn').onclick = () => sto
 
 /* ================= online: amici, stanze, duelli, insieme, classifica ================= */
 const KL = Object.keys(DW.U).sort(), KI = Object.fromEntries(KL.map((k, i) => [k, i]));   // stesso elenco su tutti i telefoni
+/* ---------- online fuori da Claude (GitHub): Firebase fa da stanza, posta e rubrica ---------- */
+const FBX = {on:false, err:null, db:null, uid:null, me:null, friends:{}, fdata:{}, fstat:{}, fw:{}, mail:{}, invSeen:new Set(), found:null, tab:'amici', del:null};
+const FB_MSGS = ['Rivincita?', 'Bella partita!', 'Ti ho battuto 😈', 'Sono online: giochiamo?', 'Grazie del regalo!', 'Il drago ti saluta 🐉'];
+const FB_GIFT = 100, FB_INV_TTL = 5 * 60 * 1000;
+const FB_NAME = /^[A-Za-z0-9_]{3,14}$/, FB_ABC = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789';
+const fbRef = p => FBX.db.ref(p), fbNow = () => firebase.database.ServerValue.TIMESTAMP;
+const fbCode = c => c ? c.slice(0, 2) + '-' + c.slice(2) : '';
+save.gifts = save.gifts || {};
+async function fbInit() {
+  if (!window.firebase) { FBX.err = 'Online non raggiungibile: controlla la connessione e riapri il gioco.'; return; }
+  try {
+    firebase.initializeApp(window.DW_FB);
+    const auth = firebase.auth(); FBX.db = firebase.database();
+    const user = await new Promise(res => { let tried = false; const un = auth.onAuthStateChanged(u => { if (u) { un(); res(u); } else if (!tried) { tried = true; auth.signInAnonymously().catch(() => res(null)); } }); });
+    if (!user) { FBX.err = 'Non riesco a collegarmi. Riprova più tardi.'; return; }
+    FBX.uid = NET.myId = user.uid; FBX.on = true;
+    NET.user = {id:async () => FBX.uid, profiles:async ids => { const out = {}; await Promise.all(ids.map(async id => { const n = (FBX.fdata[id] || {}).name || (id === FBX.uid && FBX.me ? FBX.me.name : null) || (await fbRef('users/' + id + '/name').once('value')).val(); if (n) out[id] = {name:n}; })); return out; }};
+    NET.db = {collection:p => ({onSnapshot:(cb, err) => fbRef(p).on('value', snap => { const docs = []; snap.forEach(c => { docs.push({id:c.key, data:() => c.val()}); }); cb({docs}); }, err)}), doc:p => ({set:v => fbRef(p).set(v)})};
+    NET.room = {join:async name => fbRoom(name), presence:async () => {}, onPeers:() => () => {}};
+    fbRef('users/' + FBX.uid).on('value', snap => { FBX.me = snap.val() || {}; if (!FBX.me.code) fbClaimCode(); fbPaint(); });
+    fbRef('.info/connected').on('value', snap => { if (!snap.val()) return; const r = fbRef('status/' + FBX.uid); r.onDisconnect().remove(); r.set({st:NET.g ? 'gioca' : 'libero', t:fbNow()}); });
+    fbRef('friends/' + FBX.uid).on('value', snap => { FBX.friends = snap.val() || {}; fbWatchFriends(); fbPaint(); });
+    fbRef('mail/' + FBX.uid).on('value', snap => { FBX.mail = snap.val() || {}; fbMailArrived(); fbPaint(); });
+    boardListen(); syncBoard();
+  } catch (e) { FBX.err = 'Non riesco a collegarmi. Riprova più tardi.'; }
+}
+function fbRoom(name) {                                                    // una stanza: ognuno scrive il suo stato, tutti leggono quello degli altri
+  const ref = fbRef('rooms/' + name + '/peers'), me = ref.push(), pid = me.key, mine = {}; let h = null;
+  me.onDisconnect().remove();
+  return {
+    presence(o) { Object.assign(mine, o); return me.set({uid:FBX.uid, j:JSON.stringify(mine)}); },
+    onPeers(cb, lost) {
+      h = ref.on('value', snap => { const peers = []; snap.forEach(c => { const v = c.val() || {}; let p = null; try { p = JSON.parse(v.j || 'null'); } catch (e) {} peers.push({peer:c.key, sameTab:c.key === pid, isMe:c.key === pid, by:v.uid, presence:p}); }); cb({peers}); }, () => lost && lost());
+      return () => ref.off('value', h);
+    },
+    leave() { if (h) ref.off('value', h); me.onDisconnect().cancel(); return me.remove(); }
+  };
+}
+async function fbClaimCode() {                                             // il codice amico: unico, si sceglie una volta sola
+  if (FBX.claiming) return; FBX.claiming = true;
+  for (let i = 0; i < 6; i++) {
+    const c = 'DW' + Array.from({length:5}, () => FB_ABC[Math.floor(Math.random() * FB_ABC.length)]).join('');
+    try { const r = await fbRef('codes/' + c).transaction(cur => cur === null ? FBX.uid : undefined); if (r.committed) { await fbRef('users/' + FBX.uid).update({code:c}); break; } } catch (e) {}
+  }
+  FBX.claiming = false;
+}
+async function fbSetName(n) {                                              // il nome: unico, si può cambiare
+  n = (n || '').trim();
+  if (!FB_NAME.test(n)) return 'Da 3 a 14 caratteri: lettere, numeri o _';
+  const k = n.toLowerCase(), old = FBX.me && FBX.me.name;
+  if (old && old.toLowerCase() === k) { await fbRef('users/' + FBX.uid).update({name:n}); return null; }
+  try { const r = await fbRef('names/' + k).transaction(cur => cur === null || cur === FBX.uid ? FBX.uid : undefined); if (!r.committed) return 'Questo nome è già preso'; }
+  catch (e) { return 'Questo nome è già preso'; }
+  if (old) fbRef('names/' + old.toLowerCase()).remove().catch(() => {});
+  await fbRef('users/' + FBX.uid).update({name:n});
+  return null;
+}
+function fbWatchFriends() {                                                // per ogni amico: nome e se è online
+  for (const f of Object.keys(FBX.friends)) if (!FBX.fw[f]) {
+    const a = fbRef('users/' + f).on('value', s => { FBX.fdata[f] = s.val() || {}; fbPaint(); });
+    const b = fbRef('status/' + f).on('value', s => { FBX.fstat[f] = s.val(); fbPaint(); });
+    FBX.fw[f] = [a, b];
+  }
+  for (const f of Object.keys(FBX.fw)) if (!FBX.friends[f]) { fbRef('users/' + f).off('value', FBX.fw[f][0]); fbRef('status/' + f).off('value', FBX.fw[f][1]); delete FBX.fw[f]; delete FBX.fdata[f]; delete FBX.fstat[f]; }
+}
+function fbSend(to, m) { return fbRef('mail/' + to).push(Object.assign({from:FBX.uid, name:(FBX.me && FBX.me.name) || 'Un amico', t:fbNow()}, m)); }
+function fbDrop(id) { return fbRef('mail/' + FBX.uid + '/' + id).remove().catch(() => {}); }
+function fbStatus() { if (FBX.on) fbRef('status/' + FBX.uid).set({st:NET.g ? 'gioca' : 'libero', t:fbNow()}).catch(() => {}); }
+function fbMailArrived() {                                                 // un invito fresco apre subito la finestra di sfida
+  const dot = $('frDot'), n = Object.keys(FBX.mail).length;
+  if (dot) { dot.hidden = !n; dot.textContent = n > 9 ? '9+' : n; }
+  for (const [id, m] of Object.entries(FBX.mail)) {
+    if (m.type !== 'inv' || FBX.invSeen.has(id) || NET.g || Date.now() - (m.t || 0) > 2 * 60 * 1000) continue;
+    FBX.invSeen.add(id);
+    $('invTxt').textContent = `${m.name} ti sfida: ${MODES[m.mode] ? MODES[m.mode].name : 'partita'}${m.mode === 'coop' ? ' · ' + DW.COOP[m.coop || 0].name : ''}`;
+    $('ovInvite').hidden = false;
+    $('invYes').onclick = () => { $('ovInvite').hidden = true; fbDrop(id); guestJoin(m.code); };
+    $('invNo').onclick = () => { $('ovInvite').hidden = true; fbDrop(id); };
+    break;
+  }
+}
+function fbChallenge(f, mode) {                                            // sfida un amico: apro la stanza e gli mando l'invito
+  const st = FBX.fstat[f];
+  if (!st) return toast('È offline: riprova quando è online');
+  onMode = mode; if (mode === 'coop') onCoop = Math.min(save.coopWon, DW.COOP.length - 1);
+  const code = randCode(); hostRoom(code);
+  fbSend(f, {type:'inv', mode, coop:onCoop, code});
+}
+function fbPick(title, opts, done) {                                       // finestrella con qualche scelta
+  $('pickTitle').textContent = title; const box = $('pickList'); box.innerHTML = '';
+  for (const [v, label] of opts) { const b = document.createElement('button'); b.className = 'big alt'; b.textContent = label; b.onclick = () => { $('ovPick').hidden = true; done(v); }; box.appendChild(b); }
+  $('ovPick').hidden = false;
+}
+function fbAskName(force) {
+  $('nameIn').value = (FBX.me && FBX.me.name) || ''; $('nameErr').textContent = force ? 'Scegli un nome: gli amici ti trovano così.' : 'Il nome vecchio torna libero per gli altri.';
+  $('nameNo').hidden = !!force; $('ovName').hidden = false; setTimeout(() => $('nameIn').focus(), 50);
+  $('nameOk').onclick = async () => { $('nameOk').disabled = true; const e = await fbSetName($('nameIn').value); $('nameOk').disabled = false; if (e) { $('nameErr').textContent = e; return; } $('ovName').hidden = true; toast('Nome salvato!'); renderFriends(); };
+  $('nameNo').onclick = () => { $('ovName').hidden = true; };
+}
+/* ---------- schermata Amici (con la casella postale) ---------- */
+function showFriends() { toScene(); $('friends').hidden = false; $('frGold').textContent = save.gold.toLocaleString('it-IT'); renderFriends(); if (FBX.on && FBX.me && !FBX.me.name) fbAskName(true); }
+let fbPaintT = 0;
+function fbPaint() { if ($('friends').hidden) { if (!$('online').hidden) renderOnline(); return; } clearTimeout(fbPaintT); fbPaintT = setTimeout(renderFriends, 60); }
+function frRow(html) { const r = document.createElement('div'); r.className = 'fgRow frRow'; r.innerHTML = html; return r; }
+function renderFriends() {
+  const box = $('frList'); box.innerHTML = '';
+  const note = t => { const n = document.createElement('p'); n.className = 'note'; n.style.textAlign = 'center'; n.textContent = t; box.appendChild(n); };
+  if (!FBX.on) { note(FBX.err || 'Mi collego…'); return; }
+  const me = FBX.me || {};
+  const card = frRow(`<span class="frAva">🐉</span><div class="tx"><b></b><small>Codice amico: <span class="frCode"></span></small></div><button class="upBtn" id="frName">${me.name ? 'Cambia nome' : 'Scegli nome'}</button>`);
+  card.classList.add('meRow'); card.querySelector('b').textContent = me.name || 'Senza nome'; card.querySelector('.frCode').textContent = fbCode(me.code) || '…';
+  card.querySelector('.tx').onclick = () => { if (me.code && navigator.clipboard) navigator.clipboard.writeText(fbCode(me.code)).then(() => toast('Codice copiato: mandalo su WhatsApp!'), () => {}); };
+  box.appendChild(card); $('frName').onclick = () => fbAskName(false);
+  const sr = document.createElement('div'); sr.className = 'onAct';
+  sr.innerHTML = `<div class="onJoin frSearch"><input id="frQ" maxlength="16" placeholder="Nome o codice" autocomplete="off"><button class="big alt" id="frGo">Cerca</button></div>`;
+  box.appendChild(sr);
+  $('frGo').onclick = async () => {
+    const q = $('frQ').value.trim(); if (q.length < 3) return toast('Scrivi almeno 3 lettere');
+    let uid = null; const c = q.toUpperCase().replace(/[^A-Z0-9]/g, '');
+    try {
+      if (/^DW[A-Z0-9]{5}$/.test(c)) uid = (await fbRef('codes/' + c).once('value')).val();
+      if (!uid && FB_NAME.test(q)) uid = (await fbRef('names/' + q.toLowerCase()).once('value')).val();
+    } catch (e) {}
+    if (!uid) { FBX.found = {none:q}; renderFriends(); return; }
+    const u = (await fbRef('users/' + uid).once('value')).val() || {};
+    FBX.found = {uid, name:u.name || '?', code:u.code || ''}; renderFriends();
+  };
+  if (FBX.found) {
+    const F = FBX.found;
+    if (F.none) note(`Nessuno si chiama “${F.none}”. Controlla il nome o chiedi il codice amico.`);
+    else {
+      const r = frRow(`<span class="frAva">😈</span><div class="tx"><b></b><small>${fbCode(F.code)}</small></div><button class="upBtn">${F.uid === FBX.uid ? 'Sei tu' : FBX.friends[F.uid] ? 'Già amici' : 'Aggiungi'}</button>`);
+      r.querySelector('b').textContent = F.name; const b = r.querySelector('.upBtn'); b.disabled = F.uid === FBX.uid || !!FBX.friends[F.uid];
+      b.onclick = () => { if (!me.name) return fbAskName(true); fbSend(F.uid, {type:'req'}); FBX.found = null; toast('Richiesta mandata!'); renderFriends(); };
+      box.appendChild(r);
+    }
+  }
+  const mails = Object.entries(FBX.mail).sort((a, b) => (b[1].t || 0) - (a[1].t || 0)), fl = Object.keys(FBX.friends);
+  const tabs = document.createElement('div'); tabs.className = 'tabs3 tabs2'; tabs.setAttribute('role', 'tablist');
+  tabs.innerHTML = `<button role="tab" data-t="amici" aria-selected="${FBX.tab === 'amici'}">Amici (${fl.length})</button><button role="tab" data-t="posta" aria-selected="${FBX.tab === 'posta'}">Posta${mails.length ? ' (' + mails.length + ')' : ''}</button>`;
+  tabs.querySelectorAll('button').forEach(b => b.onclick = () => { FBX.tab = b.dataset.t; renderFriends(); });
+  box.appendChild(tabs);
+  if (FBX.tab === 'posta') {
+    if (!mails.length) note('Casella vuota. Nessuno ti scrive? Strano, sei così simpatico.');
+    for (const [id, m] of mails) {
+      const old = m.type === 'inv' && Date.now() - (m.t || 0) > FB_INV_TTL;
+      const txt = m.type === 'req' ? 'vuole essere tuo amico' : m.type === 'acc' ? 'ha accettato: ora siete amici!' : m.type === 'inv' ? (old ? 'ti aveva sfidato (invito scaduto)' : 'ti sfida: ' + (MODES[m.mode] ? MODES[m.mode].name : 'partita')) : m.type === 'gift' ? `ti regala ${m.n || FB_GIFT} oro` : '“' + (FB_MSGS[m.i] || '…') + '”';
+      const btns = m.type === 'req' ? '<button class="upBtn frNo">No</button><button class="upBtn frYes">Accetta</button>' : m.type === 'inv' && !old ? '<button class="upBtn frNo">No</button><button class="upBtn frYes">Gioca</button>' : m.type === 'gift' ? '<button class="upBtn frYes">Ritira</button>' : m.type === 'msg' && FBX.friends[m.from] ? '<button class="upBtn frNo">Ok</button><button class="upBtn frYes">Rispondi</button>' : '<button class="upBtn frNo">Ok</button>';
+      const r = frRow(`<span class="frAva">${m.type === 'gift' ? '🎁' : m.type === 'inv' ? '⚔️' : m.type === 'msg' ? '💬' : '✉️'}</span><div class="tx"><b></b><small></small></div>${btns}`);
+      r.querySelector('b').textContent = m.name || 'Un amico'; r.querySelector('small').textContent = txt;
+      const no = r.querySelector('.frNo'), yes = r.querySelector('.frYes');
+      if (no) no.onclick = () => fbDrop(id);
+      if (yes) yes.onclick = async () => {
+        if (m.type === 'req') { await fbRef('friends/' + FBX.uid + '/' + m.from).set(true); await fbRef('friends/' + m.from + '/' + FBX.uid).set(true); fbSend(m.from, {type:'acc'}); fbDrop(id); toast('Nuovo amico!'); }
+        else if (m.type === 'inv') { fbDrop(id); guestJoin(m.code); }
+        else if (m.type === 'gift') { save.gold += m.n || FB_GIFT; persist(); fbDrop(id); $('frGold').textContent = save.gold.toLocaleString('it-IT'); toast(`+${m.n || FB_GIFT} oro!`); }
+        else if (m.type === 'msg') fbPick('Rispondi a ' + m.name, FB_MSGS.map((t, i) => [i, t]), i => { fbSend(m.from, {type:'msg', i}); fbDrop(id); toast('Mandato!'); });
+      };
+      box.appendChild(r);
+    }
+    return;
+  }
+  if (!fl.length) { note('Ancora nessun amico. Cercali per nome o fatti dare il loro codice.'); return; }
+  const day = today();
+  fl.sort((a, b) => (FBX.fstat[b] ? 1 : 0) - (FBX.fstat[a] ? 1 : 0) || ((FBX.fdata[a] || {}).name || '').localeCompare((FBX.fdata[b] || {}).name || ''));
+  for (const f of fl) {
+    const d = FBX.fdata[f] || {}, st = FBX.fstat[f], tr = (NET.board[f] || {}).tr || 0, gifted = save.gifts[f] === day;
+    const r = frRow(`<span class="frAva"><i class="frDot${st ? ' on' : ''}"></i>😈</span><div class="tx"><b></b><small>${st ? (st.st === 'gioca' ? 'Sta giocando' : 'Online') : 'Offline'} · ${tr} trofei</small></div>
+      <div class="frBtns"><button class="upBtn frGift" ${gifted ? 'disabled' : ''} aria-label="Regalo">🎁</button><button class="upBtn frMsg" aria-label="Messaggio">💬</button><button class="upBtn frX" aria-label="Rimuovi">${FBX.del === f ? 'Sicuro?' : '✕'}</button><button class="upBtn frDuel" ${st && st.st !== 'gioca' ? '' : 'disabled'}>Sfida</button></div>`);
+    r.querySelector('b').textContent = d.name || '…';
+    r.querySelector('.frDuel').onclick = () => fbPick('Sfida ' + (d.name || ''), Object.entries(MODES).map(([m, M]) => [m, M.name + (m === 'coop' ? ' · ' + DW.COOP[Math.min(save.coopWon, DW.COOP.length - 1)].name : '')]), m => fbChallenge(f, m));
+    r.querySelector('.frGift').onclick = () => { save.gifts[f] = day; persist(); fbSend(f, {type:'gift', n:FB_GIFT}); toast(`Regalo mandato: ${FB_GIFT} oro`); renderFriends(); };
+    r.querySelector('.frMsg').onclick = () => fbPick('Messaggio a ' + (d.name || ''), FB_MSGS.map((t, i) => [i, t]), i => { fbSend(f, {type:'msg', i}); toast('Mandato!'); });
+    r.querySelector('.frX').onclick = () => { if (FBX.del !== f) { FBX.del = f; renderFriends(); return; } FBX.del = null; fbRef('friends/' + FBX.uid + '/' + f).remove(); fbRef('friends/' + f + '/' + FBX.uid).remove(); toast('Amico rimosso'); };
+    box.appendChild(r);
+  }
+}
+function renderOnlineFriends(box) {                                        // nella schermata Online: gli amici collegati, da sfidare al volo
+  const on = Object.keys(FBX.friends).filter(f => FBX.fstat[f]);
+  if (!on.length) { const n = document.createElement('p'); n.className = 'note'; n.style.textAlign = 'center'; n.textContent = Object.keys(FBX.friends).length ? 'Nessun amico online adesso. Crea una stanza e manda il codice.' : 'Aggiungi amici dalla schermata Amici, oppure crea una stanza e manda il codice.'; box.appendChild(n); return; }
+  for (const f of on) {
+    const d = FBX.fdata[f] || {}, busy = FBX.fstat[f].st === 'gioca';
+    const r = frRow(`<span class="frAva"><i class="frDot on"></i>😈</span><div class="tx"><b></b><small>${busy ? 'Sta giocando' : 'Libero'} · ${(NET.board[f] || {}).tr || 0} trofei</small></div><button class="upBtn" ${busy ? 'disabled' : ''}>Sfida</button>`);
+    r.querySelector('b').textContent = d.name || '…';
+    r.querySelector('.upBtn').onclick = () => fbChallenge(f, onMode);
+    box.appendChild(r);
+  }
+}
 const NET_VER = KL.length + ':' + DW.ROSTER.length;
 const ET = ['hit', 'die', 'boom', 'fire', 'legend', 'freeze', 'revive', 'stone', 'dive', 'kidnap', 'donkey', 'mirror', 'mirage', 'summon', 'heal', 'steal', 'overtime', 'grow', 'dodge', 'vanish', 'curse', 'gaze', 'mute', 'fear', 'charm', 'stun', 'leap', 'release', 'rush', 'boss', 'bhit', 'wallet', 'behead', 'swallow', 'genie', 'robbed'];
 const NET = {room:null, db:null, user:null, myId:null, peer:null, peers:[], g:null, invSeen:new Set(), board:{}, boardOk:false, lastBoard:''};
@@ -4322,6 +4548,7 @@ async function names(ids) {                                                // i 
   try { return await NET.user.profiles(ids); } catch (e) { return {}; }
 }
 async function netInit() {
+  if (!GALLERY && window.DW_FB) return fbInit();                            // su GitHub l'online passa da Firebase
   if (GALLERY || !window.claude || !window.claude.use) return;
   try {
     const [room, db, user] = await Promise.all([claude.use('room'), claude.use('db'), claude.use('user')]);
@@ -4336,6 +4563,7 @@ async function netInit() {
   } catch (e) {}
 }
 function lobbyPresence(extra = {}) {
+  if (FBX.on) return fbStatus();
   if (!NET.room) return;
   NET.room.presence(Object.assign({app:'dw', id:NET.myId, tr:save.trophies, st:NET.g ? 'gioca' : 'libero', inv:null}, extra)).catch(() => {});
 }
@@ -4361,7 +4589,7 @@ function showOnline(scroll) {
 async function renderOnline() {
   const box = $('onList'); box.innerHTML = '';
   const st = document.createElement('p'); st.className = 'note'; st.style.textAlign = 'center';
-  if (!NET.room) { st.textContent = 'L’online funziona quando il gioco è aperto su claude.ai, con un account, e chi lo ha creato ti ha invitato. Qui non è disponibile.'; box.appendChild(st); return; }
+  if (!NET.room) { st.textContent = window.DW_FB ? (FBX.err || 'Mi collego…') : 'L’online funziona quando il gioco è aperto su claude.ai, con un account, e chi lo ha creato ti ha invitato. Qui non è disponibile.'; box.appendChild(st); return; }
   st.textContent = `Trofei: ${save.trophies} · Duelli vinti: ${save.duelWins}`; box.appendChild(st);
   for (const [m, M] of Object.entries(MODES)) {
     const b = document.createElement('button'); b.className = 'wCard' + (onMode === m ? ' on' : '');
@@ -4385,6 +4613,7 @@ async function renderOnline() {
   $('onCreate').onclick = () => hostRoom(randCode());
   $('onJoinBtn').onclick = () => { const c = ($('onCode').value || '').toUpperCase().replace(/[^A-Z]/g, ''); if (c.length !== 4) return toast('Il codice ha 4 lettere'); guestJoin(c); };
   const h2 = document.createElement('h3'); h2.className = 'shopH'; h2.id = 'onFriends'; h2.textContent = 'Amici online'; box.appendChild(h2);
+  if (FBX.on) { renderOnlineFriends(box); return; }
   const others = NET.peers.filter(p => !p.isMe && p.presence && p.presence.app === 'dw');
   if (!others.length) { const n = document.createElement('p'); n.className = 'note'; n.style.textAlign = 'center'; n.textContent = 'Nessuno ha il gioco aperto adesso. Crea una stanza e manda il codice.'; box.appendChild(n); return; }
   const ids = others.map(p => p.by || p.presence.id).filter(Boolean), ps = await names(ids);
@@ -4493,7 +4722,7 @@ function startMp() {                                                       // l'
 }
 function battleUi() {
   inMenu = false; inStory = false; document.body.classList.remove('inMenu');
-  for (const id of ['story', 'menu', 'worlds', 'capr', 'miss', 'wanted', 'shop', 'online', 'board', 'bpick', 'map', 'squad', 'forge', 'ovPause', 'ovEnd', 'ovGift', 'ovEgg', 'ovOdds', 'ovWait', 'ovInvite']) $(id).hidden = true;
+  for (const id of ['story', 'menu', 'worlds', 'capr', 'miss', 'wanted', 'shop', 'online', 'board', 'bpick', 'map', 'squad', 'forge', 'ovPause', 'ovEnd', 'ovGift', 'ovEgg', 'ovOdds', 'ovWait', 'ovInvite', 'friends', 'ovName', 'ovPick']) $(id).hidden = true;
   tutHide(); tut = null; resize(); speed = 1;
   particles = []; nums = []; bubbles = []; hooks = []; seenId = 0; endT = 0; ended = false; dragon.fireT = 0; dragon.phase = 'idle';
   running = true; paused = false; countT = 3; viaT = 0; lightP = 0;
@@ -4633,8 +4862,8 @@ function showBoard() { toScene(); $('board').hidden = false; renderBoard(); }
 async function renderBoard() {
   document.querySelectorAll('#boardTabs button').forEach(b => b.setAttribute('aria-selected', String(b.dataset.t === boardTab)));
   const list = $('boardList'); list.innerHTML = '';
-  if (!NET.db) { const n = document.createElement('p'); n.className = 'note'; n.style.textAlign = 'center'; n.textContent = 'La classifica si vede quando il gioco è aperto su claude.ai con un account.'; list.appendChild(n); return; }
-  const rows = Object.entries(NET.board).map(([id, d]) => ({id, v:d[boardTab] || 0})).sort((a, b) => b.v - a.v).slice(0, 50);
+  if (!NET.db) { const n = document.createElement('p'); n.className = 'note'; n.style.textAlign = 'center'; n.textContent = window.DW_FB ? (FBX.err || 'Mi collego…') : 'La classifica si vede quando il gioco è aperto su claude.ai con un account.'; list.appendChild(n); return; }
+  const rows = Object.entries(NET.board).filter(([id]) => !FBX.on || id === FBX.uid || FBX.friends[id]).map(([id, d]) => ({id, v:d[boardTab] || 0})).sort((a, b) => b.v - a.v).slice(0, 50);
   if (!rows.length) { const n = document.createElement('p'); n.className = 'note'; n.style.textAlign = 'center'; n.textContent = NET.boardOk ? 'Ancora nessuno in classifica: gioca una partita!' : 'Carico la classifica…'; list.appendChild(n); return; }
   const ps = await names(rows.map(r => r.id));
   rows.forEach((r, i) => {
