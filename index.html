@@ -235,6 +235,7 @@ body.inMenu .top, body.inMenu .hud{display:none}
 .onJoin input{flex:1;min-width:0;font:400 22px var(--display);letter-spacing:6px;text-transform:uppercase;text-align:center;border:3px solid var(--ink);border-radius:12px;padding:6px;background:var(--parch);color:var(--ink)}
 .waitCode{font-family:var(--display);font-size:44px;letter-spacing:10px;text-align:center;color:var(--evil)}
 .ruby{display:inline-block;width:15px;height:15px;flex:none;background:linear-gradient(135deg,#ffb0bc,#e8304a 55%,#8a1028);clip-path:polygon(50% 0,100% 36%,80% 100%,20% 100%,0 36%);vertical-align:-2px}
+.sndB{position:absolute;top:14px;left:max(16px,env(safe-area-inset-left,0px));pointer-events:auto;font-size:20px}
 .mGold .ruby,.mGold2 .ruby{width:18px;height:18px;margin-left:8px}
 .shopH{font-family:var(--display);font-weight:400;font-size:20px;color:var(--gold2);-webkit-text-stroke:3px var(--ink);paint-order:stroke fill;margin:6px 0 0;width:min(560px,100%);align-self:center;display:flex;justify-content:space-between;align-items:center}
 .shopH small{font:900 12px var(--body);-webkit-text-stroke:0;color:#ffd0d0}
@@ -383,6 +384,7 @@ button:focus-visible{outline:3px solid #5aa0ff;outline-offset:2px}
     <div id="toast" role="status" aria-live="polite"></div>
 
     <div class="menu" id="menu">
+      <button class="ib sndB" id="sndBtn" aria-label="Audio">🔊</button>
       <div class="mGold"><span class="coin"></span><span id="menuGold">0</span><span class="ruby"></span><span id="menuRu">0</span></div>
       <div class="mHead">
         <h1 class="logo"><span>Dragon</span><b>War</b></h1>
@@ -493,6 +495,7 @@ button:focus-visible{outline:3px solid #5aa0ff;outline-offset:2px}
       <div class="card">
         <h2>Pausa</h2>
         <button class="big" id="resumeBtn">Riprendi</button>
+        <button class="big alt" id="sndBtn2" aria-label="Audio">🔊</button>
         <div class="pair"><button class="big alt" id="restartBtn">Ricomincia</button><button class="big alt" id="menuBtn">Mappa</button></div>
         <div id="betaTools" hidden>
           <p class="lbl">Beta · luce</p>
@@ -3393,6 +3396,7 @@ const pz = y => P34 ? .75 + .5 * y : 1;                                    // in
 
 function handleEvents() {
   for (const e of s.ev) {
+    sndEvent(e);
     if (e.type === 'hit') {
       const y = e.y * DY - 54 * CS;
       if (e.src === 'fire') { if (Math.random() < .7) nums.push({x:e.x, y:y - 20, t:0, txt:'-' + e.dmg, big:1}); }
@@ -3784,7 +3788,7 @@ function openEgg(t, fromInv) {
 }
 $('eggBtn').onclick = () => {
   if (!egg || egg.done) return;
-  const b = $('eggBtn'); b.classList.remove('shake'); void b.offsetWidth; b.classList.add('shake'); vibrate(15);
+  const b = $('eggBtn'); b.classList.remove('shake'); void b.offsetWidth; b.classList.add('shake'); vibrate(15); UIS.tap();
   const cks = document.querySelectorAll('#eggBtn .ck');
   if (egg.cur < egg.r) { egg.cur++; setEggLook(egg.cur, true); vibrate(40); }                 // sale di rarità
   else if (egg.cracks < 1) { egg.cracks++; }                                                 // un tocco in più per creare l'attesa
@@ -3793,6 +3797,7 @@ $('eggBtn').onclick = () => {
   $('eggHint').textContent = egg.cur < egg.r || egg.cracks < 1 ? 'Ancora!' : 'Si apre…';
 };
 function showEggPrize() {
+  UIS.open();
   $('eggBtn').hidden = true; $('eggHint').textContent = `${EGGS[egg.t].name} · ${RNAME[egg.r]}`;
   const box = $('eggItems'); box.innerHTML = ''; box.hidden = false; let d = 0;
   const add = el => { el.style.animationDelay = (d++ * .18) + 's'; box.appendChild(el); };
@@ -3975,7 +3980,7 @@ function statsOf(kk, lv) {
   const d = DW.U[kk], b = d.group ? DW.U[d.group.k || d.group.ks[0]] : d, m = (1 + .08 * (lv - 1)) * (DW.LEG.has(kk) ? 1.25 : 1);
   return {hp:Math.round(b.hp * m), dmg:Math.round(b.dmg * m * 10) / 10, n:d.group ? (d.group.n || d.group.ks.length) : 1};
 }
-function buy(cost, apply, msg) { if (save.gold < cost) return; save.gold -= cost; save.stat.ups++; apply(); persist(); toast(msg); vibrate(20); renderForge(); }
+function buy(cost, apply, msg) { if (save.gold < cost) return UIS.err(); UIS.up(); save.gold -= cost; save.stat.ups++; apply(); persist(); toast(msg); vibrate(20); renderForge(); }
 function renderForge() {
   $('forgeGold').textContent = save.gold.toLocaleString('it-IT');
   document.querySelectorAll('#forgeTabs button').forEach(b => b.setAttribute('aria-selected', String(b.dataset.t === forgeTab)));
@@ -4073,6 +4078,7 @@ function finish() {
   trackBattle({win, st, kills:s.stats.kills, fires:s.stats.fires, kidnaps:s.stats.kidnaps, beaten:s.stats.beaten, deck:s.squad, t:s.t, boss:!!s.boss, cap:ci != null, hard});
   persist(); syncBoard();
   const timeout = !win && s.rule.timeLimit && s.t >= s.rule.timeLimit;
+  (win ? UIS.win : UIS.lose)();
   $('endTitle').textContent = timeout ? 'Tempo scaduto!' : finale ? 'Il Trono del Drago' : win ? (ci != null ? 'Capriccio accontentato!' : s.lv.boss ? `${DW.U[s.lv.boss].elite.name}: giù!` : 'Castello conquistato!') : 'La tana è caduta!';
   $('endStars').innerHTML = hard ? crownHtml(st) : starHtml(st); $('endStars').hidden = !win;
   $('endGold').innerHTML = `+${g + bonus} oro` + (ruGot ? ` · <span class="ruby"></span> +${ruGot}` : '');
@@ -4093,6 +4099,88 @@ function finish() {
 const backFromBattle = () => curOpt.cap != null ? showCapr() : showMap(curWorld, !!curOpt.hard);
 $('menuPlay').onclick = showWorlds; $('againBtn').onclick = () => NET.g ? mpRematch() : newBattle(); $('restartBtn').onclick = () => newBattle();
 $('menuBtn').onclick = () => NET.g ? leaveGame() : backFromBattle(); $('endMenuBtn').onclick = () => NET.g ? leaveGame() : backFromBattle();
+/* ================= suoni e musica ================= */
+const SND = {ctx:null, g:null, buf:{}, last:{}, mode:0, track:null, el:{}, want:null};   // mode: 0 tutto, 1 solo effetti, 2 muto
+try { const m = +localStorage.getItem('dw_snd'); if (m >= 0 && m <= 2) SND.mode = m; } catch (e) {}
+const SFX_FILES = ['hit1', 'hit2', 'hit3', 'hitbig', 'wall1', 'wall2', 'fall', 'die', 'magic1', 'magic2', 'fire', 'coins1', 'coins2', 'gem',
+  'vmon1', 'vmon2', 'vmon3', 'vmon4', 'vroar1', 'vroar2', 'vroar3', 'vroar4', 'vmisc1', 'vmisc2', 'vmisc3', 'vhowl', 'vbeast1', 'vbeast2', 'vbeast3'];
+const VOICE = {goblin:['vmisc1', 1.4], topi:['vmisc2', 1.8], fionda:['vmisc1', 1.55], gnomo:['vmisc3', 1.6], pandizenzero:['vmisc2', 1.6], gattovolpe:['vmon1', 1.3],
+  strega:['vmon2', 1.5], matrigna:['vmon2', 1.3], stregamare:['vmon2', 1.2], reginacattiva:['vmon2', 1], reginanevi:['vmon4', 1.1], morgana:['vmon2', 1.25], babajaga:['vmon3', 1.2],
+  reginacuori:['vmon1', 1.15], stregone:['vmon4', .95], lupo:['vhowl', 1.1], bestia:['vbeast1', 1.2], coccodrillo:['vbeast2', .8], grifone:['vroar4', 1.3], basilisco:['vbeast3', .8],
+  pescecane:['vbeast2', .6], retopi:['vmisc2', 1.1], orco:['vroar1', 1], gigante:['vroar2', .7], ciclope:['vroar3', .8], mangiafuoco:['vroar1', .85], cavaliereverde:['vroar2', .9],
+  senzatesta:['vmon3', .9], mummia:['vmon3', .8], spirito:['vroar4', .9], diavolo:['vroar3', .75], dracula:['vmon4', .8], medusa:['vmon4', 1.2], tremotino:['vmisc3', 1.3],
+  omino:['vmisc3', 1.1], uncino:['vmon1', .9], barbablu:['vroar1', .9], fantasma:['vmon3', 1.3], spaventapasseri:['vmisc1', .9]};
+function sndUnlock() {                                                     // il primo tocco accende l'audio (i browser lo chiedono)
+  if (GALLERY) return;
+  if (SND.ctx) { if (SND.ctx.state === 'suspended') SND.ctx.resume().catch(() => {}); musicUpdate(); return; }
+  try { SND.ctx = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) { return; }
+  SND.g = SND.ctx.createGain(); SND.g.gain.value = .7; SND.g.connect(SND.ctx.destination);
+  for (const n of SFX_FILES) fetch('audio/' + n + '.mp3').then(r => r.ok ? r.arrayBuffer() : Promise.reject()).then(a => SND.ctx.decodeAudioData(a)).then(b => { SND.buf[n] = b; }).catch(() => {});
+  musicUpdate();
+}
+addEventListener('pointerdown', sndUnlock, true); addEventListener('keydown', sndUnlock, true);
+function sfx(n, o = {}) {                                                  // un effetto vero, con un filo di variazione per non stancare
+  if (SND.mode === 2 || !SND.ctx || !SND.buf[n] || document.hidden) return;
+  const now = SND.ctx.currentTime, key = o.key || n;
+  if (o.gap && SND.last[key] != null && now - SND.last[key] < o.gap) return; SND.last[key] = now;
+  const src = SND.ctx.createBufferSource(), g = SND.ctx.createGain();
+  src.buffer = SND.buf[n]; src.playbackRate.value = (o.rate || 1) * (1 + (Math.random() - .5) * (o.vary ?? .12)); g.gain.value = o.vol ?? 1;
+  src.connect(g); g.connect(SND.g); src.start();
+}
+function tone(seq, type = 'triangle', vol = .1) {                          // suoni creati dal gioco: [frequenza, durata, ritardo]
+  if (SND.mode === 2 || !SND.ctx || document.hidden) return;
+  const t0 = SND.ctx.currentTime + .01;
+  for (const [f, d, at = 0] of seq) {
+    const o = SND.ctx.createOscillator(), g = SND.ctx.createGain(); o.type = type; o.frequency.value = f;
+    g.gain.setValueAtTime(0, t0 + at); g.gain.linearRampToValueAtTime(vol, t0 + at + .012); g.gain.exponentialRampToValueAtTime(.0008, t0 + at + d);
+    o.connect(g); g.connect(SND.g); o.start(t0 + at); o.stop(t0 + at + d + .05);
+  }
+}
+const UIS = {
+  click:() => tone([[700, .05]], 'triangle', .07),
+  coin:() => tone([[988, .07], [1319, .2, .07]], 'square', .05),
+  up:() => { tone([[523, .1], [659, .1, .08], [784, .1, .16], [1047, .3, .24]], 'triangle', .1); sfx('coins1', {vol:.5}); },
+  err:() => tone([[150, .16]], 'sawtooth', .05),
+  win:() => tone([[523, .14], [523, .1, .15], [523, .1, .26], [659, .3, .37], [587, .14, .7], [659, .14, .85], [784, .7, 1]], 'square', .06),
+  lose:() => tone([[392, .32], [370, .32, .32], [349, .32, .64], [330, .9, .96]], 'triangle', .11),
+  tap:() => tone([[220 + Math.random() * 60, .06]], 'square', .07),
+  open:() => { tone([[784, .08], [988, .08, .06], [1175, .08, .12], [1568, .5, .18]], 'triangle', .11); sfx('gem', {vol:.8}); },
+  horn:() => tone([[196, .35], [262, .6, .3]], 'sawtooth', .045)
+};
+function sndEvent(e) {                                                     // gli eventi della battaglia diventano suoni
+  switch (e.type) {
+    case 'hit': if (e.src !== 'fire' && e.src !== 'burn') { if (e.dmg >= 30) sfx('hitbig', {vol:.45, gap:.09, key:'hit'}); else sfx('hit' + (1 + Math.floor(Math.random() * 3)), {vol:.3, gap:.07, key:'hit'}); } break;
+    case 'bhit': sfx(Math.random() < .5 ? 'wall1' : 'wall2', {vol:.55, gap:.3}); break;
+    case 'die': if (e.side === 1) sfx('fall', {vol:.45, gap:.1}); else sfx('die', {vol:.3, rate:1.35, gap:.18}); break;
+    case 'fire': sfx('fire', {vol:.9, vary:0}); break;
+    case 'boom': case 'behead': sfx('hitbig', {vol:.7}); break;
+    case 'legend': sfx('vroar4', {vol:1, rate:.8, vary:0}); sfx('hitbig', {vol:.8}); break;
+    case 'swallow': sfx('vbeast2', {vol:.8, rate:.6}); break;
+    case 'genie': case 'freeze': case 'mirror': case 'mirage': case 'gaze': case 'petrify': sfx('magic2', {vol:.6, gap:.3, key:'magic'}); break;
+    case 'summon': case 'curse': case 'mute': case 'charm': case 'kidnap': case 'revive': case 'grow': sfx('magic1', {vol:.5, gap:.3, key:'magic'}); break;
+    case 'steal': case 'robbed': sfx('coins2', {vol:.35, gap:.25, key:'coin'}); break;
+    case 'boss': sfx('vroar2', {vol:.9, rate:.7}); UIS.horn(); break;
+    case 'rush': UIS.horn(); break;
+    case 'spawn': { const v = VOICE[e.k]; if (v) sfx(v[0], {vol:.5, rate:v[1], gap:.35, key:'voice'}); break; }
+  }
+}
+function musicUpdate() {                                                   // taverna nel menu, battaglia in campo, sfumando
+  if (!SND.ctx || GALLERY) return;
+  const want = SND.mode !== 0 || document.hidden ? null : (running || (!inMenu && !inStory)) ? 'battle' : 'menu';
+  if (want === SND.track) return;
+  const old = SND.el[SND.track]; SND.track = want;
+  if (old) { const o = old; let v = o.volume; const t = setInterval(() => { v -= .04; if (v <= 0) { clearInterval(t); o.pause(); } else o.volume = v; }, 40); }
+  if (!want) return;
+  let el = SND.el[want]; if (!el) { el = SND.el[want] = new Audio('audio/music_' + want + '.mp3'); el.loop = true; el.preload = 'auto'; }
+  const target = want === 'menu' ? .35 : .25; el.volume = 0; el.play().catch(() => { SND.track = null; });
+  let v = 0; const t = setInterval(() => { v += .02; if (v >= target || el.paused) { clearInterval(t); el.volume = Math.min(target, Math.max(0, v)); } else el.volume = v; }, 40);
+}
+setInterval(musicUpdate, 600); document.addEventListener('visibilitychange', musicUpdate);
+const SND_ICON = ['🔊', '🔉', '🔇'], SND_TXT = ['Musica ed effetti', 'Solo effetti', 'Tutto spento'];
+function sndCycle() { SND.mode = (SND.mode + 1) % 3; try { localStorage.setItem('dw_snd', SND.mode); } catch (e) {} sndUnlock(); musicUpdate(); sndPaint(); toast(SND_TXT[SND.mode]); }
+function sndPaint() { for (const id of ['sndBtn', 'sndBtn2']) { const b = $(id); if (b) { b.textContent = SND_ICON[SND.mode]; b.setAttribute('aria-label', 'Audio: ' + SND_TXT[SND.mode]); } } }
+document.addEventListener('click', e => { const b = e.target.closest && e.target.closest('button'); if (b && !(b.id || '').startsWith('u_') && b.id !== 'eggBtn') UIS.click(); }, true);
+$('sndBtn').onclick = sndCycle; $('sndBtn2').onclick = sndCycle; sndPaint();
 $('menuFriends').onclick = () => window.DW_FB ? showFriends() : showOnline(true); $('frBack').onclick = showMenu; $('pickNo').onclick = () => { $('ovPick').hidden = true; }; $('menuOnline').onclick = () => showOnline(); $('menuBoard').onclick = showBoard;
 $('onBack').onclick = showMenu; $('boardBack').onclick = showMenu; $('waitLeave').onclick = () => leaveGame(); $('caprBack').onclick = showWorlds;
 $('worldsBack').onclick = showMenu; $('mapBack').onclick = showWorlds; $('sqBack').onclick = () => sqOpt.cap != null ? showCapr() : showMap(sqWorld, !!sqOpt.hard);
@@ -4543,7 +4631,7 @@ function renderOnlineFriends(box) {                                        // ne
   }
 }
 const NET_VER = KL.length + ':' + DW.ROSTER.length;
-const ET = ['hit', 'die', 'boom', 'fire', 'legend', 'freeze', 'revive', 'stone', 'dive', 'kidnap', 'donkey', 'mirror', 'mirage', 'summon', 'heal', 'steal', 'overtime', 'grow', 'dodge', 'vanish', 'curse', 'gaze', 'mute', 'fear', 'charm', 'stun', 'leap', 'release', 'rush', 'boss', 'bhit', 'wallet', 'behead', 'swallow', 'genie', 'robbed'];
+const ET = ['hit', 'die', 'boom', 'fire', 'legend', 'freeze', 'revive', 'stone', 'dive', 'kidnap', 'donkey', 'mirror', 'mirage', 'summon', 'heal', 'steal', 'overtime', 'grow', 'dodge', 'vanish', 'curse', 'gaze', 'mute', 'fear', 'charm', 'stun', 'leap', 'release', 'rush', 'boss', 'bhit', 'wallet', 'behead', 'swallow', 'genie', 'robbed', 'spawn'];
 const NET = {room:null, db:null, user:null, myId:null, peer:null, peers:[], g:null, invSeen:new Set(), board:{}, boardOk:false, lastBoard:''};
 const MODES = {duel:{name:'Duello', txt:'Cattivi contro cattivi: due tane, vince chi abbatte quella dell’altro.'},
   alt:{name:'Duello alternativo', txt:'Uno fa i cattivi, l’altro i buoni. A ogni rivincita ci si scambia.'},
@@ -4815,6 +4903,7 @@ function mpFinish() {
   save.gold += gold; save.ru += ru; save.eggInv.base += egg; save.trophies += tr; persist(); syncBoard();
   if (G.role === 'host') G.nr.presence({st:'end', res:s.over, g:encodeSnap()}).catch(() => {});
   G.state = 'end';
+  (win ? UIS.win : UIS.lose)();
   $('endTitle').textContent = win ? (coop ? 'Castello vostro!' : 'Hai vinto!') : (coop ? 'Il castello resiste' : 'Hai perso');
   $('endStars').hidden = true;
   $('endGold').innerHTML = `+${gold} oro` + (ru ? ` · <span class="ruby"></span> +${ru}` : '') + (tr ? ` · ${tr > 0 ? '+' : ''}${tr} trofei` : '');
