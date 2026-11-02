@@ -4388,15 +4388,22 @@ async function fbClaimCode() {                                             // il
   }
   FBX.claiming = false;
 }
+const fbErr = e => /permission/i.test((e && (e.code || e.message)) || '') ? 'Firebase blocca il salvataggio: in Firebase pubblica le regole del database.' : 'Errore di collegamento: ' + ((e && (e.code || e.message)) || 'sconosciuto');
 async function fbSetName(n) {                                              // il nome: unico, si può cambiare
   n = (n || '').trim();
   if (!FB_NAME.test(n)) return 'Da 3 a 14 caratteri: lettere, numeri o _';
   const k = n.toLowerCase(), old = FBX.me && FBX.me.name;
   if (old && old.toLowerCase() === k) { await fbRef('users/' + FBX.uid).update({name:n}); return null; }
-  try { const r = await fbRef('names/' + k).transaction(cur => cur === null || cur === FBX.uid ? FBX.uid : undefined); if (!r.committed) return 'Questo nome è già preso'; }
-  catch (e) { return 'Questo nome è già preso'; }
+  try {
+    const cur = (await fbRef('names/' + k).once('value')).val();
+    if (cur && cur !== FBX.uid) return 'Questo nome è già preso';
+    await fbRef('names/' + k).set(FBX.uid);
+  } catch (e) {
+    let cur = null; try { cur = (await fbRef('names/' + k).once('value')).val(); } catch (e2) {}
+    return cur && cur !== FBX.uid ? 'Questo nome è già preso' : fbErr(e);
+  }
   if (old) fbRef('names/' + old.toLowerCase()).remove().catch(() => {});
-  await fbRef('users/' + FBX.uid).update({name:n});
+  try { await fbRef('users/' + FBX.uid).update({name:n}); } catch (e) { return fbErr(e); }
   return null;
 }
 function fbWatchFriends() {                                                // per ogni amico: nome e se è online
