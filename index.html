@@ -3193,7 +3193,7 @@ function drawUnits(dt) {
   const list = s.units.slice().sort((a, b) => a.y - b.y);
   const withShadow = list.length <= 18;
   for (const u of list) {                                                // ombre a terra
-    const sc = SC[vis(u.k)] * eScale(u.k) * CS * (u.big > 0 ? 1.6 : 1), dy = u.y * 28, dir = u.side ? -1 : 1;
+    const sc = SC[vis(u.k)] * eScale(u.k) * CS * (u.big > 0 ? 1.6 : 1) * pz(u.y), dy = u.y * DY, dir = u.side ? -1 : 1;
     if (u.dead) continue;
     ctx.fillStyle = 'rgba(20,12,36,.35)'; ctx.beginPath(); ctx.ellipse(u.x, dy + 1, 22 * sc, 5 * sc, 0, 0, 7); ctx.fill();
     if (!withShadow) continue;
@@ -3202,7 +3202,7 @@ function drawUnits(dt) {
     MODE = 'shadow'; DRAW[vis(u.k)](unitParams(u)); MODE = 'normal'; ctx.restore();
   }
   for (const u of list) {
-    const sc = SC[vis(u.k)] * eScale(u.k) * CS * (u.big > 0 ? 1.6 : 1), dy = u.y * 28, dir = u.side ? -1 : 1, o = unitParams(u), el = DW.U[u.k].elite;
+    const sc = SC[vis(u.k)] * eScale(u.k) * CS * (u.big > 0 ? 1.6 : 1) * pz(u.y), dy = u.y * DY, dir = u.side ? -1 : 1, o = unitParams(u), el = DW.U[u.k].elite;
     u.flash = Math.max(0, (u.flash || 0) - dt * 7);
     ctx.save(); ctx.translate(u.x, dy);
     if (u.dead) { const a = Math.min(1, (s.t - u.deadAt) / .45); ctx.globalAlpha = 1 - a; ctx.translate(0, -a * 16); ctx.rotate(a * -dir * .9); }
@@ -3233,7 +3233,7 @@ function drawUnits(dt) {
 }
 function drawHooks(dt) {                                                   // la catena del gancio di Uncino
   for (const h of hooks) {
-    h.t += dt; const a = 1 - h.t / .35, y = h.y * 28 - 50 * CS;
+    h.t += dt; const a = 1 - h.t / .35, y = h.y * DY - 50 * CS;
     ctx.strokeStyle = `rgba(216,219,228,${a})`; ctx.lineWidth = 3; ctx.setLineDash([6, 5]); ctx.beginPath(); ctx.moveTo(h.x1, y); ctx.lineTo(h.x2, y); ctx.stroke(); ctx.setLineDash([]);
   }
   hooks = hooks.filter(h => h.t < .35);
@@ -3245,12 +3245,12 @@ function drawShots() {
     const f = Math.min(1, p.t / p.dur), x = p.from + (tx - p.from) * f;
     ctx.save();
     if (p.kind === 'bolt') {
-      const st = castlePt(632, 212), y0 = st.y, y1 = (-40 * CS) + (tu ? tu.y * 28 : 0), y = y0 + (y1 - y0) * f, x0 = st.x, xx = x0 + (tx - x0) * f;
+      const st = castlePt(632, 212), y0 = st.y, y1 = (-40 * CS) + (tu ? tu.y * DY : 0), y = y0 + (y1 - y0) * f, x0 = st.x, xx = x0 + (tx - x0) * f;
       ctx.translate(xx, y); ctx.rotate(Math.atan2(y1 - y0, tx - x0));
       ctx.fillStyle = L.shadow; ctx.fillRect(-18, -2, 24, 4); ctx.fillStyle = L.rimTop; ctx.fillRect(-18, -2, 24, 1.2);
       ctx.beginPath(); ctx.moveTo(6, -4); ctx.lineTo(12, 0); ctx.lineTo(6, 4); ctx.fillStyle = '#c9ccd6'; ctx.fill();
     } else {
-      const base = -46 * CS + (p.y || 0) * 28, y = base - Math.sin(Math.PI * f) * (p.kind === 'gnomo' ? 110 : 60);
+      const base = -46 * CS + (p.y || 0) * DY, y = base - Math.sin(Math.PI * f) * (p.kind === 'gnomo' ? 110 : 60);
       if (p.kind === 'ciclope' || p.kind === 'senzatesta') {                    // masso del Ciclope, zucca infuocata del Cavaliere senza Testa
         const r = (p.kind === 'ciclope' ? 11 : 7) * CS * .8; ctx.translate(x, y); ctx.rotate(f * 9);
         if (p.kind === 'senzatesta') { ctx.globalCompositeOperation = 'lighter'; glow(ctx, 0, 0, r * 3, '255,140,50', .7); ctx.globalCompositeOperation = 'source-over'; }
@@ -3388,11 +3388,13 @@ let frostT = 0, countT = 0, viaT = 0, firstGame = true, endT = 0, time = 0, hits
 let lightP = 0, lightOverride = null, bubbles = [], seenId = 0, toastT = 0;
 const cam = {x:0};
 let W = 0, H = 0, k = .6, dpr = 1, groundY = 0, CS = 1;
+let DY = 28, P34 = false;                                                 // profondità del campo: in battaglia la telecamera è alzata (vista 3/4)
+const pz = y => P34 ? .75 + .5 * y : 1;                                    // in 3/4 chi è davanti si vede più grande
 
 function handleEvents() {
   for (const e of s.ev) {
     if (e.type === 'hit') {
-      const y = e.y * 28 - 54 * CS;
+      const y = e.y * DY - 54 * CS;
       if (e.src === 'fire') { if (Math.random() < .7) nums.push({x:e.x, y:y - 20, t:0, txt:'-' + e.dmg, big:1}); }
       else {
         nums.push({x:e.x, y, t:0, txt:'-' + e.dmg, col:e.side ? '#cfe2ff' : '#ffc4c4'});
@@ -3401,8 +3403,8 @@ function handleEvents() {
       }
     }
     else if (e.type === 'die') {
-      for (let i = 0; i < 8; i++) particles.push({x:e.x + (Math.random() - .5) * 30, y:e.y * 28 - 20 - Math.random() * 50 * CS, vx:(Math.random() - .5) * 60, vy:-30 - Math.random() * 50, life:.9, max:.9, kind:'smoke', r:9 + Math.random() * 9});
-      if (e.side && DW.U[e.k] && DW.U[e.k].bounty) nums.push({x:e.x, y:e.y * 28 - 110 * CS, t:0, txt:'+' + DW.U[e.k].bounty, gold:1});
+      for (let i = 0; i < 8; i++) particles.push({x:e.x + (Math.random() - .5) * 30, y:e.y * DY - 20 - Math.random() * 50 * CS, vx:(Math.random() - .5) * 60, vy:-30 - Math.random() * 50, life:.9, max:.9, kind:'smoke', r:9 + Math.random() * 9});
+      if (e.side && DW.U[e.k] && DW.U[e.k].bounty) nums.push({x:e.x, y:e.y * DY - 110 * CS, t:0, txt:'+' + DW.U[e.k].bounty, gold:1});
     }
     else if (e.type === 'bhit') shakeB[e.side] = .15;
     else if (e.type === 'fire') { dragon.phase = 'antic'; dragon.pt = 0; dragon.fireT = 1.15; shake = 9; hitstop = .08; vibrate(40); }
@@ -3410,40 +3412,40 @@ function handleEvents() {
     else if (e.type === 'wallet') toast(`Cattiveria livello ${e.lv}!`);
     else if (e.type === 'end') { endT = 0; shake = 10; vibrate(80); }
     else if (e.type === 'boom') {
-      const y = e.y * 28 - 30 * CS, col = e.k === 'strega' ? '170,255,140' : e.k === 're' ? '255,240,200' : e.k === 'carrozza' ? '255,220,150' : '255,170,60';
-      burst(e.x, y, 12, 230, .45, 'spark', col); wave(e.x, e.y * 28, 70, col, .4);
+      const y = e.y * DY - 30 * CS, col = e.k === 'strega' ? '170,255,140' : e.k === 're' ? '255,240,200' : e.k === 'carrozza' ? '255,220,150' : '255,170,60';
+      burst(e.x, y, 12, 230, .45, 'spark', col); wave(e.x, e.y * DY, 70, col, .4);
       if (e.k === 'gnomo') for (let i = 0; i < 5; i++) particles.push({x:e.x + (Math.random() - .5) * 30, y:y - Math.random() * 20, vx:(Math.random() - .5) * 40, vy:-30 - Math.random() * 30, life:.8, max:.8, kind:'smoke', r:8 + Math.random() * 6});
       if (e.k !== 'strega') shake = Math.max(shake, 4);
     }
-    else if (e.type === 'heal') { nums.push({x:e.x, y:e.y * 28 - 80 * CS, t:0, txt:'+' + e.n, col:'#9effb0'}); burst(e.x, e.y * 28 - 40 * CS, 8, 60, .7, 'rise', '150,255,170'); }
+    else if (e.type === 'heal') { nums.push({x:e.x, y:e.y * DY - 80 * CS, t:0, txt:'+' + e.n, col:'#9effb0'}); burst(e.x, e.y * DY - 40 * CS, 8, 60, .7, 'rise', '150,255,170'); }
     else if (e.type === 'legend') {                                           // entrata in scena di un leggendario
       wave(e.x, -20, 260, '255,210,90', .9); wave(e.x, -20, 160, '255,240,180', .6); burst(e.x, -60 * CS, 26, 220, .9, 'spark', '255,215,90');
       nums.push({x:e.x + 30, y:-150 * CS, t:0, txt:SHORT[e.k] + '!', big:1}); shake = Math.max(shake, 7); vibrate(80);
     }
-    else if (e.type === 'mirage') burst(e.x, e.y * 28 - 50 * CS, 14, 100, .8, 'spark', '200,150,255');
-    else if (e.type === 'stone') { nums.push({x:e.x, y:e.y * 28 - 110 * CS, t:0, txt:'Pietra!', gold:1}); burst(e.x, e.y * 28 - 40 * CS, 8, 70, .6, 'puff', '180,180,190'); }
-    else if (e.type === 'dive') { wave(e.x2, e.y * 28 - 10, 90, '255,230,180', .5); burst(e.x2, e.y * 28 - 30 * CS, 10, 120, .5, 'spark', '255,230,180'); }
-    else if (e.type === 'grow') nums.push({x:e.x, y:e.y * 28 - 140 * CS, t:0, txt:'Gigante!', gold:1});
-    else if (e.type === 'dodge') nums.push({x:e.x, y:e.y * 28 - 80 * CS, t:0, txt:'Mancato!', gold:1});
-    else if (e.type === 'revive') { nums.push({x:e.x, y:e.y * 28 - 120 * CS, t:0, txt:'Ancora qui!', gold:1}); burst(e.x, e.y * 28 - 50 * CS, 16, 120, .8, 'spark', '150,255,150'); }
-    else if (e.type === 'vanish') burst(e.x, e.y * 28 - 50 * CS, 10, 60, .6, 'puff', '220,200,255');
-    else if (e.type === 'curse') burst(e.x, e.y * 28 - 50 * CS, 6, 50, .6, 'spark', '150,255,120');
-    else if (e.type === 'donkey') { nums.push({x:e.x, y:e.y * 28 - 100 * CS, t:0, txt:'Ih-oh!', gold:1}); burst(e.x, e.y * 28 - 40 * CS, 12, 100, .6, 'puff', '255,240,200'); particles.push({x:e.x, y:e.y * 28 - 20, vx:140, vy:0, life:2.2, max:2.2, kind:'donkey'}); }
-    else if (e.type === 'behead') { nums.push({x:e.x, y:e.y * 28 - 110 * CS, t:0, txt:'Via la testa!', gold:1}); burst(e.x, e.y * 28 - 60 * CS, 12, 110, .6, 'spark', '255,90,110'); vibrate(25); }
-    else if (e.type === 'swallow') { nums.push({x:e.x, y:e.y * 28 - 100 * CS, t:0, txt:'Gulp!', gold:1}); burst(e.x, e.y * 28 - 30 * CS, 14, 90, .7, 'puff', '170,210,240'); shake = Math.max(shake, 4); vibrate(30); }
-    else if (e.type === 'genie') { wave(e.x, e.y * 28 - 30 * CS, 130, '180,120,255', .8); burst(e.x, e.y * 28 - 70 * CS, 22, 160, .8, 'spark', '200,150,255'); nums.push({x:e.x, y:e.y * 28 - 140 * CS, t:0, txt:'Genio!', gold:1}); shake = Math.max(shake, 5); }
-    else if (e.type === 'robbed') { nums.push({x:e.x, y:e.y * 28 - 90 * CS, t:0, txt:'-' + e.n + ' Cattiveria'}); burst(e.x, e.y * 28 - 50 * CS, 5, 80, .5, 'spark', '120,220,120'); }
-    else if (e.type === 'mute') { wave(e.x, e.y * 28 - 50 * CS, 170, '120,230,255', .7); nums.push({x:e.x, y:e.y * 28 - 120 * CS, t:0, txt:'Shhh!', gold:1}); }
-    else if (e.type === 'mirror') { burst(e.x, e.y * 28 - 50 * CS, 16, 120, .7, 'spark', '220,220,255'); nums.push({x:e.x, y:e.y * 28 - 110 * CS, t:0, txt:'Specchio!', gold:1}); }
-    else if (e.type === 'freeze') { frostT = 1; for (const u of s.units) if (u.side === 1 && !u.dead) burst(u.x, u.y * 28 - 40 * CS, 4, 60, .8, 'spark', '200,245,255'); vibrate(60); }
-    else if (e.type === 'kidnap') { nums.push({x:e.x, y:e.y * 28 - 100 * CS, t:0, txt:'Preso!', gold:1}); burst(e.x, e.y * 28 - 50 * CS, 14, 120, .7, 'spark', '255,215,90'); vibrate(25); }
-    else if (e.type === 'steal') { nums.push({x:e.x, y:e.y * 28 - 90 * CS, t:0, txt:'+' + e.n, gold:1}); burst(e.x, e.y * 28 - 50 * CS, 5, 90, .5, 'spark', '255,220,100'); }
+    else if (e.type === 'mirage') burst(e.x, e.y * DY - 50 * CS, 14, 100, .8, 'spark', '200,150,255');
+    else if (e.type === 'stone') { nums.push({x:e.x, y:e.y * DY - 110 * CS, t:0, txt:'Pietra!', gold:1}); burst(e.x, e.y * DY - 40 * CS, 8, 70, .6, 'puff', '180,180,190'); }
+    else if (e.type === 'dive') { wave(e.x2, e.y * DY - 10, 90, '255,230,180', .5); burst(e.x2, e.y * DY - 30 * CS, 10, 120, .5, 'spark', '255,230,180'); }
+    else if (e.type === 'grow') nums.push({x:e.x, y:e.y * DY - 140 * CS, t:0, txt:'Gigante!', gold:1});
+    else if (e.type === 'dodge') nums.push({x:e.x, y:e.y * DY - 80 * CS, t:0, txt:'Mancato!', gold:1});
+    else if (e.type === 'revive') { nums.push({x:e.x, y:e.y * DY - 120 * CS, t:0, txt:'Ancora qui!', gold:1}); burst(e.x, e.y * DY - 50 * CS, 16, 120, .8, 'spark', '150,255,150'); }
+    else if (e.type === 'vanish') burst(e.x, e.y * DY - 50 * CS, 10, 60, .6, 'puff', '220,200,255');
+    else if (e.type === 'curse') burst(e.x, e.y * DY - 50 * CS, 6, 50, .6, 'spark', '150,255,120');
+    else if (e.type === 'donkey') { nums.push({x:e.x, y:e.y * DY - 100 * CS, t:0, txt:'Ih-oh!', gold:1}); burst(e.x, e.y * DY - 40 * CS, 12, 100, .6, 'puff', '255,240,200'); particles.push({x:e.x, y:e.y * DY - 20, vx:140, vy:0, life:2.2, max:2.2, kind:'donkey'}); }
+    else if (e.type === 'behead') { nums.push({x:e.x, y:e.y * DY - 110 * CS, t:0, txt:'Via la testa!', gold:1}); burst(e.x, e.y * DY - 60 * CS, 12, 110, .6, 'spark', '255,90,110'); vibrate(25); }
+    else if (e.type === 'swallow') { nums.push({x:e.x, y:e.y * DY - 100 * CS, t:0, txt:'Gulp!', gold:1}); burst(e.x, e.y * DY - 30 * CS, 14, 90, .7, 'puff', '170,210,240'); shake = Math.max(shake, 4); vibrate(30); }
+    else if (e.type === 'genie') { wave(e.x, e.y * DY - 30 * CS, 130, '180,120,255', .8); burst(e.x, e.y * DY - 70 * CS, 22, 160, .8, 'spark', '200,150,255'); nums.push({x:e.x, y:e.y * DY - 140 * CS, t:0, txt:'Genio!', gold:1}); shake = Math.max(shake, 5); }
+    else if (e.type === 'robbed') { nums.push({x:e.x, y:e.y * DY - 90 * CS, t:0, txt:'-' + e.n + ' Cattiveria'}); burst(e.x, e.y * DY - 50 * CS, 5, 80, .5, 'spark', '120,220,120'); }
+    else if (e.type === 'mute') { wave(e.x, e.y * DY - 50 * CS, 170, '120,230,255', .7); nums.push({x:e.x, y:e.y * DY - 120 * CS, t:0, txt:'Shhh!', gold:1}); }
+    else if (e.type === 'mirror') { burst(e.x, e.y * DY - 50 * CS, 16, 120, .7, 'spark', '220,220,255'); nums.push({x:e.x, y:e.y * DY - 110 * CS, t:0, txt:'Specchio!', gold:1}); }
+    else if (e.type === 'freeze') { frostT = 1; for (const u of s.units) if (u.side === 1 && !u.dead) burst(u.x, u.y * DY - 40 * CS, 4, 60, .8, 'spark', '200,245,255'); vibrate(60); }
+    else if (e.type === 'kidnap') { nums.push({x:e.x, y:e.y * DY - 100 * CS, t:0, txt:'Preso!', gold:1}); burst(e.x, e.y * DY - 50 * CS, 14, 120, .7, 'spark', '255,215,90'); vibrate(25); }
+    else if (e.type === 'steal') { nums.push({x:e.x, y:e.y * DY - 90 * CS, t:0, txt:'+' + e.n, gold:1}); burst(e.x, e.y * DY - 50 * CS, 5, 90, .5, 'spark', '255,220,100'); }
     else if (e.type === 'hook') hooks.push({x1:e.x1, x2:e.x2, y:e.y, t:0});
-    else if (e.type === 'fear') { wave(e.x, e.y * 28, 160, '190,120,255', .7); toastOnce('Barbablù fa scappare i buoni!'); }
-    else if (e.type === 'charm') { wave(e.x, e.y * 28, 200, '200,255,200', .8); toastOnce('Il Pifferaio incanta i piccoli!'); }
-    else if (e.type === 'stun') wave(e.x, e.y * 28, 100, '255,240,180', .5);
-    else if (e.type === 'summon' || e.type === 'release') for (let i = 0; i < 6; i++) particles.push({x:e.x + (Math.random() - .5) * 26, y:e.y * 28 - 20 - Math.random() * 30, vx:(Math.random() - .5) * 50, vy:-20 - Math.random() * 40, life:.8, max:.8, kind:'puff', r:6 + Math.random() * 5});
-    else if (e.type === 'leap') burst(e.x1, e.y * 28, 6, 120, .4, 'spark', '200,255,170');
+    else if (e.type === 'fear') { wave(e.x, e.y * DY, 160, '190,120,255', .7); toastOnce('Barbablù fa scappare i buoni!'); }
+    else if (e.type === 'charm') { wave(e.x, e.y * DY, 200, '200,255,200', .8); toastOnce('Il Pifferaio incanta i piccoli!'); }
+    else if (e.type === 'stun') wave(e.x, e.y * DY, 100, '255,240,180', .5);
+    else if (e.type === 'summon' || e.type === 'release') for (let i = 0; i < 6; i++) particles.push({x:e.x + (Math.random() - .5) * 26, y:e.y * DY - 20 - Math.random() * 30, vx:(Math.random() - .5) * 50, vy:-20 - Math.random() * 40, life:.8, max:.8, kind:'puff', r:6 + Math.random() * 5});
+    else if (e.type === 'leap') burst(e.x1, e.y * DY, 6, 120, .4, 'spark', '200,255,170');
     else if (e.type === 'boss') { toast(`Arriva: ${DW.U[e.k].elite ? DW.U[e.k].elite.name : 'il boss'}!`); toastT = 3; shake = 9; vibrate(70); }
   }
   s.ev.length = 0;
@@ -3463,7 +3465,10 @@ function resize() {
   k = Math.min(W / 1150, (H - 40) / 420);                                  // tutto il campo sempre visibile
   CS = Math.min(2.1, Math.max(1, .64 / k));                                // su schermi stretti personaggi più grandi
   BS = Math.min(1.45, CS * .78);
-  groundY = inMenu ? Math.min(H * .6, H - 290) : Math.min(H - 34, Math.max(H * .72, 420 * k + 40));   // nel menu la scena sta sopra i pulsanti
+  P34 = !inMenu && !GALLERY && !inStory;
+  const dpx = P34 ? Math.max(50, Math.min(240, H * .32)) : 0;              // quanto è profondo il campo sullo schermo
+  DY = P34 ? dpx / k : 28;
+  groundY = inMenu ? Math.min(H * .6, H - 290) : P34 ? Math.min(H - 40 - dpx, Math.max(H * .42, 420 * k + 30)) : Math.min(H - 34, Math.max(H * .72, 420 * k + 40));   // nel menu la scena sta sopra i pulsanti
   cam.x = 495 - (W / k) / 2;
 }
 
@@ -4199,7 +4204,7 @@ function drawBubbles(dt) {
     b.t += dt;
     const u = s.units.find(x => x.id === b.id);
     if (!u || u.dead) { b.t = 9; continue; }
-    const sx = (u.x - cam.x) * k, sy = groundY + (u.y * 28 - HEIGHT[vis(u.k)] * SC[vis(u.k)] * eScale(u.k) * CS - 16) * k;
+    const sx = (u.x - cam.x) * k, sy = groundY + (u.y * DY - HEIGHT[vis(u.k)] * SC[vis(u.k)] * eScale(u.k) * CS - 16) * k;
     ctx.font = '800 12px Nunito, sans-serif';
     const tw = ctx.measureText(b.txt).width + 14, bx = Math.max(6, Math.min(W - tw - 6, sx - tw / 2)), by = sy - 26;
     ctx.globalAlpha = Math.max(0, Math.min(1, (2.4 - b.t) * 3));
