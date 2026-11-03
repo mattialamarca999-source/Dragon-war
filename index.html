@@ -3573,6 +3573,7 @@ function updateHud() {
 const starHtml = n => [0, 1, 2].map(i => `<span class="star${i < n ? ' on' : ''}"></span>`).join('');
 const crownHtml = n => [0, 1, 2].map(i => `<span class="star crown${i < n ? ' on' : ''}"></span>`).join('');
 function toScene() {                                                       // schermate fuori dalla battaglia: la scena viva resta dietro
+  setTimeout(musicUpdate, 0);
   dragon.glasses = 1; dragon.sad = 0; dragon.rear = 0;
   inMenu = true; inStory = false; running = false; paused = false; ended = false; tutHide();
   for (const id of ['story', 'menu', 'worlds', 'capr', 'miss', 'wanted', 'shop', 'map', 'squad', 'forge', 'ovPause', 'ovEnd', 'ovGift', 'ovEgg', 'ovOdds', 'online', 'board', 'bpick', 'ovWait', 'ovInvite', 'friends', 'ovName', 'ovPick', 'ovSet']) $(id).hidden = true;
@@ -3894,6 +3895,7 @@ $('missBack').onclick = showMenu; $('wantedBack').onclick = showMenu; $('shopBac
 const NX = [24, 72, 32, 70, 28, 68, 34, 74, 30, 64];
 let mapWorld = 0, mapHero = false;
 function showMap(w = mapWorld, hero = mapHero) {
+  musicPreload(w);
   if (w !== mapWorld) hero = false;
   hero = hero && (BETA || bossBeaten(w));
   mapWorld = w; mapHero = hero; HERO = hero; TH = DW.WORLDS[w].theme; toScene(); $('map').hidden = false;
@@ -3933,6 +3935,7 @@ function showMap(w = mapWorld, hero = mapHero) {
 let sqSel = [], sqLevel = 0, sqWorld = 0, sqOpt = {}, sqMax = 4;
 const sqCards = {};
 function showSquad(w, i, opt = {}) {
+  musicPreload(w);
   sqOpt = opt; HERO = !!opt.hard; sqMax = opt.cap != null && DW.CAPRICCI[opt.cap].pick || DW.DECK;
   TH = DW.WORLDS[w].theme; toScene(); $('squad').hidden = false; sqLevel = i; sqWorld = w;
   $('sqLevel').textContent = opt.cap != null ? `Capriccio · ${DW.CAPRICCI[opt.cap].name}` : `${opt.hard ? 'Eroica · ' : ''}${w + 1}-${i + 1} · ${DW.levelOf(w, i).name}`;
@@ -4055,7 +4058,7 @@ function newBattle(world = curWorld, level = curLevel, opt = curOpt) {
   if (secret) setTimeout(() => { if (running) toast('Qualcuno ti osserva dal buio…'); }, 4200);
   $('lvlName').textContent = cp ? cp.name : s.lv.name; $('lvlSub').textContent = cp ? 'Capriccio del Drago' : `${opt.hard ? 'Eroica · ' : ''}${DW.WORLDS[world].name} · ${level + 1}/${DW.WORLDS[world].n}`;
   particles = []; nums = []; bubbles = []; hooks = []; seenId = 0; endT = 0; ended = false; dragon.fireT = 0; dragon.phase = 'idle';
-  running = true; paused = false; countT = 3; viaT = 0; lightP = 0;
+  running = true; paused = false; countT = 3; viaT = 0; lightP = 0; setTimeout(musicUpdate, 0);
 }
 function pause() { if (!running || ended || inMenu) return; if (NET.g) { $('restartBtn').hidden = true; $('ovPause').hidden = false; return; } $('restartBtn').hidden = false; paused = true; $('ovPause').hidden = false; }   // online la battaglia non si ferma
 function resume() { paused = false; $('ovPause').hidden = true; if (!ended) countT = 3; }
@@ -4193,25 +4196,35 @@ function musicWorld() {                                                     // i
   if (NET.g) return 4;
   return s && s.lv && s.lv.world != null ? s.lv.world : 0;
 }
-function musicUpdate() {                                                   // storia, menu e un brano per ogni mondo, sfumando
+function musicEl(k) {                                                       // ogni brano si prepara una volta sola e resta pronto
+  let el = SND.el[k];
+  if (!el) { el = SND.el[k] = new Audio('audio/mus_' + k + '.mp3'); el.loop = true; el.preload = 'auto'; try { el.load(); } catch (e) {} }
+  return el;
+}
+function musicPreload(w) { if (!GALLERY) musicEl('w' + (Math.min(9, Math.max(0, w)) + 1)); }
+function musicWant() { return !SND.set.mus || document.hidden ? null : inStory ? 'story' : (running || !inMenu) ? 'w' + (Math.min(9, Math.max(0, musicWorld())) + 1) : 'menu'; }
+function fadeTo(el, target, ms, done) {                                    // dissolvenza corta e precisa (pochi decimi di secondo)
+  clearInterval(el._fade); const v0 = el.volume, t0 = performance.now();
+  el._fade = setInterval(() => { const f = Math.min(1, (performance.now() - t0) / ms); el.volume = Math.max(0, Math.min(1, v0 + (target - v0) * f)); if (f >= 1) { clearInterval(el._fade); done && done(); } }, 16);
+}
+function musicUpdate() {                                                   // storia, menu e un brano per ogni mondo: cambio quasi immediato
   if (!SND.ctx || GALLERY) return;
-  const want = !SND.set.mus || document.hidden ? null : inStory ? 'story' : (running || !inMenu) ? 'w' + (Math.min(9, Math.max(0, musicWorld())) + 1) : 'menu';
-  for (const [k, el] of Object.entries(SND.el)) if (k === SND.track && !el.paused) el.volume = Math.min(1, MUS_VOL[k[0]] * SND.set.mus);
+  const want = musicWant();
   if (want === SND.track) return;
   const old = SND.el[SND.track]; SND.track = want;
-  if (old) { const o = old; let v = o.volume; const t = setInterval(() => { v -= .04; if (v <= 0) { clearInterval(t); o.pause(); } else o.volume = v; }, 40); }
+  if (old) fadeTo(old, 0, 180, () => old.pause());
   if (!want) return;
-  let el = SND.el[want]; if (!el) { el = SND.el[want] = new Audio('audio/mus_' + want + '.mp3'); el.loop = true; el.preload = 'auto'; }
-  const target = Math.min(1, MUS_VOL[want[0]] * SND.set.mus); el.volume = 0; el.currentTime = 0; el.play().catch(() => { SND.track = null; });
-  let v = 0; const t = setInterval(() => { v += .02; if (v >= target || el.paused) { clearInterval(t); el.volume = Math.min(target, Math.max(0, v)); } else el.volume = v; }, 40);
+  const el = musicEl(want), target = Math.min(1, MUS_VOL[want[0]] * SND.set.mus);
+  el.volume = 0; if (el.readyState > 0) { try { el.currentTime = 0; } catch (e) {} }
+  const p = el.play(); if (p) p.then(() => fadeTo(el, target, 160), () => { SND.track = null; }); else fadeTo(el, target, 160);
 }
-const MUS_VOL = {m:.3, s:.32, w:.22};                                      // menu, storia, battaglia (poi la barra Musica)
-setInterval(musicUpdate, 600); document.addEventListener('visibilitychange', musicUpdate);
+const MUS_VOL = {m:.3, s:.3, w:.24};                                      // tutti i brani hanno lo stesso livello (normalizzati): qui solo menu, storia, battaglia                                      // menu, storia, battaglia (poi la barra Musica)
+setInterval(musicUpdate, 250); try { musicEl('menu'); musicEl('story'); } catch (e) {}   // menu e storia pronti fin dall'apertura document.addEventListener('visibilitychange', musicUpdate);
 function showSettings() {                                                  // impostazioni: volumi e vibrazione
   const S = SND.set; $('setMus').value = Math.round(S.mus * 100); $('setSfx').value = Math.round(S.sfx * 100); $('setVox').value = Math.round(S.vox * 100);
   $('setVib').textContent = S.vib ? 'Sì' : 'No'; $('setVib').setAttribute('aria-pressed', String(S.vib)); $('ovSet').hidden = false;
 }
-function sndApply() { const S = SND.set; if (SND.g) SND.g.gain.value = 1.6 * S.sfx; if (SND.vg) SND.vg.gain.value = 1.5 * S.vox; musicUpdate(); sndSave(); }
+function sndApply() { const S = SND.set; if (SND.g) SND.g.gain.value = 1.6 * S.sfx; if (SND.vg) SND.vg.gain.value = 1.5 * S.vox; const el = SND.el[SND.track]; if (el && !el.paused) { clearInterval(el._fade); el.volume = Math.min(1, MUS_VOL[SND.track[0]] * S.mus); } musicUpdate(); sndSave(); }
 let testT = 0;
 function sndWire() {
   for (const [id, k] of [['setMus', 'mus'], ['setSfx', 'sfx'], ['setVox', 'vox']]) $(id).oninput = e => { SND.set[k] = +e.target.value / 100; sndApply(); const now = performance.now(); if (now - testT > 250) { testT = now; if (k === 'sfx') sfx('hit1', {vol:.8}); if (k === 'vox') sfx('goblin', {voice:1, rate:VOICE.goblin}); } };
@@ -4380,6 +4393,7 @@ const SLIDES = [
 const story = {i:0, fireCd:1, t:0, snap:0, puff:0, boost:0, flash:0, breath:0, fadeTo:null, fadeT:0, applied:false};
 const sCam = {x:700, w:720, g:.58};
 function startStory() {
+  setTimeout(musicUpdate, 0);
   inStory = true; inMenu = true; running = false; paused = false; ended = false; tutHide();
   TH = 'bosco'; HERO = false; for (const id of ['menu', 'worlds', 'capr', 'miss', 'wanted', 'shop', 'online', 'board', 'bpick', 'map', 'squad', 'forge']) $(id).hidden = true; $('story').hidden = false; document.body.classList.add('inMenu');
   for (const id of ['ovPause', 'ovEnd']) $(id).hidden = true;
@@ -4872,11 +4886,12 @@ function startMp() {                                                       // l'
   G.nr.presence({st:'play', mode:G.mode, coop:G.coop, hv:G.hv, gpi:G.gpi, res:null, g:encodeSnap()}).catch(() => {});
 }
 function battleUi() {
+  setTimeout(musicUpdate, 0);
   inMenu = false; inStory = false; document.body.classList.remove('inMenu');
   for (const id of ['story', 'menu', 'worlds', 'capr', 'miss', 'wanted', 'shop', 'online', 'board', 'bpick', 'map', 'squad', 'forge', 'ovPause', 'ovEnd', 'ovGift', 'ovEgg', 'ovOdds', 'ovWait', 'ovInvite', 'friends', 'ovName', 'ovPick', 'ovSet']) $(id).hidden = true;
   tutHide(); tut = null; resize(); speed = 1;
   particles = []; nums = []; bubbles = []; hooks = []; seenId = 0; endT = 0; ended = false; dragon.fireT = 0; dragon.phase = 'idle';
-  running = true; paused = false; countT = 3; viaT = 0; lightP = 0;
+  running = true; paused = false; countT = 3; viaT = 0; lightP = 0; setTimeout(musicUpdate, 0);
 }
 function enterGuestBattle(P) {
   const G = NET.g; G.state = 'play'; G.gpi = P.gpi; G.mirror = P.mode === 'duel'; G.um = new Map();
