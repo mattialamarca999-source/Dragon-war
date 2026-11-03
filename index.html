@@ -772,7 +772,11 @@ const DW = (() => {
     {name:'Rocca del Lieto Fine', theme:'lietofine', n:10, pool:['soldatino', 'arciere', 'cacciatore', 'peterpan', 'robinhood', 'porcellino', 'fata', 'merlino', 'raperonzolo', 'carrozza', 'gattostivali', 'musicanti', 'pifferaio', 'principe'], semi:'principe_azzurro', boss:'re_oro',
      names:['Ponte levatoio', 'Cortile dei cavalieri', 'Scuderie reali', 'Sala delle armature', 'Galleria dei ritratti', 'Biblioteca dei finali', 'Giardino delle rose', 'Torre del narratore', 'Sala del trono', 'Il Trono del Drago']}
   ];
-  const wmul = w => w <= 4 ? 1.1 + .05 * (w - 1) : 1.25 + .02 * (w - 4);   // mondi 2-5: +10/15/20/25%, poi +2% a mondo (mondo 10: +35%)
+  // il sole cala: dal tramonto alla notte i buoni arrivano più spesso e più robusti
+  const NIGHT = Object.assign({pace:.12, hp:.06, w3:0, from:2}, typeof process !== 'undefined' && process.env && process.env.DW_NIGHT ? JSON.parse(process.env.DW_NIGHT) : {});
+  const nightP = t => t < 25 ? 0 : t < 55 ? (t - 25) / 30 * .5 : Math.min(1, .5 + (t - 55) / 25 * .5);   // 0 giorno · 0,5 tramonto · 1 notte
+  const wmulB = w => w <= 4 ? 1.1 + .05 * (w - 1) : 1.25 + .02 * (w - 4);   // mondi 2-5: +10/15/20/25%, poi +2% a mondo (mondo 10: +35%)
+  const wmul = w => wmulB(w) * (w >= 2 ? 1 + NIGHT.w3 : 1);               // dal mondo 3 un filo in più (w3)
   const WMOD = Object.fromEntries(Array.from({length:9}, (_, i) => [i + 1, {hp:wmul(i + 1), qty:wmul(i + 1)}]));
   const COMP_EXTRA = +((typeof process !== 'undefined' && process.env && process.env.COMP) || 1.05);
   const SHARD_ORDER = ['goblin', 'strega', 'topi', 'lupo', 'fionda', 'gattovolpe', 'orco', 'gnomo', 'spaventapasseri', 'fantasma', 'coccodrillo', 'barbablu'];
@@ -854,7 +858,7 @@ const DW = (() => {
     const ab = ABIL.find(a => d[a]);
     const m = (d.side === 0 ? 1 + .08 * ((lvMap[PARENT[k] || k] || 1) - 1) : s.eMul) * (d.side === 0 && LEG.has(k) ? LEG_MUL : 1);   // +8% per livello ai cattivi; i buoni crescono coi castelli
     const u = {id:++s.id, k, side, x:x ?? (side ? s.castle.x - 30 : s.base.x + 30), y:y ?? Math.random(), dm:m,
-      hp:Math.round(d.hp * m * (side === 1 && d.side === 1 ? s.lv.hpMul || 1 : 1)), max:Math.round(d.hp * m * (side === 1 && d.side === 1 ? s.lv.hpMul || 1 : 1)), disg:d.disguise ? 1 : 0, atkT:.2, kb:0, st:'walk', swing:0, born:s.t, abT:ab ? d[ab].every * .5 : 0, fear:0, stun:0, spdMul:1, charged:false};
+      hp:Math.round(d.hp * m * (side === 1 && d.side === 1 ? (s.lv.hpMul || 1) * (s.mp || (s.lv.world || 0) < NIGHT.from ? 1 : 1 + NIGHT.hp * nightP(s.t)) : 1)), max:Math.round(d.hp * m * (side === 1 && d.side === 1 ? (s.lv.hpMul || 1) * (s.mp || (s.lv.world || 0) < NIGHT.from ? 1 : 1 + NIGHT.hp * nightP(s.t)) : 1)), disg:d.disguise ? 1 : 0, atkT:.2, kb:0, st:'walk', swing:0, born:s.t, abT:ab ? d[ab].every * .5 : 0, fear:0, stun:0, spdMul:1, charged:false};
     s.units.push(u);
     return u;
   }
@@ -953,7 +957,7 @@ const DW = (() => {
   }
 
   function castleAI(s, dt) {
-    const lv = s.lv, ramp = 1 + Math.max(0, s.t - 30) / 170;
+    const lv = s.lv, ramp = (1 + Math.max(0, s.t - 30) / 170) * (s.mp || (s.lv.world || 0) < NIGHT.from ? 1 : 1 + NIGHT.pace * nightP(s.t));
     const enemies = s.units.filter(u => u.side === 1 && !u.dead).length;
     if (enemies < 16) lv.waves.forEach((w, i) => { if ((s.timers[i] -= dt) <= 0) { addGroup(s, w[0]); s.timers[i] = w[2] / ramp; } });
     if (s.boss && !s.castle.bossDone && s.t >= s.bossAt) { s.castle.bossDone = true; addUnit(s, s.boss); s.ev.push({type:'boss', k:s.boss}); }
@@ -1172,7 +1176,7 @@ const DW = (() => {
     {name:'Parata dei boss',       txt:'Tre semiboss in fila. Nessuno li ha invitati.',             w:9, c:0, rule:{extra:[['generale', 30], ['capo_nani', 80], ['carrozza_oro', 130]]}, prize:'gigante'}
   ];
   CAPRICCI.forEach((c, i) => { c.fr = 10; c.gold = 300 + 100 * i; });
-  return {BCOST, COOP, coopLevel, costOf, LEG, DECK, HAND, HARD, CAPRICCI, EK, U, ELITE, ROSTER, START, LEVELS, WORLDS, TOTAL, levelOf, firstIdx, FIRE, WALLET_MAX_LV, walletMax, walletRate, walletCost, create, spawn, canSpawn, upgradeWallet, fire, step, stars, reward};
+  return {nightP, BCOST, COOP, coopLevel, costOf, LEG, DECK, HAND, HARD, CAPRICCI, EK, U, ELITE, ROSTER, START, LEVELS, WORLDS, TOTAL, levelOf, firstIdx, FIRE, WALLET_MAX_LV, walletMax, walletRate, walletCost, create, spawn, canSpawn, upgradeWallet, fire, step, stars, reward};
 })();
 
 const BETA = false;
@@ -2715,25 +2719,123 @@ function drawTana(b = s.base, mirror = false) {
   ctx.restore();
   if (!mirror) mouthW = tanaPt(m.x, m.y);
 }
+function castleDeco(th, T) {                                               // ogni castello si veste come il suo mondo (restando un castello)
+  const roofs = [612, 752], merl = []; for (let x = 632; x < 790; x += 22) merl.push(x);
+  const CS2 = CSHAPE[th] || {ext:[0, 0], roof:'cone'}, topOf = tx => 176 - CS2.ext[tx < 700 ? 0 : 1], roofP = tx => roofPath(CS2.roof, tx, topOf(tx));
+  if (th === 'bosco') {                                                    // edera sui muri, funghi e fiori alla base
+    for (const [x0, y0, len] of [[632, 232, 90], [786, 240, 70], [614, 190, 110], [800, 200, 80]]) {
+      for (let i = 0; i < len; i += 9) { const x = x0 + Math.sin(i * .25) * 5, y = y0 + i; D(E(x, y, 5, 3, .6), i % 18 ? '#3f8a3a' : '#2f7030'); }
+    }
+    for (const [x, s] of [[640, 1], [668, .8], [748, .9], [778, 1.1]]) { P(cap(x, 400, x, 388 - 4 * s, 4 * s), '#f4ead8', x, 394, 3); P(E(x, 386 - 4 * s, 9 * s, 6 * s), '#d8383a', x, 384, 7); D(E(x - 3, 384 - 5 * s, 1.6, 1.4), '#fff'); }
+    for (const x of [654, 700, 762]) D(starPath(x, 396, 3.5), '#ffd35a');
+  } else if (th === 'brema') {                                             // tetti di paglia, balle di fieno, staccionata
+    for (const tx of roofs) { ctx.save(); ctx.clip(roofP(tx)); for (let i = 0; i < 11; i++) D(cap(tx - 14 + i * 8, 182, tx + 25, 104, 2), i % 2 ? '#e8c060' : '#b8862a'); ctx.restore();
+      D(cap(tx - 14, 180, tx + 64, 180, 4), '#a8762a'); }
+    ctx.save(); ctx.translate(777, 214); ctx.rotate(time * .8); for (let i = 0; i < 4; i++) { ctx.rotate(Math.PI / 2); P(RR(-3, 4, 6, 44, 2), '#8a5a2a', 0, 26, 6); P(RR(-9, 14, 7, 30, 1), '#f4ead8', -5, 29, 6); } ctx.restore(); P(E(777, 214, 5, 5), '#6b4524', 777, 214, 4);   // le pale del mulino
+    ctx.save(); ctx.lineWidth = 4; ctx.strokeStyle = MODE === 'normal' ? '#f4ead8' : '#000'; ctx.beginPath(); ctx.moveTo(690, 352); ctx.lineTo(730, 396); ctx.moveTo(730, 352); ctx.lineTo(690, 396); ctx.stroke(); ctx.restore();
+    for (const [x, y, w] of [[600, 384, 34], [788, 386, 30], [770, 368, 24]]) { P(RR(x, y, w, 16, 5), '#e2b84a', x + w / 2, y + 8, 14); for (let i = 1; i < 4; i++) D(cap(x + 3, y + i * 4, x + w - 3, y + i * 4, 1), '#b8862a'); }
+    for (let x = 640; x < 690; x += 12) P(RR(x, 372, 5, 28, 1), '#8a5a2a', x + 2, 386, 4);
+    D(cap(636, 380, 690, 380, 3), '#6b4524'); D(cap(636, 392, 690, 392, 3), '#6b4524');
+  } else if (th === 'ghiaccio') {                                          // neve sui tetti e sui merli, ghiaccioli, ghiaccio alla base
+    for (const tx of roofs) { const t = topOf(tx); ctx.save(); ctx.clip(roofP(tx)); D(new Path2D(`M${tx - 10} ${t - 40} Q${tx + 25} ${t - 30} ${tx + 60} ${t - 40} L${tx + 60} ${t - 120} L${tx - 10} ${t - 120} Z`), '#ffffff'); ctx.restore(); if (MODE === 'normal') { ctx.globalCompositeOperation = 'lighter'; glow(ctx, tx + 25, t - 50, 40, '190,235,255', .25); ctx.globalCompositeOperation = 'source-over'; } }
+    for (const x of merl) { P(E(x + 7, 214, 9, 4), '#f4faff', x + 7, 213, 8); D(PL([x + 3, 232, x + 5, 246, x + 7, 232]), '#bfe8ff'); D(PL([x + 9, 232, x + 11, 240, x + 13, 232]), '#d8f2ff'); }
+    for (const tx of roofs) { const t = topOf(tx) + 2; D(PL([tx + 4, t, tx + 8, t + 16, tx + 12, t, tx + 30, t, tx + 34, t + 12, tx + 38, t]), '#bfe8ff'); }
+    P(new Path2D('M600 400 Q640 382 690 392 Q740 380 800 390 L806 400 Z'), '#eef7ff', 700, 392, 60);
+    D(cap(640, 300, 652, 296, 2), '#ffffff', {glow:'rgba(255,255,255,.6)'}); D(cap(760, 330, 776, 326, 2), '#ffffff', {glow:'rgba(255,255,255,.6)'});
+  } else if (th === 'miniera') {                                           // travi da miniera attorno alla porta, lanterne, cristalli, binari
+    P(RR(674, 330, 8, 70, 2), '#7a5030', 678, 365, 6); P(RR(738, 330, 8, 70, 2), '#7a5030', 742, 365, 6); P(RR(670, 324, 80, 9, 2), '#7a5030', 710, 328, 8);
+    for (const x of [664, 756]) { D(cap(x, 312, x, 320, 1.5), '#3a3a44'); P(RR(x - 5, 320, 10, 12, 3), '#3a3a44', x, 326, 6); D(E(x, 326, 3, 4), '#ffd35a', {glow:'#ffcc66'}); }
+    for (const [x, y, c] of [[640, 352, '#7ad8ff'], [776, 300, '#c87aff'], [618, 240, '#7affb8'], [786, 372, '#ff7aa8']]) { P(PL([x - 6, y + 8, x - 2, y - 8, x + 2, y + 4, x + 6, y - 4, x + 8, y + 8]), c, x, y, 7); }
+    D(cap(600, 398, 820, 398, 2.5), '#6a6a74'); for (let x = 606; x < 820; x += 14) D(RR(x, 394, 4, 6, 1), '#7a5030');
+  } else if (th === 'mare') {                                              // alghe sui muri, conchiglie, coralli, bollicine
+    for (const [x, h] of [[634, 70], [646, 50], [784, 80], [774, 56], [616, 90], [802, 60]]) { const p = new Path2D(); p.moveTo(x, 400); for (let i = 1; i <= 6; i++) p.quadraticCurveTo(x + (i % 2 ? 8 : -8) + Math.sin(time * 1.5 + x) * 2, 400 - h * (i - .5) / 6, x, 400 - h * i / 6); ctx.save(); ctx.lineWidth = 4; ctx.lineCap = 'round'; ctx.strokeStyle = MODE === 'normal' ? '#2f9a6a' : '#000'; ctx.stroke(p); ctx.restore(); }
+    for (const [x, y] of [[660, 392], [756, 390]]) { P(E(x, y, 8, 6), '#ffb8a8', x, y, 6); for (let i = -2; i <= 2; i++) D(cap(x, y + 4, x + i * 3, y - 4, 1), '#e88a7a'); }
+    for (const tx of roofs) { const t = topOf(tx); ctx.save(); ctx.clip(roofP(tx)); for (let i = 0; i < 5; i++) D(cap(tx - 10, t - i * 16, tx + 60, t - 20 - i * 16, 3), '#ffffff', {glow:'rgba(255,255,255,.45)'}); ctx.restore(); }
+    D(starPath(700, 330, 7), '#ff9a3a'); P(new Path2D('M596 400 Q606 372 614 400 M612 400 Q622 380 630 400'), '#ff6a7a', 614, 390, 10);
+    if (MODE === 'normal') for (let i = 0; i < 5; i++) { const pr = (time * .3 + i / 5) % 1; ctx.strokeStyle = 'rgba(220,245,255,.7)'; ctx.lineWidth = 1.5; ctx.beginPath(); ctx.arc(640 + i * 34, 380 - pr * 250, 3 + i % 3, 0, 7); ctx.stroke(); }
+  } else if (th === 'balocchi') {                                          // torri a strisce di zucchero, festoni di bandierine, palloncini
+    for (const tx of roofs) { ctx.save(); ctx.clip(new Path2D(`M${tx} 400 L${tx} 176 L${tx + 50} 176 L${tx + 50} 400 Z`)); for (let y = 160; y < 410; y += 26) D(PL([tx - 10, y, tx + 60, y - 30, tx + 60, y - 18, tx - 10, y + 12]), '#ffffff', {glow:'rgba(255,255,255,.55)'}); ctx.restore(); }
+    for (const tx of roofs) { const t = topOf(tx); ctx.save(); ctx.clip(roofP(tx)); for (let i = 0; i < 4; i++) D(PL([tx + 25, t - 74, tx - 8 + i * 18, t + 2, tx + 1 + i * 18, t + 2]), '#ffffff'); ctx.restore(); }
+    const fest = new Path2D(); fest.moveTo(637, 184); fest.quadraticCurveTo(702, 236, 777, 184); ctx.save(); ctx.lineWidth = 1.5; ctx.strokeStyle = MODE === 'normal' ? '#5a3a22' : '#000'; ctx.stroke(fest); ctx.restore();
+    ['#ff5a5a', '#ffd35a', '#5ad0ff', '#7aff8a', '#ff8ad8', '#ffd35a', '#5ad0ff'].forEach((c, i) => { const t = (i + .5) / 7, x = 637 + 140 * t, y = 184 + 52 * t * (1 - t) * 1.9; D(PL([x - 5, y, x + 5, y, x, y + 11]), c); });
+    for (const [x, c, d] of [[604, '#ff5a5a', 0], [818, '#5ad0ff', 1.3]]) { const y = 140 + Math.sin(time * 1.6 + d) * 5; D(cap(x, y + 14, x + (x < 700 ? 12 : -12), 210, .8), '#5a3a22'); P(E(x, y, 10, 12), c, x, y, 10); D(E(x - 3, y - 4, 2.5, 3.5), '#ffffff', {glow:'rgba(255,255,255,.7)'}); }
+    for (const [x, c] of [[610, '#ff5a5a'], [628, '#5ad0ff'], [792, '#ffd35a']]) { P(RR(x, 384, 16, 16, 2), c, x + 8, 392, 9); D(starPath(x + 8, 392, 4), '#fff'); }
+  } else if (th === 'ballo') {                                             // tappeto rosso, rose, orologio della mezzanotte, punte d'oro
+    P(new Path2D('M690 400 L730 400 L746 420 L674 420 Z'), '#c8283a', 710, 408, 24);
+    P(E(710, 302, 15, 15), '#f4f1ea', 710, 302, 14); ctx.save(); ctx.lineWidth = 3; ctx.strokeStyle = MODE === 'normal' ? '#c8a050' : '#000'; ctx.beginPath(); ctx.arc(710, 302, 15, 0, 7); ctx.stroke(); ctx.restore();
+    D(cap(710, 302, 710, 291, 2), '#1c1a24'); D(cap(710, 302, 718, 298, 1.6), '#1c1a24');
+    for (const x of [640, 668, 752, 780]) for (const y of [380, 352]) { D(E(x, y, 4.5, 4), '#e83a5a'); D(E(x - 4, y + 4, 2.5, 1.5, .5), '#3a8a3a'); }
+    for (const tx of roofs) { const t = topOf(tx); D(cap(tx - 6, t + 2, tx + 56, t + 2, 2.5), '#ffd35a'); D(cap(tx, t + 30, tx + 50, t + 30, 2), '#ffd35a'); }
+  } else if (th === 'torre') {                                             // la treccia d'oro che scende dalla torre, rovi spinosi
+    const t0 = topOf(612) + 40, br = new Path2D(); br.moveTo(630, t0); br.bezierCurveTo(590 + Math.sin(time) * 4, t0 + 110, 646, 300, 618, 400);
+    ctx.save(); ctx.lineCap = 'round'; ctx.lineWidth = 10; ctx.strokeStyle = MODE === 'normal' ? '#e8b83a' : '#000'; ctx.stroke(br);
+    if (MODE === 'normal') { ctx.lineWidth = 3; ctx.setLineDash([6, 6]); ctx.strokeStyle = '#b8862a'; ctx.stroke(br); ctx.setLineDash([]); } ctx.restore();
+    D(E(630, t0, 7, 5), '#e8b83a');
+    for (const [x0, w] of [[650, 40], [744, 50]]) { const p = new Path2D(); p.moveTo(x0, 400); for (let i = 0; i <= 8; i++) p.lineTo(x0 + i * w / 8, 400 - (i % 2 ? 22 : 8) - Math.sin(i) * 4); ctx.save(); ctx.lineWidth = 3; ctx.strokeStyle = MODE === 'normal' ? '#3a2a3a' : '#000'; ctx.stroke(p); ctx.restore();
+      for (let i = 1; i < 8; i += 2) D(PL([x0 + i * w / 8 - 2, 380, x0 + i * w / 8, 372, x0 + i * w / 8 + 2, 380]), '#5a3a4a'); }
+  } else if (th === 'marzapane') {                                         // glassa che cola, bastoncini di zucchero, caramelle sui muri
+    for (const tx of roofs) { const g = new Path2D(`M${tx - 6} 176 L${tx + 56} 176 L${tx + 56} 182 Q${tx + 50} 196 ${tx + 44} 182 Q${tx + 36} 200 ${tx + 28} 182 Q${tx + 20} 194 ${tx + 12} 182 Q${tx + 4} 198 ${tx - 6} 182 Z`); P(g, '#fff4f8', tx + 25, 182, 30); }
+    for (const tx of roofs) for (let i = 0; i < 7; i++) D(E(tx + 6 + (i * 13) % 38, 168 - (i * 23) % 56, 2.2, 1.4, i), ['#ff5a8a', '#5ad0ff', '#ffd35a', '#7aff8a'][i % 4]);
+    P(RR(758, 120, 14, 40, 2), '#8a4a2a', 765, 140, 10); if (MODE === 'normal') for (let i = 0; i < 3; i++) { const pr = (time * .5 + i / 3) % 1; ctx.fillStyle = `rgba(240,235,240,${.5 * (1 - pr)})`; ctx.beginPath(); ctx.arc(765 + pr * 12, 116 - pr * 50, 6 + pr * 10, 0, 7); ctx.fill(); }
+    for (const x of merl) P(new Path2D(`M${x} 214 L${x + 14} 214 L${x + 14} 220 Q${x + 10} 228 ${x + 7} 220 Q${x + 4} 226 ${x} 220 Z`), '#fff4f8', x + 7, 218, 8);
+    for (const [x, y, c] of [[648, 248, '#ff5a8a'], [770, 250, '#5ad0ff'], [700, 268, '#ffd35a'], [652, 320, '#7aff8a'], [768, 318, '#ff8a3a']]) { P(E(x, y, 6, 5), c, x, y, 5); D(E(x - 2, y - 2, 1.8, 1.4), '#ffffff', {glow:'rgba(255,255,255,.8)'}); }
+    for (const x of [606, 812]) { const cc = new Path2D(); cc.moveTo(x, 400); cc.lineTo(x, 350); cc.arc(x + 8, 350, 8, Math.PI, 0); ctx.save(); ctx.lineWidth = 6; ctx.lineCap = 'round'; ctx.strokeStyle = MODE === 'normal' ? '#fff' : '#000'; ctx.stroke(cc);
+      if (MODE === 'normal') { ctx.strokeStyle = '#e83a4a'; ctx.setLineDash([5, 5]); ctx.stroke(cc); ctx.setLineDash([]); } ctx.restore(); }
+    if (MODE === 'normal') { ctx.globalCompositeOperation = 'lighter'; glow(ctx, 710, 372, 36, '255,140,40', .35 + .1 * Math.sin(time * 5)); ctx.globalCompositeOperation = 'source-over'; }   // il forno acceso dietro la porta
+  } else if (th === 'lietofine') {                                         // corona d'oro sul muro, stendardi reali, punte d'oro
+    P(PL([684, 214, 690, 192, 700, 204, 710, 186, 720, 204, 730, 192, 736, 214]), '#ffd35a', 710, 202, 18); D(E(710, 196, 3, 3), '#e83a4a');
+    for (const x of [646, 760]) { P(new Path2D(`M${x} 244 L${x + 18} 244 L${x + 18} 300 L${x + 9} 290 L${x} 300 Z`), '#b8283a', x + 9, 270, 16); D(starPath(x + 9, 262, 5), '#ffd35a'); D(cap(x - 2, 244, x + 20, 244, 2.5), '#ffd35a'); }
+    for (const tx of roofs) { const t = topOf(tx); D(cap(tx - 4, t + 2, tx + 54, t + 2, 3), '#c8a030'); for (let i = 0; i < 3; i++) D(E(tx + 10 + i * 15, t - 20, 2.5, 2.5), '#fff0a0'); }
+  }
+}
+const CSHAPE = {                                                           // la forma del castello cambia un poco con il mondo
+  bosco:{wall:'#b8c0a8', roof:'leaf', ext:[0, 0]}, brema:{wall:'#c8584a', roof:'thatch', ext:[0, 0]}, ghiaccio:{wall:'#cfe6f4', roof:'spike', ext:[18, 18]},
+  miniera:{wall:'#9a9098', roof:'cone', ext:[0, 0]}, mare:{wall:'#f0cfc0', roof:'shell', ext:[0, 10]}, balocchi:{wall:'#f4e0ff', roof:'tent', ext:[0, 0]},
+  ballo:{wall:'#e8ecff', roof:'cone', ext:[24, 24]}, torre:{wall:'#8a7a9a', roof:'cone', ext:[120, 0]}, marzapane:{wall:'#b8783e', roof:'choc', ext:[0, 0]},
+  lietofine:{wall:'#fff0c8', roof:'dome', ext:[0, 0]}};
+const CROOF = {bosco:['#3f8a3a', '#4a9a40'], brema:['#d8a840', '#c89838'], ghiaccio:['#eaf6ff', '#dcefff'], mare:['#f4b0a0', '#e89a90'], balocchi:['#ff5a7a', '#5ab8ff'], marzapane:['#6a3a20', '#5a3018'], lietofine:['#ffd35a', '#ffc83a']};
+function roofPath(kind, tx, top) {                                         // il tetto della torre (top = dove finisce la torre)
+  const b = top + 2, a = top - 74;
+  if (kind === 'leaf') { const p = new Path2D(); for (const [dx, dy, r] of [[25, -46, 24], [6, -24, 20], [44, -24, 20], [25, -14, 26]]) { p.moveTo(tx + dx + r, top + dy); p.arc(tx + dx, top + dy, r, 0, 7); } return p; }
+  if (kind === 'thatch') return new Path2D(`M${tx - 14} ${b + 2} Q${tx + 25} ${a - 18} ${tx + 64} ${b + 2} Z`);
+  if (kind === 'spike') return new Path2D(`M${tx - 4} ${b} L${tx + 8} ${b - 30} L${tx + 14} ${b - 22} L${tx + 25} ${a - 16} L${tx + 36} ${b - 22} L${tx + 42} ${b - 30} L${tx + 54} ${b} Z`);
+  if (kind === 'dome' || kind === 'tent' && false) return new Path2D(`M${tx - 6} ${b} Q${tx - 14} ${top - 40} ${tx + 25} ${top - 58} Q${tx + 64} ${top - 40} ${tx + 56} ${b} Z`);
+  if (kind === 'shell') return new Path2D(`M${tx - 8} ${b} Q${tx + 6} ${top - 30} ${tx + 25} ${a} Q${tx + 44} ${top - 30} ${tx + 58} ${b} Z`);
+  return new Path2D(`M${tx - 8} ${b} L${tx + 25} ${a} L${tx + 58} ${b} Z`);
+}
+function castleBack(th) {                                                  // quello che sta dietro le mura
+  if (th === 'bosco') { P(cap(600, 400, 596, 250, 22), '#6b4524', 598, 330, 16); for (const [x, y, r] of [[590, 236, 40], [560, 260, 30], [620, 214, 30]]) P(E(x, y, r, r * .85), '#3f7a3a', x, y, r); }
+  else if (th === 'miniera') { P(new Path2D('M560 400 L600 250 L640 200 L700 160 L770 190 L830 260 L860 400 Z'), '#6a5a5a', 700, 260, 140); }
+  else if (th === 'ballo') { P(new Path2D('M694 232 L694 130 L726 130 L726 232 Z'), '#d8dcf4', 710, 180, 30); P(new Path2D('M688 132 L710 40 L732 132 Z'), '#5a6ad8', 710, 100, 26); P(cap(710, 40, 710, 24, 2.5), '#ffd35a', 710, 32, 2); D(E(710, 160, 5, 8), '#ffe9a0', {glow:L.win}); }
+  else if (th === 'lietofine') {                                         // il castello finale: più grande, con altre due torri ai lati
+    for (const x of [570, 806]) { P(new Path2D(`M${x} 400 L${x} 214 L${x + 44} 214 L${x + 44} 400 Z`), '#e8d8b0', x + 22, 300, 60); for (let mx = x + 2; mx < x + 44; mx += 14) P(RR(mx, 202, 9, 13, 2), '#e8d8b0', mx + 4, 208, 6);
+      P(new Path2D(`M${x - 4} 204 Q${x - 10} 170 ${x + 22} 150 Q${x + 54} 170 ${x + 48} 204 Z`), '#ffd35a', x + 22, 180, 26); P(cap(x + 22, 150, x + 22, 128, 3), '#6b4524', x + 22, 140, 3); flag(x + 22, 128, 26, 15, HERO ? '#c42a3a' : '#b8283a', -1);
+      D(new Path2D(`M${x + 15} 290 L${x + 15} 273 Q${x + 22} 263 ${x + 29} 273 L${x + 29} 290 Z`), '#ffe9a0', {glow:L.win}); }
+    for (const x of [662, 742]) { P(new Path2D(`M${x} 232 L${x} 160 L${x + 16} 160 L${x + 16} 232 Z`), '#fff0c8', x + 8, 196, 16); P(new Path2D(`M${x - 4} 162 Q${x + 8} 128 ${x + 20} 162 Z`), '#ffd35a', x + 8, 150, 12); } }
+}
 function drawCastle() {
   if (s.mp === 'duel') { ctx.save(); ctx.translate(1000, 0); ctx.scale(-1, 1); drawTana(s.castle, true); ctx.restore(); return; }   // nel duello di fronte c'è la tana dell'amico
   const c = s.castle, f = c.hp / c.max, sink = c.hp <= 0 ? Math.min(1, endT / 1.2) * 150 : 0;
   const sh = shakeB[1] > 0 ? Math.sin(time * 90) * 2.5 : 0;
-  ctx.save(); ctx.translate(1030 + sh, sink); ctx.scale(BS, BS); ctx.translate(-1030, 0); ctx.translate(220, -392);
-  const T = THEMES[TH] || {}, stone = T.stone || '#d6cfe6', dark = mix(stone, '#2a2050', .15);
+  ctx.save(); ctx.translate(1030 + sh, sink); ctx.scale(BS * (TH === 'lietofine' ? 1.18 : 1), BS * (TH === 'lietofine' ? 1.18 : 1)); ctx.translate(-1030, 0); ctx.translate(220, -392);
+  const T = THEMES[TH] || {}, CSH = CSHAPE[TH] || {ext:[0, 0], roof:'cone'}, stone = CSH.wall || T.stone || '#d6cfe6', dark = mix(stone, '#2a2050', .15);
+  castleBack(TH);
   P(new Path2D('M630 400 L630 230 L790 230 L790 400 Z'), stone, 690, 280, 110);
   for (let x = 632; x < 790; x += 22) P(RR(x, 214, 14, 18, 2), stone, x + 7, 222, 10);
   for (const tx of [612, 752]) {
-    P(new Path2D(`M${tx} 400 L${tx} 176 L${tx + 50} 176 L${tx + 50} 400 Z`), dark, tx + 20, 270, 90);
+    const top = 176 - CSH.ext[tx < 700 ? 0 : 1], apex = CSH.roof === 'leaf' ? top - 70 : CSH.roof === 'dome' ? top - 58 : CSH.roof === 'thatch' ? top - 56 : CSH.roof === 'spike' ? top - 90 : top - 72;
+    P(new Path2D(`M${tx} 400 L${tx} ${top} L${tx + 50} ${top} L${tx + 50} 400 Z`), dark, tx + 20, 270, 90);
+    if (top < 170) for (const [x, y] of [[tx + 18, top + 30], [tx + 18, top + 80]]) D(new Path2D(`M${x} ${y + 26} L${x} ${y + 9} Q${x + 7} ${y - 1} ${x + 14} ${y + 9} L${x + 14} ${y + 26} Z`), '#ffe9a0', {glow:L.win});
     const tilt = tx < 700 && f < .33 ? .22 : 0;
-    ctx.save(); ctx.translate(tx + 25, 178); ctx.rotate(-tilt); ctx.translate(-tx - 25, -178);
-    P(new Path2D(`M${tx - 8} 178 L${tx + 25} 104 L${tx + 58} 178 Z`), tx < 700 ? (T.roof ? T.roof[0] : '#3d6fd1') : (T.roof ? T.roof[1] : '#e86fa2'), tx + 18, 150, 40);
-    P(cap(tx + 25, 104, tx + 25, 80, 3), '#6b4524', tx + 25, 92, 3);
-    flag(tx + 25, 80, 30, 18, HERO ? '#c42a3a' : '#f2b33d', -1);
+    ctx.save(); ctx.translate(tx + 25, top + 2); ctx.rotate(-tilt); ctx.translate(-tx - 25, -top - 2);
+    P(roofPath(CSH.roof, tx, top), (CROOF[TH] || T.roof || ['#3d6fd1', '#e86fa2'])[tx < 700 ? 0 : 1], tx + 18, top - 26, 40);
+    P(cap(tx + 25, apex, tx + 25, apex - 24, 3), '#6b4524', tx + 25, apex - 12, 3);
+    flag(tx + 25, apex - 24, 30, 18, HERO ? '#c42a3a' : '#f2b33d', -1);
     ctx.restore();
   }
   P(new Path2D('M684 400 L684 340 Q710 306 736 340 L736 400 Z'), '#6b4524', 708, 360, 30);
   for (const [x, y] of [[625, 200], [765, 200], [660, 266], [742, 266]]) D(new Path2D(`M${x} ${y + 26} L${x} ${y + 9} Q${x + 7} ${y - 1} ${x + 14} ${y + 9} L${x + 14} ${y + 26} Z`), '#ffe9a0', {glow:L.win});
+  castleDeco(TH, T);
   if (f < .66) { ctx.strokeStyle = L.shadow; ctx.lineWidth = 3; ctx.lineJoin = 'round'; ctx.beginPath(); ctx.moveTo(770, 240); ctx.lineTo(758, 270); ctx.lineTo(772, 290); ctx.moveTo(640, 310); ctx.lineTo(656, 330); ctx.lineTo(648, 350); ctx.stroke(); }
   if (f < .33) { ctx.beginPath(); ctx.moveTo(700, 236); ctx.lineTo(690, 270); ctx.lineTo(706, 292); ctx.lineTo(694, 314); ctx.stroke(); }
   ctx.restore();
@@ -4267,7 +4369,7 @@ function battleLight() {                                                    // g
   if (s.hard) return 1;                                                    // l'Eroica si gioca sempre di notte
   if (s.lv && s.lv.world === 7) { if (s.t < .3) lightP = Math.max(lightP, .5); return Math.min(1, .5 + s.t / 70 * .5); }   // Torre delle Trecce Maledette: si parte al tramonto e scende la notte
   const t = s.t;
-  let p = t < 60 ? 0 : t < 90 ? (t - 60) / 30 * .5 : Math.min(1, .5 + (t - 90) / 30 * .5);
+  let p = DW.nightP(t);                                                    // il sole cala prima: tramonto dai 25 secondi, notte piena a 80
   if (s.castle.rushed) p = Math.max(p, .5);                                // i rinforzi portano il tramonto
   return p;
 }
@@ -5106,6 +5208,7 @@ function galBuild() {
 function startGallery() {
   inMenu = true; inStory = false; running = false; $('menu').hidden = true; $('gallery').hidden = false; document.body.classList.add('inMenu');
   s = DW.create(); galBuild();
+  try { const q = new URLSearchParams(location.search).get('th'); if (q && THEMES[q]) TH = q; } catch (e) {}   // anteprima: ?th=ghiaccio mostra quel mondo
   const seg = (id, fn) => $(id).querySelectorAll('button[data-v]').forEach(b => b.addEventListener('click', () => { $(id).querySelectorAll('button[data-v]').forEach(x => x.setAttribute('aria-pressed', String(x === b))); fn(b.dataset.v); }));
   seg('galSet', v => { gal.set = v; galBuild(); });
   seg('galLight', v => { gal.light = +v; });
