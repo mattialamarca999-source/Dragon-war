@@ -3469,7 +3469,8 @@ function handleEvents() {
     else if (e.type === 'boss') { toast(`Arriva: ${DW.U[e.k].elite ? DW.U[e.k].elite.name : 'il boss'}!`); toastT = 3; shake = 9; vibrate(70); }
   }
   s.ev.length = 0;
-  for (const u of s.units) if (u.id > seenId) { seenId = u.id; if (LINES[u.k] && bubbles.length < 2 && Math.random() < .3) bubbles.push({id:u.id, txt:pick(LINES[u.k]), t:0}); }
+  for (const u of s.units) if (u.id > seenId) { seenId = u.id; if (u.side === 1 && !u.dead) { const d = DW.U[u.k] || {}, bk = u.k === 'nano' ? 'nani' : d.elite ? d.elite.base : u.k; if (VOICE[bk] && (!d.sub || u.k === 'nano')) sfx(bk, {voice:1, vol:.7, rate:VOICE[bk] * (d.elite ? .75 : 1), gap:.5, key:'gvoice'}); }   // i buoni che scendono in campo
+    if (LINES[u.k] && bubbles.length < 2 && Math.random() < .3) bubbles.push({id:u.id, txt:pick(LINES[u.k]), t:0}); }
 }
 function vibrate(ms) { if (typeof SND !== 'undefined' && !SND.set.vib) return; try { navigator.vibrate && navigator.vibrate(ms); } catch (e) {} }
 function toast(t) { const el = $('toast'); el.textContent = t; el.classList.add('on'); toastT = 2.2; }
