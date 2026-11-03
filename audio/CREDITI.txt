@@ -1,6 +1,8 @@
 Suoni e musiche di Dragon War: tutti CC0 (pubblico dominio, gratuiti anche per uso commerciale)
 - Effetti di colpo e impatto: Kenney "Impact Sounds" (www.kenney.nl), CC0
 - Versi di creature, magie, monete, gemme: "80 CC0 RPG SFX" e "80 CC0 creature SFX" (rubberduck, OpenGameArt), CC0
-- Musica menu: "Kings Feast" di RandomMind (OpenGameArt), CC0
-- Musica battaglia: "Old battle theme 2" di Monplaisir, CC0
+- Musica menu: "The Bard's Tale" di RandomMind (OpenGameArt), CC0
+- Musica storia: "Brewing Potions" (FreePD), CC0
+- Mondi: 1 "Dancing at the Inn", 2 "Blood Eagle", 4 "Kings Trailer", 5 "The Vikings", 6 "Village Tarantella", 7 "Behind the Sword", 8 "Night Attack", 9 "Epic Boss Battle" (FreePD, CC0); 3 "Old battle theme 2" di Monplaisir (CC0); 10 "Decisive battle with the childhood friend" di Komiku (CC0)
+- Versi di cattivi e buoni: raccolte CC0 (80 CC0 creature SFX 1 e 2, 30 CC0 weird SFX, 100 CC0 SFX, Micro Pack Organic Wooshes e Cat Meows, angerdog), Kenney Impact e Interface Sounds (CC0)
 - Suoni dei tasti, monete, vittoria e sconfitta: creati dal gioco (Web Audio)
