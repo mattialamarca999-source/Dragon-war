@@ -3541,7 +3541,8 @@ function act(kind, fn) {                                                   // du
   if (!canAct()) return;
   const st = tut && tut.shown ? TUT[tut.i] : null;
   if (st && st.block && st.id !== kind) return;
-  if (fn() !== false && st && st.id === kind) tutNext();
+  const ok = fn(); if (ok === false) UIS.err(); else if (kind !== 'fire' && kind !== 'wallet') UIS.card();   // ogni tocco ha il suo suono
+  if (ok !== false && st && st.id === kind) tutNext();
 }
 $('walletBtn').addEventListener('click', () => act('wallet', () => netAct('w')));
 $('fireBtn').addEventListener('click', () => act('fire', () => netAct('f')));
@@ -4126,8 +4127,8 @@ function sndUnlock() {                                                     // il
   if (GALLERY) return;
   if (SND.ctx) { if (SND.ctx.state === 'suspended') SND.ctx.resume().catch(() => {}); musicUpdate(); return; }
   try { SND.ctx = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) { return; }
-  SND.g = SND.ctx.createGain(); SND.g.gain.value = 1.3 * SND.set.sfx; SND.g.connect(SND.ctx.destination);
-  SND.vg = SND.ctx.createGain(); SND.vg.gain.value = 1.2 * SND.set.vox; SND.vg.connect(SND.ctx.destination);
+  SND.g = SND.ctx.createGain(); SND.g.gain.value = 1.6 * SND.set.sfx; SND.g.connect(SND.ctx.destination);
+  SND.vg = SND.ctx.createGain(); SND.vg.gain.value = 1.5 * SND.set.vox; SND.vg.connect(SND.ctx.destination);
   const load = (url, put) => fetch(url).then(r => r.ok ? r.arrayBuffer() : Promise.reject()).then(a => SND.ctx.decodeAudioData(a)).then(put).catch(() => {});
   for (const n of SFX_FILES) load('audio/' + n + '.mp3', b => { SND.buf[n] = b; });
   for (const k of Object.keys(VOICE)) load('audio/v_' + k + '.mp3', b => { SND.vbuf[k] = b; });
@@ -4153,10 +4154,16 @@ function tone(seq, type = 'triangle', vol = .1) {                          // su
   }
 }
 const UIS = {
-  click:() => tone([[700, .05]], 'triangle', .07),
+  click:() => tone([[880, .05]], 'triangle', .14),
+  big:() => tone([[523, .05], [784, .1, .045]], 'triangle', .15),
+  back:() => tone([[660, .05], [440, .09, .05]], 'triangle', .15),
+  pause:() => tone([[523, .07], [392, .12, .07]], 'square', .08),
+  resume:() => tone([[392, .07], [523, .12, .07]], 'square', .08),
+  tab:() => tone([[1175, .035]], 'square', .07),
+  card:() => tone([[330, .04], [494, .06, .03]], 'triangle', .12),
   coin:() => tone([[988, .07], [1319, .2, .07]], 'square', .05),
   up:() => { tone([[523, .1], [659, .1, .08], [784, .1, .16], [1047, .3, .24]], 'triangle', .1); sfx('coins1', {vol:.5}); },
-  err:() => tone([[150, .16]], 'sawtooth', .05),
+  err:() => tone([[180, .09], [140, .14, .08]], 'sawtooth', .08),
   win:() => tone([[523, .14], [523, .1, .15], [523, .1, .26], [659, .3, .37], [587, .14, .7], [659, .14, .85], [784, .7, 1]], 'square', .06),
   lose:() => tone([[392, .32], [370, .32, .32], [349, .32, .64], [330, .9, .96]], 'triangle', .11),
   tap:() => tone([[220 + Math.random() * 60, .06]], 'square', .07),
@@ -4177,6 +4184,7 @@ function sndEvent(e) {                                                     // gl
     case 'steal': case 'robbed': sfx('coins2', {vol:.35, gap:.25, key:'coin'}); break;
     case 'boss': sfx('vroar2', {vol:.9, rate:.7}); UIS.horn(); break;
     case 'rush': UIS.horn(); break;
+    case 'wallet': UIS.up(); break;
     case 'spawn': if (VOICE[e.k]) sfx(e.k, {voice:1, vol:.9, rate:VOICE[e.k], vary:.05, gap:.3, key:'voice'}); break;
   }
 }
@@ -4203,7 +4211,7 @@ function showSettings() {                                                  // im
   const S = SND.set; $('setMus').value = Math.round(S.mus * 100); $('setSfx').value = Math.round(S.sfx * 100); $('setVox').value = Math.round(S.vox * 100);
   $('setVib').textContent = S.vib ? 'Sì' : 'No'; $('setVib').setAttribute('aria-pressed', String(S.vib)); $('ovSet').hidden = false;
 }
-function sndApply() { const S = SND.set; if (SND.g) SND.g.gain.value = 1.3 * S.sfx; if (SND.vg) SND.vg.gain.value = 1.2 * S.vox; musicUpdate(); sndSave(); }
+function sndApply() { const S = SND.set; if (SND.g) SND.g.gain.value = 1.6 * S.sfx; if (SND.vg) SND.vg.gain.value = 1.5 * S.vox; musicUpdate(); sndSave(); }
 let testT = 0;
 function sndWire() {
   for (const [id, k] of [['setMus', 'mus'], ['setSfx', 'sfx'], ['setVox', 'vox']]) $(id).oninput = e => { SND.set[k] = +e.target.value / 100; sndApply(); const now = performance.now(); if (now - testT > 250) { testT = now; if (k === 'sfx') sfx('hit1', {vol:.8}); if (k === 'vox') sfx('goblin', {voice:1, rate:VOICE.goblin}); } };
@@ -4211,7 +4219,17 @@ function sndWire() {
   $('setOk').onclick = () => { $('ovSet').hidden = true; };
   $('sndBtn').onclick = showSettings; $('sndBtn2').onclick = showSettings;
 }
-document.addEventListener('click', e => { const b = e.target.closest && e.target.closest('button'); if (b && !(b.id || '').startsWith('u_') && b.id !== 'eggBtn') UIS.click(); }, true);
+document.addEventListener('click', e => {                                  // ogni cosa che si tocca suona: indietro, pausa, schede, tasti
+  const el = e.target.closest && e.target.closest('button,[role=tab],[role=button],a,label,input,select,.wCard,.card2,.fgRow');
+  if (!el) return; const id = el.id || '';
+  if (id.startsWith('u_') || id === 'eggBtn' || id === 'walletBtn' || id === 'fireBtn' || el.type === 'range') return;   // le carte e i tasti di battaglia hanno i loro suoni
+  if (/Back$|Leave$|^pickNo$|^nameNo$|^invNo$|^setOk$/.test(id) || el.textContent.trim() === '‹') UIS.back();
+  else if (id === 'pauseBtn') UIS.pause();
+  else if (id === 'resumeBtn') UIS.resume();
+  else if (el.getAttribute('role') === 'tab' || (el.parentElement && el.parentElement.getAttribute('role') === 'tablist')) UIS.tab();
+  else if (el.classList.contains('big')) UIS.big();
+  else UIS.click();
+}, true);
 sndWire();
 $('menuFriends').onclick = () => window.DW_FB ? showFriends() : showOnline(true); $('frBack').onclick = showMenu; $('pickNo').onclick = () => { $('ovPick').hidden = true; }; $('menuOnline').onclick = () => showOnline(); $('menuBoard').onclick = showBoard;
 $('onBack').onclick = showMenu; $('boardBack').onclick = showMenu; $('waitLeave').onclick = () => leaveGame(); $('caprBack').onclick = showWorlds;
