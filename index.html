@@ -237,6 +237,8 @@ body.inMenu .top, body.inMenu .hud{display:none}
 .onJoin input{flex:1;min-width:0;font:400 22px var(--display);letter-spacing:6px;text-transform:uppercase;text-align:center;border:3px solid var(--ink);border-radius:12px;padding:6px;background:var(--parch);color:var(--ink)}
 .waitCode{font-family:var(--display);font-size:44px;letter-spacing:10px;text-align:center;color:var(--evil)}
 .ruby{display:inline-block;width:15px;height:15px;flex:none;background:linear-gradient(135deg,#ffb0bc,#e8304a 55%,#8a1028);clip-path:polygon(50% 0,100% 36%,80% 100%,20% 100%,0 36%);vertical-align:-2px}
+.mLives{position:absolute;top:60px;right:max(16px,env(safe-area-inset-right,0px));pointer-events:auto;display:flex;align-items:center;gap:5px;font-family:var(--display);font-size:18px;color:#ffd0d8;background:var(--glass);border:2px solid rgba(255,120,150,.5);border-radius:999px;padding:3px 12px;cursor:pointer}
+.mLives small{font:800 11px var(--body);opacity:.85}
 .sndB{position:absolute;top:14px;left:max(16px,env(safe-area-inset-left,0px));pointer-events:auto;font-size:20px}
 .mGold .ruby,.mGold2 .ruby{width:18px;height:18px;margin-left:8px}
 .shopH{font-family:var(--display);font-weight:400;font-size:20px;color:var(--gold2);-webkit-text-stroke:3px var(--ink);paint-order:stroke fill;margin:6px 0 0;width:min(560px,100%);align-self:center;display:flex;justify-content:space-between;align-items:center}
@@ -388,6 +390,7 @@ button:focus-visible{outline:3px solid #5aa0ff;outline-offset:2px}
     <div class="menu" id="menu">
       <button class="ib sndB" id="sndBtn" aria-label="Impostazioni">⚙️</button>
       <div class="mGold"><span class="coin"></span><span id="menuGold">0</span><span class="ruby"></span><span id="menuRu">0</span></div>
+      <button class="mLives" id="mLives" aria-label="Vite"><span>❤️</span><b>5</b><small>piene</small></button>
       <div class="mHead">
         <h1 class="logo"><span>Dragon</span><b>War</b></h1>
         <p class="slogan">I cattivi delle fiabe all'assedio</p>
@@ -546,6 +549,17 @@ button:focus-visible{outline:3px solid #5aa0ff;outline-offset:2px}
         <input class="nameIn" id="nameIn" maxlength="14" autocomplete="off" placeholder="NomeCattivo">
         <p class="note" id="nameErr"></p>
         <div class="pair"><button class="big alt" id="nameNo">Annulla</button><button class="big" id="nameOk">Salva</button></div>
+      </div>
+    </div>
+
+    <div class="ov" id="ovLives" hidden>
+      <div class="card">
+        <h2 id="livesH">Niente vite!</h2>
+        <p class="note" id="livesTxt">La prossima vita arriva tra 30:00.</p>
+        <p class="note">Si perde una vita se perdi, se lasci a metà o se rigiochi un castello già vinto. I castelli nuovi vinti non costano niente.</p>
+        <button class="big" id="livesRu">Ricarica tutte · 10</button>
+        <button class="big alt" id="livesFr">Chiedi agli amici</button>
+        <button class="big alt" id="livesNo">Aspetto</button>
       </div>
     </div>
 
@@ -3678,7 +3692,7 @@ function toScene() {                                                       // sc
   setTimeout(musicUpdate, 0);
   dragon.glasses = 1; dragon.sad = 0; dragon.rear = 0;
   inMenu = true; inStory = false; running = false; paused = false; ended = false; tutHide();
-  for (const id of ['story', 'menu', 'worlds', 'capr', 'miss', 'wanted', 'shop', 'map', 'squad', 'forge', 'ovPause', 'ovEnd', 'ovGift', 'ovEgg', 'ovOdds', 'online', 'board', 'bpick', 'ovWait', 'ovInvite', 'friends', 'ovName', 'ovPick', 'ovSet']) $(id).hidden = true;
+  for (const id of ['story', 'menu', 'worlds', 'capr', 'miss', 'wanted', 'shop', 'map', 'squad', 'forge', 'ovPause', 'ovEnd', 'ovGift', 'ovEgg', 'ovOdds', 'online', 'board', 'bpick', 'ovWait', 'ovInvite', 'friends', 'ovName', 'ovPick', 'ovSet', 'ovLives']) $(id).hidden = true;
   document.body.classList.add('inMenu'); resize();
   s = DW.create(); particles = []; nums = []; bubbles = []; hooks = []; dragon.fireT = 0; dragon.phase = 'idle';
 }
@@ -3819,7 +3833,7 @@ function renderMiss() {
       const rw = m.gold ? `<span class="rwd"><span class="coin"></span>${m.gold} oro</span>` : `<span class="rwd">${m.k ? `<canvas width="56" height="52"></canvas>` : ''}${m.fr} frammenti${m.k ? ' ' + SHORT[m.k] : ' a caso'}</span>`;
       const r = row(m.gold ? COIN_ICO.replace('<svg', '<svg width="40" height="40"') : CHEST_ICO('#7b3fb3'), m.txt, `<small>${Math.min(p, m.need)}/${m.need}</small>${rw}`, p / m.need,
         `<button class="upBtn" ${done && !got ? '' : 'disabled'}>${got ? 'Fatto' : 'Ritira'}</button>`,
-        () => { dd.got.push(id); persist(); if (m.gold) showGift('Missione compiuta!', m.gold, []); else if (m.k) { save.shards[m.k] = (save.shards[m.k] || 0) + m.fr; showGift('Missione compiuta!', 0, [{k:m.k, n:m.fr}]); } else showGift('Missione compiuta!', 0, giveShards(m.fr, 2)); }, got);
+        () => { dd.got.push(id); if (!BETA) livesAdd(1); persist(); if (m.gold) showGift('Missione compiuta!', m.gold, []); else if (m.k) { save.shards[m.k] = (save.shards[m.k] || 0) + m.fr; showGift('Missione compiuta!', 0, [{k:m.k, n:m.fr}]); } else showGift('Missione compiuta!', 0, giveShards(m.fr, 2)); }, got);
       if (m.k) { const c = r.querySelector('.rwd canvas'); if (c) drawIcon(c, m.k); }
     }
     row(CHEST_ICO(), 'Baule del giorno', '<small>Finisci tutte e 3 le missioni: dentro c’è un Uovo di Drago</small>', dd.got.length / 3,
@@ -3887,6 +3901,7 @@ function rollEgg(t) {                                                        // 
     save.unlocked.push(out.char); if (save.squad.length < DW.DECK) save.squad.push(out.char); save.pity = 0;
   } else save.pity++;
   giveShards(C.fr, C.parts, out.shards);
+  out.life = BETA ? 0 : r >= 2 ? 2 : Math.random() < .35 ? 1 : 0; if (out.life) livesAdd(out.life);   // nelle uova, a volte, vite in regalo
   save.gold += out.gold; save.ru += out.ru;
   out.fresh = BETA ? [] : checkUnlocks();
   persist();
@@ -3924,6 +3939,7 @@ function showEggPrize() {
   const add = el => { el.style.animationDelay = (d++ * .18) + 's'; box.appendChild(el); };
   if (egg.char) { const c = document.createElement('div'); c.className = 'nu big'; c.innerHTML = `<small>Cattivo nuovo!</small><canvas width="112" height="104"></canvas><b>${SHORT[egg.char]}</b>`; drawIcon(c.querySelector('canvas'), egg.char); add(c); }
   const g = document.createElement('div'); g.className = 'nu'; g.innerHTML = `<small>Oro</small><span class="coin" style="width:34px;height:34px;margin:8px"></span><b>+${egg.gold}</b>`; add(g);
+  if (egg.life) { const l = document.createElement('div'); l.className = 'nu'; l.innerHTML = `<small>Vite</small><span style="font-size:30px;margin:6px">❤️</span><b>+${egg.life}</b>`; add(l); }
   if (egg.ru) { const r = document.createElement('div'); r.className = 'nu'; r.innerHTML = `<small>Rubini</small><span class="ruby" style="width:32px;height:32px;margin:9px"></span><b>+${egg.ru}</b>`; add(r); }
   for (const it of egg.shards) { const c = document.createElement('div'); c.className = 'nu'; c.innerHTML = `<small>Frammenti</small><canvas width="112" height="104"></canvas><b>+${it.n} ${SHORT[it.k]}</b>`; drawIcon(c.querySelector('canvas'), it.k); add(c); }
   for (const kk of egg.fresh) { const c = document.createElement('div'); c.className = 'nu big'; c.innerHTML = `<small>Sbloccato!</small><canvas width="112" height="104"></canvas><b>${SHORT[kk]}</b>`; drawIcon(c.querySelector('canvas'), kk); add(c); }
@@ -4146,12 +4162,43 @@ document.querySelectorAll('#forgeTabs button').forEach(b => b.onclick = () => { 
 $('menuForge').onclick = () => showForge('menu'); $('mapForge').onclick = () => showForge('map');
 $('forgeBack').onclick = () => forgeFrom === 'map' ? showMap(mapWorld, mapHero) : showMenu();
 let curLevel = 0, curWorld = 0, curOpt = {};
+/* ================= vite (come Candy Crush) ================= */
+const LIVES_MAX = 5, LIFE_MS = 30 * 60 * 1000, LIFE_RU = 10, LIVES_CAP = 10;   // 5 vite, 1 ogni 30 minuti, tutte con 10 rubini, regali fino a 10
+save.lives = save.lives || {n:LIVES_MAX, t:Date.now()};
+let battleCharged = false;                                                 // questa battaglia ha già pagato la sua vita?
+function livesTick() {                                                     // le vite tornano col tempo, anche a gioco chiuso
+  const L = save.lives, now = Date.now();
+  if (L.n >= LIVES_MAX) { L.t = now; return; }
+  const k = Math.floor((now - L.t) / LIFE_MS);
+  if (k > 0) { L.n = Math.min(LIVES_MAX, L.n + k); L.t = L.n >= LIVES_MAX ? now : L.t + k * LIFE_MS; persist(); }
+}
+const lifeWait = () => Math.max(0, save.lives.t + LIFE_MS - Date.now());
+const mmss = ms => { const t = Math.ceil(ms / 1000); return Math.floor(t / 60) + ':' + String(t % 60).padStart(2, '0'); };
+function livesUse() { livesTick(); if (save.lives.n >= LIVES_MAX) save.lives.t = Date.now(); save.lives.n = Math.max(0, save.lives.n - 1); persist(); paintLives(); }
+function livesAdd(n) { livesTick(); save.lives.n = Math.min(LIVES_CAP, save.lives.n + n); if (save.lives.n >= LIVES_MAX) save.lives.t = Date.now(); persist(); paintLives(); }
+const isReplay = (w, c, opt) => opt.cap != null ? !!save.capr[opt.cap] : opt.hard ? crownsOf(w, c) > 0 : starsOf(w, c) > 0;
+function paintLives() {
+  if (BETA) return; livesTick(); const L = save.lives, el = $('mLives'); if (!el) return;
+  el.querySelector('b').textContent = L.n; el.querySelector('small').textContent = L.n >= LIVES_MAX ? (L.n > LIVES_MAX ? 'extra' : 'piene') : mmss(lifeWait());
+  if (!$('ovLives').hidden) $('livesTxt').textContent = save.lives.n > 0 ? `Hai ${save.lives.n} vite: si gioca!` : `La prossima vita arriva tra ${mmss(lifeWait())}.`;
+}
+setInterval(paintLives, 1000);
+function abandonBattle() { if (!BETA && !NET.g && running && !ended && !battleCharged) { battleCharged = true; livesUse(); toast('Partita lasciata: -1 vita'); } }   // uscire a metà conta come perdere
+function showNoLives() {
+  $('livesH').textContent = save.lives.n > 0 ? 'Le tue vite' : 'Niente vite!'; $('ovLives').hidden = false; paintLives();
+  $('livesRu').textContent = `Ricarica tutte · ${LIFE_RU}`; $('livesRu').disabled = save.ru < LIFE_RU;
+  $('livesRu').onclick = () => { if (save.ru < LIFE_RU) return UIS.err(); save.ru -= LIFE_RU; save.lives.n = Math.max(save.lives.n, LIVES_MAX); save.lives.t = Date.now(); persist(); paintLives(); $('ovLives').hidden = true; UIS.up(); toast('Vite piene!'); $('menuRu').textContent = save.ru; };
+  $('livesFr').hidden = !window.DW_FB; $('livesFr').onclick = () => { $('ovLives').hidden = true; showFriends(); };
+  $('livesNo').onclick = () => { $('ovLives').hidden = true; };
+}
 function newBattle(world = curWorld, level = curLevel, opt = curOpt) {
+  abandonBattle();
+  if (!BETA) { livesTick(); if (save.lives.n <= 0) { if (running) { running = false; backFromBattle(); } showNoLives(); return; } battleCharged = isReplay(world, level, opt); if (battleCharged) { livesUse(); toast('Castello già vinto: -1 vita'); } }
   curLevel = level; curWorld = world; curOpt = opt; TH = DW.WORLDS[world].theme; HERO = !!opt.hard;
   const cp = opt.cap != null ? DW.CAPRICCI[opt.cap] : null;
   const W0 = DW.WORLDS[world];
   inMenu = false; inStory = false; document.body.classList.remove('inMenu');
-  for (const id of ['story', 'menu', 'worlds', 'capr', 'miss', 'wanted', 'shop', 'map', 'squad', 'forge', 'ovPause', 'ovEnd', 'ovGift', 'ovEgg', 'ovOdds', 'online', 'board', 'bpick', 'ovWait', 'ovInvite', 'friends', 'ovName', 'ovPick', 'ovSet']) $(id).hidden = true;
+  for (const id of ['story', 'menu', 'worlds', 'capr', 'miss', 'wanted', 'shop', 'map', 'squad', 'forge', 'ovPause', 'ovEnd', 'ovGift', 'ovEgg', 'ovOdds', 'online', 'board', 'bpick', 'ovWait', 'ovInvite', 'friends', 'ovName', 'ovPick', 'ovSet', 'ovLives']) $(id).hidden = true;
   const squad = cp && cp.squad ? cp.squad.slice() : (sqSel.length ? sqSel : save.squad).filter(isUnlocked).slice(0, cp && cp.pick || DW.DECK);
   tutHide(); tut = !save.tutorialDone && world === 0 && level === 0 && !cp && !opt.hard ? {i:0, shown:false, t:0} : null; resize();
   const secret = !cp && opt.hard && world === DW.WORLDS.length - 1 && level === W0.n - 1 && draculaReady(squad);   // la notte giusta, al Trono del Drago, arriva il Conte
@@ -4167,6 +4214,7 @@ function resume() { paused = false; $('ovPause').hidden = true; if (!ended) coun
 function finish() {
   if (NET.g) return mpFinish();
   ended = true; $('againBtn').disabled = false;
+  if (!BETA && s.over <= 0 && !battleCharged) { battleCharged = true; livesUse(); }   // persa: -1 vita
   const win = s.over > 0, st = DW.stars(s), g = DW.reward(s), fresh = [], W = DW.WORLDS[curWorld], hard = !!curOpt.hard, ci = curOpt.cap;
   const key = curWorld + ':' + curLevel, first = ci != null ? !save.capr[ci] : hard ? !crownsOf(curWorld, curLevel) : !starsOf(curWorld, curLevel);
   const finale = win && ci == null && curWorld === DW.WORLDS.length - 1 && curLevel === W.n - 1;
@@ -4221,7 +4269,7 @@ function finish() {
 }
 const backFromBattle = () => curOpt.cap != null ? showCapr() : showMap(curWorld, !!curOpt.hard);
 $('menuPlay').onclick = showWorlds; $('againBtn').onclick = () => NET.g ? mpRematch() : newBattle(); $('restartBtn').onclick = () => newBattle();
-$('menuBtn').onclick = () => NET.g ? leaveGame() : backFromBattle(); $('endMenuBtn').onclick = () => NET.g ? leaveGame() : backFromBattle();
+$('menuBtn').onclick = () => NET.g ? leaveGame() : (abandonBattle(), backFromBattle()); $('endMenuBtn').onclick = () => NET.g ? leaveGame() : backFromBattle();
 /* ================= suoni e musica ================= */
 const SND = {ctx:null, g:null, vg:null, buf:{}, vbuf:{}, last:{}, track:null, el:{}, set:{mus:.8, sfx:1, vox:1, vib:true}};
 try { const o = JSON.parse(localStorage.getItem('dw_audio') || 'null'); if (o) Object.assign(SND.set, o); } catch (e) {}
@@ -4332,7 +4380,7 @@ function sndWire() {
   for (const [id, k] of [['setMus', 'mus'], ['setSfx', 'sfx'], ['setVox', 'vox']]) $(id).oninput = e => { SND.set[k] = +e.target.value / 100; sndApply(); const now = performance.now(); if (now - testT > 250) { testT = now; if (k === 'sfx') sfx('hit1', {vol:.8}); if (k === 'vox') sfx('goblin', {voice:1, rate:VOICE.goblin}); } };
   $('setVib').onclick = () => { SND.set.vib = !SND.set.vib; sndSave(); showSettings(); if (SND.set.vib) vibrate(40); };
   $('setOk').onclick = () => { $('ovSet').hidden = true; };
-  $('sndBtn').onclick = showSettings; $('sndBtn2').onclick = showSettings;
+  $('sndBtn').onclick = showSettings; $('sndBtn2').onclick = showSettings; $('mLives').onclick = showNoLives; if (BETA) $('mLives').hidden = true;
 }
 document.addEventListener('click', e => {                                  // ogni cosa che si tocca suona: indietro, pausa, schede, tasti
   const el = e.target.closest && e.target.closest('button,[role=tab],[role=button],a,label,input,select,.wCard,.card2,.fgRow');
@@ -4755,15 +4803,16 @@ function renderFriends() {
     if (!mails.length) note('Casella vuota. Nessuno ti scrive? Strano, sei così simpatico.');
     for (const [id, m] of mails) {
       const old = m.type === 'inv' && Date.now() - (m.t || 0) > FB_INV_TTL;
-      const txt = m.type === 'req' ? 'vuole essere tuo amico' : m.type === 'acc' ? 'ha accettato: ora siete amici!' : m.type === 'inv' ? (old ? 'ti aveva sfidato (invito scaduto)' : 'ti sfida: ' + (MODES[m.mode] ? MODES[m.mode].name : 'partita')) : m.type === 'gift' ? `ti regala ${m.n || FB_GIFT} oro` : '“' + (FB_MSGS[m.i] || '…') + '”';
-      const btns = m.type === 'req' ? '<button class="upBtn frNo">No</button><button class="upBtn frYes">Accetta</button>' : m.type === 'inv' && !old ? '<button class="upBtn frNo">No</button><button class="upBtn frYes">Gioca</button>' : m.type === 'gift' ? '<button class="upBtn frYes">Ritira</button>' : m.type === 'msg' && FBX.friends[m.from] ? '<button class="upBtn frNo">Ok</button><button class="upBtn frYes">Rispondi</button>' : '<button class="upBtn frNo">Ok</button>';
-      const r = frRow(`<span class="frAva">${m.type === 'gift' ? '🎁' : m.type === 'inv' ? '⚔️' : m.type === 'msg' ? '💬' : '✉️'}</span><div class="tx"><b></b><small></small></div>${btns}`);
+      const txt = m.type === 'req' ? 'vuole essere tuo amico' : m.type === 'acc' ? 'ha accettato: ora siete amici!' : m.type === 'inv' ? (old ? 'ti aveva sfidato (invito scaduto)' : 'ti sfida: ' + (MODES[m.mode] ? MODES[m.mode].name : 'partita')) : m.type === 'gift' ? `ti regala ${m.n || FB_GIFT} oro` : m.type === 'life' ? 'ti regala 1 vita ❤️' : '“' + (FB_MSGS[m.i] || '…') + '”';
+      const btns = m.type === 'req' ? '<button class="upBtn frNo">No</button><button class="upBtn frYes">Accetta</button>' : m.type === 'inv' && !old ? '<button class="upBtn frNo">No</button><button class="upBtn frYes">Gioca</button>' : m.type === 'gift' || m.type === 'life' ? '<button class="upBtn frYes">Ritira</button>' : m.type === 'msg' && FBX.friends[m.from] ? '<button class="upBtn frNo">Ok</button><button class="upBtn frYes">Rispondi</button>' : '<button class="upBtn frNo">Ok</button>';
+      const r = frRow(`<span class="frAva">${m.type === 'gift' ? '🎁' : m.type === 'life' ? '❤️' : m.type === 'inv' ? '⚔️' : m.type === 'msg' ? '💬' : '✉️'}</span><div class="tx"><b></b><small></small></div>${btns}`);
       r.querySelector('b').textContent = m.name || 'Un amico'; r.querySelector('small').textContent = txt;
       const no = r.querySelector('.frNo'), yes = r.querySelector('.frYes');
       if (no) no.onclick = () => fbDrop(id);
       if (yes) yes.onclick = async () => {
         if (m.type === 'req') { await fbRef('friends/' + FBX.uid + '/' + m.from).set(true); await fbRef('friends/' + m.from + '/' + FBX.uid).set(true); fbSend(m.from, {type:'acc'}); fbDrop(id); toast('Nuovo amico!'); }
         else if (m.type === 'inv') { fbDrop(id); guestJoin(m.code); }
+        else if (m.type === 'life') { livesAdd(1); fbDrop(id); toast('+1 vita!'); }
         else if (m.type === 'gift') { save.gold += m.n || FB_GIFT; persist(); fbDrop(id); $('frGold').textContent = save.gold.toLocaleString('it-IT'); toast(`+${m.n || FB_GIFT} oro!`); }
         else if (m.type === 'msg') fbPick('Rispondi a ' + m.name, FB_MSGS.map((t, i) => [i, t]), i => { fbSend(m.from, {type:'msg', i}); fbDrop(id); toast('Mandato!'); });
       };
@@ -4777,9 +4826,10 @@ function renderFriends() {
   for (const f of fl) {
     const d = FBX.fdata[f] || {}, st = FBX.fstat[f], tr = (NET.board[f] || {}).tr || 0, gifted = save.gifts[f] === day;
     const r = frRow(`<span class="frAva"><i class="frDot${st ? ' on' : ''}"></i>😈</span><div class="tx"><b></b><small>${st ? (st.st === 'gioca' ? 'Sta giocando' : 'Online') : 'Offline'} · ${tr} trofei</small></div>
-      <div class="frBtns"><button class="upBtn frGift" ${gifted ? 'disabled' : ''} aria-label="Regalo">🎁</button><button class="upBtn frMsg" aria-label="Messaggio">💬</button><button class="upBtn frX" aria-label="Rimuovi">${FBX.del === f ? 'Sicuro?' : '✕'}</button><button class="upBtn frDuel" ${st && st.st !== 'gioca' ? '' : 'disabled'}>Sfida</button></div>`);
+      <div class="frBtns"><button class="upBtn frGift" ${gifted ? 'disabled' : ''} aria-label="Regalo">🎁</button><button class="upBtn frLife" ${(save.lifeGifts || {})[f] === day ? 'disabled' : ''} aria-label="Regala una vita">❤️</button><button class="upBtn frMsg" aria-label="Messaggio">💬</button><button class="upBtn frX" aria-label="Rimuovi">${FBX.del === f ? 'Sicuro?' : '✕'}</button><button class="upBtn frDuel" ${st && st.st !== 'gioca' ? '' : 'disabled'}>Sfida</button></div>`);
     r.querySelector('b').textContent = d.name || '…';
     r.querySelector('.frDuel').onclick = () => fbPick('Sfida ' + (d.name || ''), Object.entries(MODES).map(([m, M]) => [m, M.name + (m === 'coop' ? ' · ' + DW.COOP[Math.min(save.coopWon, DW.COOP.length - 1)].name : '')]), m => fbChallenge(f, m));
+    r.querySelector('.frLife').onclick = () => { save.lifeGifts = save.lifeGifts || {}; save.lifeGifts[f] = day; persist(); fbSend(f, {type:'life'}); toast('Vita regalata!'); renderFriends(); };
     r.querySelector('.frGift').onclick = () => { save.gifts[f] = day; persist(); fbSend(f, {type:'gift', n:FB_GIFT}); toast(`Regalo mandato: ${FB_GIFT} oro`); renderFriends(); };
     r.querySelector('.frMsg').onclick = () => fbPick('Messaggio a ' + (d.name || ''), FB_MSGS.map((t, i) => [i, t]), i => { fbSend(f, {type:'msg', i}); toast('Mandato!'); });
     r.querySelector('.frX').onclick = () => { if (FBX.del !== f) { FBX.del = f; renderFriends(); return; } FBX.del = null; fbRef('friends/' + FBX.uid + '/' + f).remove(); fbRef('friends/' + f + '/' + FBX.uid).remove(); toast('Amico rimosso'); };
@@ -4990,7 +5040,7 @@ function startMp() {                                                       // l'
 function battleUi() {
   setTimeout(musicUpdate, 0);
   inMenu = false; inStory = false; document.body.classList.remove('inMenu');
-  for (const id of ['story', 'menu', 'worlds', 'capr', 'miss', 'wanted', 'shop', 'online', 'board', 'bpick', 'map', 'squad', 'forge', 'ovPause', 'ovEnd', 'ovGift', 'ovEgg', 'ovOdds', 'ovWait', 'ovInvite', 'friends', 'ovName', 'ovPick', 'ovSet']) $(id).hidden = true;
+  for (const id of ['story', 'menu', 'worlds', 'capr', 'miss', 'wanted', 'shop', 'online', 'board', 'bpick', 'map', 'squad', 'forge', 'ovPause', 'ovEnd', 'ovGift', 'ovEgg', 'ovOdds', 'ovWait', 'ovInvite', 'friends', 'ovName', 'ovPick', 'ovSet', 'ovLives']) $(id).hidden = true;
   tutHide(); tut = null; resize(); speed = 1;
   particles = []; nums = []; bubbles = []; hooks = []; seenId = 0; endT = 0; ended = false; dragon.fireT = 0; dragon.phase = 'idle';
   running = true; paused = false; countT = 3; viaT = 0; lightP = 0; setTimeout(musicUpdate, 0);
