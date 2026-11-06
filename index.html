@@ -238,6 +238,9 @@ body.inMenu .top, body.inMenu .hud{display:none}
 .waitCode{font-family:var(--display);font-size:44px;letter-spacing:10px;text-align:center;color:var(--evil)}
 .ruby{display:inline-block;width:15px;height:15px;flex:none;background:linear-gradient(135deg,#ffb0bc,#e8304a 55%,#8a1028);clip-path:polygon(50% 0,100% 36%,80% 100%,20% 100%,0 36%);vertical-align:-2px}
 .mLives{position:absolute;top:60px;right:max(16px,env(safe-area-inset-right,0px));pointer-events:auto;display:flex;align-items:center;gap:5px;font-family:var(--display);font-size:18px;color:#ffd0d8;background:var(--glass);border:2px solid rgba(255,120,150,.5);border-radius:999px;padding:3px 12px;cursor:pointer}
+.wCard.soon{background:linear-gradient(120deg,#1c1a2a,#3a3450)!important;position:relative;overflow:hidden}
+.wCard.soon::after{content:'';position:absolute;inset:0;background:radial-gradient(circle at 30% 50%,rgba(255,255,255,.18),transparent 55%),radial-gradient(circle at 75% 40%,rgba(255,255,255,.12),transparent 50%);animation:fogm 6s ease-in-out infinite alternate}
+@keyframes fogm{from{transform:translateX(-12%)}to{transform:translateX(12%)}}
 .mLives small{font:800 11px var(--body);opacity:.85}
 .sndB{position:absolute;top:14px;left:max(16px,env(safe-area-inset-left,0px));pointer-events:auto;font-size:20px}
 .mGold .ruby,.mGold2 .ruby{width:18px;height:18px;margin-left:8px}
@@ -492,7 +495,7 @@ button:focus-visible{outline:3px solid #5aa0ff;outline-offset:2px}
 
     <div class="gal" id="gallery" hidden>
       <p class="galT">Laboratorio personaggi</p>
-      <div class="seg" id="galSet"><button data-v="nuovi4">Cattivi nuovi</button><button data-v="buoni4">Buoni nuovi</button><button data-v="rari">Rari e leggendari</button><button data-v="leggende">Leggende 1</button><button data-v="leggende2">Leggende 2</button><button data-v="nuovi" aria-pressed="true">Buoni nuovi 1</button><button data-v="nuovi2">Buoni nuovi 2</button><button data-v="cattivi">Cattivi 1</button><button data-v="cattivi2">Cattivi 2</button><button data-v="buoni">Buoni</button></div>
+      <div class="seg" id="galSet"><button data-v="buoni5">Buoni 11-13</button><button data-v="buoni6">Buoni 13-15</button><button data-v="boss5">Boss nuovi</button><button data-v="nuovi4">Cattivi nuovi</button><button data-v="buoni4">Buoni nuovi</button><button data-v="rari">Rari e leggendari</button><button data-v="leggende">Leggende 1</button><button data-v="leggende2">Leggende 2</button><button data-v="nuovi" aria-pressed="true">Buoni nuovi 1</button><button data-v="nuovi2">Buoni nuovi 2</button><button data-v="cattivi">Cattivi 1</button><button data-v="cattivi2">Cattivi 2</button><button data-v="buoni">Buoni</button></div>
       <div class="seg" id="galLight"><button data-v="0" aria-pressed="true">Giorno</button><button data-v=".5">Tramonto</button><button data-v="1">Notte</button><button id="galAtk" aria-pressed="true">Attacco</button></div>
     </div>
 
@@ -666,7 +669,7 @@ const DW = (() => {
     reginacattiva:{side:0, cost:320, cd:12, hp:420, dmg:26, rate:1.3, range:130, spd:38, ranged:1, splash:30, mirror:{every:11, r:220}},
     reginanevi: {side:0, cost:340, cd:12, hp:340, dmg:22, rate:1.5, range:140, spd:38, ranged:1, splash:50, freeze:{every:13, t:2.5}},
     // ---- leggende, Grimm, Esopo ----
-    morgana:    {side:0, cost:270, cd:12, hp:320, dmg:20, rate:1.4, range:140, spd:38, ranged:1, splash:35, mirage:{every:10, n:2, ttl:8}},
+    morgana:    {side:0, cost:270, cd:12, hp:240, dmg:20, rate:1.4, range:140, spd:38, ranged:1, splash:35, mirage:{every:10, n:2, ttl:8}},
     miraggio:   {side:0, sub:1, hp:90, dmg:0, rate:99, range:20, spd:42},
     basilisco:  {side:0, cost:340, cd:12, hp:600, dmg:30, rate:1.3, range:120, spd:30, beast:1, ranged:1, splash:35, petrify:{every:8, n:3, r:260, t:4}},
     grifone:    {side:0, cost:150, cd:12, hp:283, dmg:22, rate:1.1, range:24, spd:70, fly:1, beast:1, splash:25, dive:{every:9}},
@@ -711,9 +714,32 @@ const DW = (() => {
     pinocchio:  {side:1, hp:110, dmg:11, rate:1.2, range:45,  spd:45, bounty:40},
     merlino:    {side:1, hp:95,  dmg:14, rate:1.9, range:150, spd:34, bounty:60, ranged:1, splash:30},
     alice:      {side:1, hp:120, dmg:13, rate:1.1, range:22,  spd:50, bounty:45, grow:{every:12, t:4}},
+    bimbi:      {side:1, group:{k:'bimbo', n:4}},
+    bimbo:      {side:1, sub:1, hp:32, dmg:6, rate:.8, range:18, spd:62, bounty:8, small:1},
+    wendy:      {side:1, hp:90,  dmg:6,  rate:1.3, range:100, spd:40, bounty:50, ranged:1, inspire:{every:6, r:130, t:4}},
+    giglio:     {side:1, hp:75,  dmg:11, rate:1.1, range:150, spd:70, bounty:40, ranged:1},
+    cappellaio: {side:1, hp:110, dmg:12, rate:1.4, range:120, spd:38, bounty:45, ranged:1, splash:15},
+    brucaliffo: {side:1, hp:150, dmg:8,  rate:1.3, range:90,  spd:30, bounty:50, ranged:1, smoke:{every:8, r:110, t:2}},
+    lepre:      {side:1, hp:80,  dmg:8,  rate:.8,  range:20,  spd:110, bounty:35, leap:{every:5, d:70}},
+    alibaba:    {side:1, hp:100, dmg:12, rate:1.2, range:22,  spd:55, bounty:45, manaSteal:3},
+    sinbad:     {side:1, hp:260, dmg:20, rate:1.3, range:26,  spd:40, bounty:60},
+    guardie:    {side:1, group:{k:'guardia', n:3}},
+    guardia:    {side:1, sub:1, hp:110, dmg:12, rate:1.2, range:24, spd:42, bounty:15},
+    renna:      {side:1, hp:200, dmg:16, rate:1.2, range:24,  spd:90, bounty:55, beast:1, charge:{dmg:35, r:50, kb:60}},
+    fiammiferaia:{side:1, hp:70, dmg:0,  rate:2.4, range:110, spd:40, bounty:50, heal:30},
+    soldatineve:{side:1, group:{k:'pupazzo', n:3}},
+    pupazzo:    {side:1, sub:1, hp:90, dmg:9, rate:1, range:20, spd:32, bounty:12, armorRanged:.7},
+    cavcristallo:{side:1, hp:320, dmg:18, rate:1.4, range:26, spd:34, bounty:70, armorRanged:.4},
+    gemelli:    {side:1, group:{k:'gemello', n:2}},
+    gemello:    {side:1, sub:1, hp:120, dmg:12, rate:1.1, range:22, spd:50, bounty:20, split:.6},
+    pisello:    {side:1, hp:50,  dmg:0,  rate:2,   range:110, spd:38, bounty:55, heal:42},
+    tappeto:    {side:1, hp:200, dmg:14, rate:1.1, range:24,  spd:80, bounty:60, fly:1},
+    aladino:    {side:1, hp:160, dmg:16, rate:1,   range:24,  spd:60, bounty:60, dodge:.25},
+    kai:        {side:1, hp:150, dmg:15, rate:1.1, range:24,  spd:50, bounty:55},
+    gerda:      {side:1, hp:120, dmg:6,  rate:2,   range:110, spd:45, bounty:55, heal:35},
     pollicino:  {side:1, hp:60,  dmg:8,  rate:1,   range:120, spd:110, bounty:25, ranged:1}
   };
-  const ABIL = ['hook', 'fear', 'summon', 'charm', 'stunAura', 'leap', 'kidnap', 'donkey', 'mute', 'mirror', 'freeze', 'mirage', 'petrify', 'dive', 'grow', 'gaze', 'behead', 'genie', 'swallow', 'healAura'];
+  const ABIL = ['hook', 'fear', 'summon', 'charm', 'stunAura', 'leap', 'kidnap', 'donkey', 'mute', 'mirror', 'freeze', 'mirage', 'petrify', 'dive', 'grow', 'gaze', 'behead', 'genie', 'swallow', 'healAura', 'midas', 'inspire', 'smoke'];
   const PARENT = {topo:'topi', corvo:'spaventapasseri', burattino:'mangiafuoco', matrigna_m:'matrigna', sorella:'matrigna', miraggio:'morgana', pipistrello:'dracula', reginacuori_q:'reginacuori', carta:'reginacuori'};
   const LEG = new Set(['dracula', 'gigante', 'tremotino', 'reginacattiva', 'reginanevi', 'basilisco', 'cavaliereverde', 'diavolo']);   // i leggendari: +25% e entrata in scena
   const LEG_MUL = 1.25;   // i piccoli prendono il livello di chi li porta
@@ -752,7 +778,21 @@ const DW = (() => {
     mamma_porcellina: {base:'porcellino',   name:'Mamma Porcellina',         semi:1, hp:900,  dmg:16, scale:1.5, tint:'#ffb0c8'},
     hansel_giganti:   {base:'hanselgretel', name:'Hansel e Gretel giganti',  boss:1, hp:1300, dmg:18, scale:1.9, tint:'#ffd35a'},
     principe_azzurro: {base:'principe',     name:'Principe Azzurro Supremo', semi:1, hp:900,  dmg:26, scale:1.5, tint:'#9ad0ff'},
-    re_oro:           {base:'re',           name:'Re d’oro',                 boss:1, hp:1800, dmg:36, scale:1.2, tint:'#ffd35a'}
+    re_oro:           {base:'re',           name:'Re Mida',                  boss:1, hp:1800, dmg:36, scale:1.2, tint:'#ffd35a'},
+    capo_bimbi:       {base:'bimbo',        name:'Capo dei Bimbi Sperduti',  semi:1, hp:850,  dmg:20, scale:2.4, tint:'#9aff9a'},
+    trilli:           {base:'fata',         name:'Trilli',                   semi:1, hp:900,  heal:40, scale:1.3, tint:'#fff07a'},
+    peterpan_oro:     {base:'peterpan',     name:'Peter Pan d’oro',          boss:1, hp:1900, dmg:34, scale:1.7, tint:'#ffd35a'},
+    bianconiglio:     {base:'lepre',        name:'Bianconiglio',             semi:1, hp:950,  dmg:24, scale:1.8, tint:'#ffffff'},
+    alice_gigante:    {base:'alice',        name:'Alice gigante',            boss:1, hp:2000, dmg:36, scale:2.1, tint:'#9ad0ff'},
+    tappeto_volante:  {base:'tappeto',      name:'Tappeto Volante',          semi:1, hp:950,  dmg:24, scale:1.6, tint:'#ff9ad8'},
+    capo_guardie:     {base:'guardia',      name:'Capo delle Guardie',       semi:1, hp:1000, dmg:26, scale:1.8, tint:'#ffd35a'},
+    sinbad_gigante:   {base:'sinbad',       name:'Sinbad gigante',           semi:1, hp:1050, dmg:28, scale:1.6, tint:'#7ad8ff'},
+    alibaba_gigante:  {base:'alibaba',      name:'Alì Babà dei quaranta',    semi:1, hp:1000, dmg:26, scale:1.7, tint:'#ffb85a'},
+    aladino_re:       {base:'aladino',      name:'Aladino',                  boss:1, hp:2100, dmg:38, scale:1.8, tint:'#ffd35a'},
+    kai_ghiaccio:     {base:'kai',          name:'Kai',                      semi:1, hp:1100, dmg:28, scale:1.8, tint:'#bfe8ff'},
+    gerda_regina:     {base:'gerda',        name:'Gerda',                    boss:1, hp:2200, heal:60, scale:2, tint:'#ffe0f0'},
+    riflesso:         {base:'principe',     name:'Riflesso del Principe',    semi:1, hp:1150, dmg:30, scale:1.6, tint:'#d8e8ff'},
+    re_specchi:       {base:'re',           name:'Re degli Specchi',         boss:1, hp:2400, dmg:40, scale:1.3, tint:'#cfe8ff'}
   };
   ELITE.dracula_boss = {base:'dracula', name:'Conte Dracula', boss:1, hp:1500, dmg:30, scale:1.4, tint:'#ff4a6a', side:1};   // il boss segreto del Trono del Drago
   const BOSS_DMG = .5, BOSS_HEAL = .4;                       // regolazione generale di semiboss e boss
@@ -762,6 +802,7 @@ const DW = (() => {
       splash:Math.max(b.splash || 0, 45), boss:1, elite:e, sub:0, side:e.side ?? b.side, spd:Math.max(18, b.spd * .7)});
   }
   U.dracula_boss.summon = {k:'pipistrello', every:10, max:3}; U.dracula_boss.drain = .5;   // il boss resta quello provato
+  U.re_oro.midas = {every:9, r:140, t:2};                                  // Re Mida: chi tocca diventa oro per qualche secondo
   U.re.elite = {base:'re', name:'Re in armatura', boss:1, scale:1, tint:null};
 
   // ---- le 10 mappe ----
@@ -783,15 +824,25 @@ const DW = (() => {
      names:['Bosco di rovi', 'Orto della strega', 'Piede della torre', 'Scala senza fine', 'Finestra alta', 'Cima della torre']},
     {name:'Il Forno della Strega', theme:'marzapane', n:10, pool:['hanselgretel', 'cappuccetto', 'porcellino', 'peterpan', 'nani', 'biancaneve', 'pifferaio', 'fata', 'cacciatore', 'principe'], semi:'mamma_porcellina', boss:'hansel_giganti',
      names:['Sentiero di briciole', 'Ponte di biscotto', 'Steccato di cannella', 'Giardino di zucchero', 'Porcile di cioccolato', 'Fontana di caramello', 'Muro di torrone', 'Tetto di glassa', 'Forno spento', 'Casetta di marzapane']},
-    {name:'Rocca del Lieto Fine', theme:'lietofine', n:10, pool:['soldatino', 'arciere', 'cacciatore', 'peterpan', 'robinhood', 'porcellino', 'fata', 'merlino', 'raperonzolo', 'carrozza', 'gattostivali', 'musicanti', 'pifferaio', 'principe'], semi:'principe_azzurro', boss:'re_oro',
-     names:['Ponte levatoio', 'Cortile dei cavalieri', 'Scuderie reali', 'Sala delle armature', 'Galleria dei ritratti', 'Biblioteca dei finali', 'Giardino delle rose', 'Torre del narratore', 'Sala del trono', 'Il Trono del Drago']}
+    {name:'Castello di Re Mida', theme:'lietofine', n:10, pool:['soldatino', 'arciere', 'cacciatore', 'peterpan', 'robinhood', 'porcellino', 'fata', 'merlino', 'raperonzolo', 'carrozza', 'gattostivali', 'musicanti', 'pifferaio', 'principe'], semi:'principe_azzurro', boss:'re_oro',
+     names:['Ponte levatoio', 'Cortile dei cavalieri', 'Scuderie reali', 'Sala delle armature', 'Galleria dei ritratti', 'Biblioteca dei finali', 'Giardino delle rose', 'Torre del narratore', 'Sala del trono', 'Tesoro di Re Mida']},
+    {name:'Isola che non c’è', theme:'isola', n:8, pool:['bimbi', 'arciere', 'peterpan', 'giglio', 'wendy', 'fata', 'cacciatore', 'principe'], semis:{2:'capo_bimbi', 5:'trilli'}, boss:'peterpan_oro',
+     names:['Spiaggia delle sirene', 'Laguna', 'Rifugio sotterraneo', 'Accampamento indiano', 'Roccia del Teschio', 'Albero delle fate', 'Nave pirata', 'Covo di Peter Pan']},
+    {name:'Paese delle Meraviglie', theme:'meraviglie', n:8, pool:['lepre', 'alice', 'cappellaio', 'soldatino', 'brucaliffo', 'fata', 'pifferaio', 'principe'], semi:'bianconiglio', boss:'alice_gigante',
+     names:['La tana del coniglio', 'Corridoio delle porte', 'Mare di lacrime', 'Fungo del Brucaliffo', 'Tè del Cappellaio', 'Giardino delle rose', 'Campo da croquet', 'Il Tribunale']},
+    {name:'Deserto di Aladino', theme:'deserto', n:8, pool:['guardie', 'alibaba', 'arciere', 'sinbad', 'carrozza', 'fata', 'musicanti', 'principe'], semiAll:['tappeto_volante', 'capo_guardie', 'sinbad_gigante', 'alibaba_gigante'], boss:'aladino_re',
+     names:['Oasi', 'Mercato di Agrabah', 'Dune che cantano', 'Grotta dei quaranta ladroni', 'Porto di Sinbad', 'Torre del Visir', 'Giardini pensili', 'Palazzo del Sultano']},
+    {name:'Palazzo di Ghiaccio Eterno', theme:'ghiaccioeterno', n:8, pool:['soldatineve', 'renna', 'fiammiferaia', 'arciere', 'cavcristallo', 'fata', 'porcellino', 'principe'], semi:'kai_ghiaccio', boss:'gerda_regina',
+     names:['Lago gelato', 'Bosco di brina', 'Slitta abbandonata', 'Ponte di stalattiti', 'Sala delle bufere', 'Labirinto di cristallo', 'Trono di neve', 'Il cuore del ghiaccio']},
+    {name:'Regno degli Specchi', theme:'specchi', n:10, pool:['gemelli', 'cavcristallo', 'pisello', 'soldatino', 'arciere', 'merlino', 'principe', 'raperonzolo', 'fata', 'carrozza'], semi:'riflesso', boss:'re_specchi',
+     names:['Galleria riflessa', 'Stanza dei doppi', 'Lago d’argento', 'Scala che non finisce', 'Sala dei ritratti', 'Labirinto di vetro', 'Specchio parlante', 'Corte capovolta', 'Torre del riflesso', 'Il Trono del Drago']}
   ];
   // il sole cala: dal tramonto alla notte i buoni arrivano più spesso e più robusti
   const NIGHT = Object.assign({pace:.12, hp:.06, w3:0, from:2}, typeof process !== 'undefined' && process.env && process.env.DW_NIGHT ? JSON.parse(process.env.DW_NIGHT) : {});
   const nightP = t => t < 25 ? 0 : t < 55 ? (t - 25) / 30 * .5 : Math.min(1, .5 + (t - 55) / 25 * .5);   // 0 giorno · 0,5 tramonto · 1 notte
   const wmulB = w => w <= 4 ? 1.1 + .05 * (w - 1) : 1.25 + .02 * (w - 4);   // mondi 2-5: +10/15/20/25%, poi +2% a mondo (mondo 10: +35%)
-  const wmul = w => wmulB(w) * (w >= 2 ? 1 + NIGHT.w3 : 1);               // dal mondo 3 un filo in più (w3)
-  const WMOD = Object.fromEntries(Array.from({length:9}, (_, i) => [i + 1, {hp:wmul(i + 1), qty:wmul(i + 1)}]));
+  const wmul = w => (w <= 9 ? wmulB(w) : wmulB(9) + .015 * (w - 9)) * (w >= 2 ? 1 + NIGHT.w3 : 1);               // dal mondo 3 un filo in più (w3)
+  const WMOD = Object.fromEntries(Array.from({length:14}, (_, i) => [i + 1, {hp:wmul(i + 1), qty:wmul(i + 1)}]));
   const COMP_EXTRA = +((typeof process !== 'undefined' && process.env && process.env.COMP) || 1.05);
   const SHARD_ORDER = ['goblin', 'strega', 'topi', 'lupo', 'fionda', 'gattovolpe', 'orco', 'gnomo', 'spaventapasseri', 'fantasma', 'coccodrillo', 'barbablu'];
   const LATE = ['uncino', 'mangiafuoco', 'gigante'];
@@ -803,7 +854,8 @@ const DW = (() => {
   function levelOf(w, c) {
     if (w === 0) return Object.assign(LEVELS[c], {world:0, castle:c, g:c, eMul:1, semi:null, shardN:LEVELS[c].boss ? 6 : 4});
     const key = w + ':' + c; if (cache[key]) return cache[key];
-    const w0 = w, W = WORLDS[w], n = W.n, g = firstIdx(w) + c, last = c === n - 1, semiAt = W.semi ? Math.floor(n / 2) - 1 : -1, isSemi = c === semiAt;
+    const w0 = w, W = WORLDS[w], n = W.n, g = firstIdx(w) + c, last = c === n - 1, semiAt = W.semi ? Math.floor(n / 2) - 1 : -1, semiK = !last && (W.semiAll ? W.semiAll[c % W.semiAll.length] : W.semis ? W.semis[c] : c === semiAt ? W.semi : null), isSemi = !!semiK;
+    const ge = g <= 79 ? g : 79 + (g - 79) * .3;                                // dopo il mondo 10 il giocatore è al massimo: i buoni crescono piano
     const cnt = Math.min(W.pool.length, 2 + Math.floor((c + 1) * (W.pool.length - 1) / n));
     const pool = W.pool.slice(0, cnt), quick = Math.max(.75, 1 - .02 * w);
     const active = [...new Set([pool[0], ...pool.slice(Math.max(1, cnt - 2), cnt)])];   // al massimo 3 tipi di buoni per castello
@@ -814,10 +866,10 @@ const DW = (() => {
     const comp = (1 + .08 * (Lnew - 1)) / (1 + .08 * (Lold - 1)) * (g < 40 ? COMP_EXTRA : 1);
     const lv = {world:w, castle:c, g, name:W.names[c], hp:Math.round(1300 + 42 * g),
       gold:Math.round((150 + 22 * g) * (last ? 1.8 : isSemi ? 1.3 : 1)),
-      eMul:(1 + EK.a * (g - 4) + EK.b * (g - 4) * (g - 4)) * comp * (last ? .9 : isSemi ? .94 : 1),   // col boss in campo, il resto del castello è un po' più leggero
+      eMul:(1 + EK.a * (ge - 4) + EK.b * (ge - 4) * (ge - 4)) * comp * (last ? .9 : isSemi ? .94 : 1),   // col boss in campo, il resto del castello è un po' più leggero
       waves:waves.map(w => [w[0], w[1], w[2] / (last || isSemi ? 1 : (WMOD[w0] || {}).qty || 1)]), hpMul:last || isSemi ? 1 : (WMOD[w0] || {}).hp || 1, rush:active.slice(-3).concat(active.slice(0, 2)),
       shard:shards[g % shards.length], shardN:last || isSemi ? 6 : 4,
-      boss:last ? W.boss : isSemi ? W.semi : null, bossAt:last ? 70 : 55, semi:isSemi};
+      boss:last ? W.boss : isSemi ? semiK : null, bossAt:last ? 70 : 55, semi:isSemi};
     return (cache[key] = lv);
   }
 
@@ -927,6 +979,7 @@ const DW = (() => {
     if (d.dodge && src !== 'fire' && Math.random() < d.dodge) { s.ev.push({type:'dodge', x:u.x, y:u.y}); return; }   // l'Omino di Pan di Zenzero schiva
     if (u.big > 0) dmg *= .5;                                       // lo Spirito gigante incassa la metà
     if (u.stone > 0) dmg *= 1.5;                                    // le statue si crepano
+    if (u.smokeT > 0) dmg *= .7;                                    // nel fumo del Brucaliffo
     if (a && a.vsBeast && d.beast) dmg *= a.vsBeast;               // il cacciatore è forte contro gli animali
     if (a && a.ranged && d.armorRanged) dmg *= d.armorRanged;      // il muro del porcellino ferma frecce e sassi
     dmg = Math.round(dmg);
@@ -937,6 +990,7 @@ const DW = (() => {
       u.dead = true;
       s.ev.push({type:'die', k:u.k, x:u.x, y:u.y, side:u.side});
       if (s.mp) { const r = d.bounty || Math.round((d.cost || 20) * .3); if (s.mp === 'coop') { if (u.side === 1) { gain(s, r * .6); gain(s, r * .6, 1); } } else gain(s, r, u.side === 1 ? 0 : 1); }   // in due: chi abbatte guadagna
+      if (d.split && !u.splitDone) { const c = addUnit(s, u.k, u.x + 6, (u.y + .4) % 1); c.side = u.side; c.splitDone = 1; c.hp = c.max = Math.round(u.max * d.split); s.ev.push({type:'mirror', x:c.x, y:c.y}); }   // i Gemelli dello Specchio
       if (u.side === 1) { s.stats.kills++; if (!s.mp) gain(s, d.bounty || 0); const bk = d.sub ? 'nani' : u.k; s.stats.beaten[bk] = (s.stats.beaten[bk] || 0) + 1; }
       else {
         s.stats.lost++;
@@ -1051,6 +1105,15 @@ const DW = (() => {
     } else if (d.healAura) {                                       // Biancaneve: cura i buoni vicini
       const fr = alive.filter(a => a.side === u.side && !a.dead && Math.abs(a.x - u.x) <= d.healAura.r && a.hp < a.max);
       if (fr.length) { for (const a of fr) { const n = Math.min(d.healAura.n * u.dm, a.max - a.hp); a.hp += n; s.ev.push({type:'heal', x:a.x, y:a.y, n:Math.round(n)}); } u.abT = d.healAura.every; } else u.abT = 1;
+    } else if (d.midas) {                                          // Re Mida: tocca i cattivi vicini e li fa diventare oro
+      const es = within(d.midas.r);
+      if (es.length) { for (const e of es) { const t = U[e.k].boss ? d.midas.t / 2 : d.midas.t; e.stun = Math.max(e.stun, t); e.goldT = t; } s.ev.push({type:'midas', x:u.x, y:u.y}); u.abT = d.midas.every; } else u.abT = 1;
+    } else if (d.inspire) {                                        // Wendy: racconta una storia e i buoni vicini picchiano più forte
+      const fr = alive.filter(a => a.side === u.side && !a.dead && a !== u && Math.abs(a.x - u.x) <= d.inspire.r);
+      if (fr.length) { for (const a of fr) a.buffT = d.inspire.t; s.ev.push({type:'inspire', x:u.x, y:u.y}); u.abT = d.inspire.every; } else u.abT = 1;
+    } else if (d.smoke) {                                          // Brucaliffo: nuvola di fumo, i colpi sui buoni vicini fanno meno male
+      const fr = alive.filter(a => a.side === u.side && !a.dead && Math.abs(a.x - u.x) <= d.smoke.r);
+      if (foes.some(e => Math.abs(e.x - u.x) <= 160)) { for (const a of fr) a.smokeT = d.smoke.t; s.ev.push({type:'smoke', x:u.x, y:u.y}); u.abT = d.smoke.every; } else u.abT = 1;
     } else if (d.leap) {                                           // Ranocchio: salta oltre il primo nemico
       const e = foes.find(e => (e.x - u.x) * dir > 0 && (e.x - u.x) * dir <= d.range + 6);
       if (e) { const ox = u.x; u.x += dir * d.leap.d; s.ev.push({type:'leap', x1:ox, x2:u.x, y:u.y}); u.abT = d.leap.every; }
@@ -1080,6 +1143,7 @@ const DW = (() => {
       u.swing = Math.max(0, u.swing - dt * 4);
       if (u.ttl != null && (u.ttl -= dt) <= 0) { u.dead = true; s.ev.push({type:'vanish', x:u.x, y:u.y}); continue; }   // i miraggi svaniscono
       if (u.big > 0) u.big -= dt;
+      if (u.goldT > 0) u.goldT -= dt; if (u.buffT > 0) u.buffT -= dt; if (u.smokeT > 0) u.smokeT -= dt;
       if (u.burnT > 0) { u.burnT -= dt; u.burnA = (u.burnA || 0) + u.burnD * dt; if (u.burnA >= 4) { const n = Math.floor(u.burnA); u.burnA -= n; hurt(s, u, n, 'burn', 'diavolo'); if (u.dead) continue; } if (u.burnT <= 0) u.burnD = 0; }
       if (u.weakT > 0) u.weakT -= dt;
       if (u.stone > 0) u.stone -= dt;
@@ -1126,7 +1190,7 @@ const DW = (() => {
         u.st = 'atk';
         if ((u.atkT -= dt * slow) <= 0) {
           u.atkT = d.rate; u.swing = 1;
-          let mul = (u.big > 0 ? 2 : 1) * (u.weakT > 0 ? .6 : 1);
+          let mul = (u.big > 0 ? 2 : 1) * (u.weakT > 0 ? .6 : 1) * (u.buffT > 0 ? 1.3 : 1);
           if (u.disg) { mul *= d.disguise; u.disg = 0; s.ev.push({type:'unmask', x:u.x, y:u.y}); }   // giù la maschera: primo morso triplo
           if (d.ranged) s.shots.push({from:u.x, x:u.x, y:u.y, tid:hitB ? 0 : tgt.id, toB:hitB ? 1 - u.side : -1,
             dmg:d.dmg * u.dm * mul, side:u.side, aid:u.id, t:0, dur:.35 + (hitB ? bDist : best) / 600, kind:d.elite ? d.elite.base : u.k});
@@ -1160,7 +1224,7 @@ const DW = (() => {
   const reward = s => (s.hard ? 2 : 1) * (s.over > 0 ? s.lv.gold + 50 * stars(s) + s.stats.stolen * 2 : 20 + Math.round((30 + 3 * (s.lv.g || 0)) * (1 - s.castle.hp / s.castle.max)));
 
   // I Capricci del Drago: battaglie con una regola storta. Se ne apre uno per ogni mappa completata
-  const BCOST = {soldatino:40, arciere:60, pollicino:55, hanselgretel:60, ranocchio:70, raperonzolo:80, peterpan:80, cacciatore:90, fata:100, pifferaio:100, nani:110, porcellino:120, carrozza:130, musicanti:140, principe:180, cappuccetto:55, pinocchio:70, robinhood:90, gattostivali:90, alice:90, biancaneve:100, merlino:120};   // i buoni costano Bontà
+  const BCOST = {soldatino:40, arciere:60, pollicino:55, hanselgretel:60, ranocchio:70, raperonzolo:80, peterpan:80, cacciatore:90, fata:100, pifferaio:100, nani:110, porcellino:120, carrozza:130, musicanti:140, principe:180, bimbi:70, wendy:90, giglio:70, cappellaio:100, brucaliffo:100, lepre:70, alibaba:90, sinbad:150, guardie:120, renna:130, fiammiferaia:100, soldatineve:110, cavcristallo:170, gemelli:120, pisello:120, cappuccetto:55, pinocchio:70, robinhood:90, gattostivali:90, alice:90, biancaneve:100, merlino:120};   // i buoni costano Bontà
   const ALT_BMUL = 1.7, ALT_CASTLE = 1600, OVERTIME = 150, DUEL_MAX = 300;                       // duello alternativo: buoni un po' più forti, castello dei buoni
   const CK = [1.42, 1.5, .97, 1, 1.14];                           // ritocchi provati con le simulazioni a due
   const COOP = [                                                   // i castelli speciali per giocare in due
@@ -1328,6 +1392,11 @@ const THEMES = {
   ballo:{sky:'#3a2a7a', amt:.5, hill1:'#4a3a7a', hill2:'#2a2050', tree:'#2a3a4a', tt:'lantern', g1:'#4a4a6a', g2:'#22223a', stone:'#e8e0ff', roof:['#7aa0ff', '#ffd35a'], fx:'sparkle', card:['#1a1050', '#7a5ac8']},
   torre:{sky:'#a8d8a0', amt:.3, hill1:'#6a9a6a', hill2:'#4a7a4a', tree:'#2a4a3a', tt:'thorn', g1:'#5a7a4a', g2:'#2a3a22', stone:'#c8b8a0', roof:['#7a4ac8', '#c84a7a'], fx:'petals', card:['#1a4a2a', '#8ac06a']},
   marzapane:{sky:'#ffd8b0', amt:.4, hill1:'#d8a070', hill2:'#b07a4a', tree:'#e86fa2', tt:'candy', g1:'#c89060', g2:'#7a4a2a', stone:'#f4d8b0', roof:['#e86fa2', '#ffffff'], fx:'sugar', card:['#6a3a1a', '#f0a070']},
+  isola:{sky:'#5ac8f0', amt:.45, hill1:'#3a9a7a', hill2:'#2a7a5a', tree:'#2a7a3a', tt:'palm', g1:'#e8d090', g2:'#a8905a', stone:'#e8d8b8', roof:['#3a8a5a', '#c8702a'], fx:'sparkle', card:['#0a5a6a', '#5ac8f0']},
+  meraviglie:{sky:'#c8a0ff', amt:.35, hill1:'#9a7ad8', hill2:'#7a5ab8', tree:'#e85a8a', tt:'mush', g1:'#7ac86a', g2:'#4a8a3a', stone:'#f4e8ff', roof:['#e83a5a', '#1c1a24'], fx:'petals', card:['#5a2a8a', '#e85a8a']},
+  deserto:{sky:'#ffc890', amt:.45, hill1:'#e8b870', hill2:'#c8904a', tree:'#5a8a3a', tt:'palm', g1:'#f0c880', g2:'#b88a4a', stone:'#f4e0b8', roof:['#3a8ab8', '#e8b83a'], fx:'dust', card:['#8a4a1a', '#ffc860']},
+  ghiaccioeterno:{sky:'#a8c8ff', amt:.55, hill1:'#c8dcf8', hill2:'#98b0e0', tree:'#5a7aa8', tt:'icespike', g1:'#eef6ff', g2:'#a8c0e0', stone:'#e0f0ff', roof:['#8ac8ff', '#c8e8ff'], fx:'snow', card:['#1a3a7a', '#bfe8ff']},
+  specchi:{sky:'#3a3a6a', amt:.5, hill1:'#5a5a8a', hill2:'#3a3a62', tree:'#8a9ac8', tt:'mirror', g1:'#6a6a8a', g2:'#3a3a52', stone:'#e8ecff', roof:['#c8d8ff', '#8a9ad8'], fx:'sparkle', card:['#1a1a3a', '#8a9ad8']},
   lietofine:{sky:'#ffe9a0', amt:.4, hill1:'#d8c890', hill2:'#b8a060', tree:'#c8a030', tt:'goldtree', g1:'#d8c890', g2:'#8a7a40', stone:'#fff4d8', roof:['#ffd35a', '#c42a3a'], fx:'sparkle', card:['#7a5a10', '#ffd35a']}
 };
 const dayNight = day => k3(day, mix(day, '#2a1838', .45), mix(day, '#000000', .8));
@@ -2660,7 +2729,7 @@ const XU = {strega:{spd:40, rate:1.2}, lupo:{spd:70, rate:.9}, troll:{spd:28, ra
   musicanti:{spd:30, rate:2}, carrozza:{spd:90, rate:2}, nani:{spd:45, rate:.9}, nano:{spd:45, rate:.9}, pifferaio:{spd:35, rate:1.5},
   hanselgretel:{spd:50, rate:1.3}, raperonzolo:{spd:40, rate:1.5}, ranocchio:{spd:60, rate:1.2}, pollicino:{spd:110, rate:1},
   cacciatore:{spd:40, rate:1.3}, porcellino:{spd:30, rate:1.4}, fata:{spd:45, rate:1.6}, re:{spd:22, rate:2.2}};   // personaggi non ancora nelle battaglie
-const UD = kk => (DW.U[kk] && DW.U[kk].spd) ? DW.U[kk] : XU[kk] || (DW.U[kk] && DW.U[kk].group && DW.U[kk].group.ks ? DW.U[DW.U[kk].group.ks[0]] : null);
+const UD = kk => (DW.U[kk] && DW.U[kk].spd) ? DW.U[kk] : XU[kk] || (DW.U[kk] && DW.U[kk].group ? DW.U[DW.U[kk].group.ks ? DW.U[kk].group.ks[0] : DW.U[kk].group.k] : null);
 const DRAW = {goblin:o => goblin(o, 0), fionda:o => goblin(o, 1), orco, soldatino, arciere, principe, strega, lupo, troll, topi, gattovolpe, gnomo, fantasma, uncino, coccodrillo, barbablu, spaventapasseri, mangiafuoco, gigante, burattino, topo:o => topo(o, 0), corvo, musicanti, carrozza, nani, nano:o => nano(o), pifferaio, hanselgretel, raperonzolo, ranocchio, pollicino, cacciatore, porcellino, fata, re};
 const HEIGHT = {goblin:92, fionda:92, orco:112, soldatino:112, arciere:96, principe:108, strega:112, lupo:102, troll:104, topi:42, gattovolpe:100, gnomo:72, fantasma:110, uncino:118, coccodrillo:50, barbablu:124, spaventapasseri:112, mangiafuoco:130, gigante:150, burattino:72, topo:30, corvo:60, musicanti:140, carrozza:110, nani:60, nano:58, pifferaio:120, hanselgretel:70, raperonzolo:96, ranocchio:60, pollicino:72, cacciatore:116, porcellino:92, fata:104, re:130};
 
@@ -2806,8 +2875,9 @@ const CSHAPE = {                                                           // la
   bosco:{wall:'#b8c0a8', roof:'leaf', ext:[0, 0]}, brema:{wall:'#c8584a', roof:'thatch', ext:[0, 0]}, ghiaccio:{wall:'#cfe6f4', roof:'spike', ext:[18, 18]},
   miniera:{wall:'#9a9098', roof:'cone', ext:[0, 0]}, mare:{wall:'#f0cfc0', roof:'shell', ext:[0, 10]}, balocchi:{wall:'#f4e0ff', roof:'tent', ext:[0, 0]},
   ballo:{wall:'#e8ecff', roof:'cone', ext:[24, 24]}, torre:{wall:'#8a7a9a', roof:'cone', ext:[120, 0]}, marzapane:{wall:'#b8783e', roof:'choc', ext:[0, 0]},
-  lietofine:{wall:'#fff0c8', roof:'dome', ext:[0, 0]}};
-const CROOF = {bosco:['#3f8a3a', '#4a9a40'], brema:['#d8a840', '#c89838'], ghiaccio:['#eaf6ff', '#dcefff'], mare:['#f4b0a0', '#e89a90'], balocchi:['#ff5a7a', '#5ab8ff'], marzapane:['#6a3a20', '#5a3018'], lietofine:['#ffd35a', '#ffc83a']};
+  lietofine:{wall:'#fff0c8', roof:'dome', ext:[0, 0]}, isola:{wall:'#d8c8a0', roof:'thatch', ext:[0, 12]}, meraviglie:{wall:'#f4e0f8', roof:'cone', ext:[22, -8]},
+  deserto:{wall:'#f0d8a8', roof:'dome', ext:[24, 24]}, ghiaccioeterno:{wall:'#d8eeff', roof:'spike', ext:[44, 44]}, specchi:{wall:'#e0e8ff', roof:'spike', ext:[30, 30]}};
+const CROOF = {bosco:['#3f8a3a', '#4a9a40'], brema:['#d8a840', '#c89838'], ghiaccio:['#eaf6ff', '#dcefff'], mare:['#f4b0a0', '#e89a90'], balocchi:['#ff5a7a', '#5ab8ff'], marzapane:['#6a3a20', '#5a3018'], lietofine:['#ffd35a', '#ffc83a'], isola:['#c89a4a', '#b8863a'], meraviglie:['#e83a5a', '#1c1a24'], deserto:['#e8b83a', '#3a8ab8'], ghiaccioeterno:['#eaf6ff', '#dcefff'], specchi:['#d8e4ff', '#b8c8f0']};
 function roofPath(kind, tx, top) {                                         // il tetto della torre (top = dove finisce la torre)
   const b = top + 2, a = top - 74;
   if (kind === 'leaf') { const p = new Path2D(); for (const [dx, dy, r] of [[25, -46, 24], [6, -24, 20], [44, -24, 20], [25, -14, 26]]) { p.moveTo(tx + dx + r, top + dy); p.arc(tx + dx, top + dy, r, 0, 7); } return p; }
@@ -2827,6 +2897,37 @@ function castleBack(th) {                                                  // qu
       D(new Path2D(`M${x + 15} 290 L${x + 15} 273 Q${x + 22} 263 ${x + 29} 273 L${x + 29} 290 Z`), '#ffe9a0', {glow:L.win}); }
     for (const x of [662, 742]) { P(new Path2D(`M${x} 232 L${x} 160 L${x + 16} 160 L${x + 16} 232 Z`), '#fff0c8', x + 8, 196, 16); P(new Path2D(`M${x - 4} 162 Q${x + 8} 128 ${x + 20} 162 Z`), '#ffd35a', x + 8, 150, 12); } }
 }
+function castleDeco2(th) {                                                 // i castelli dei mondi 11-15
+  if (th === 'isola') {                                                    // pirati: bandiera nera, barili, palma, sabbia
+    P(new Path2D('M596 400 Q650 384 700 394 Q760 382 820 396 L824 400 Z'), '#f0d898', 700, 392, 60);
+    for (const [x, y] of [[606, 380], [622, 384]]) { P(RR(x, y, 14, 18, 4), '#8a5a2a', x + 7, y + 9, 8); D(cap(x, y + 6, x + 14, y + 6, 1.4), '#4a3a2a'); D(cap(x, y + 12, x + 14, y + 12, 1.4), '#4a3a2a'); }
+    D(cap(700, 214, 700, 176, 2.5), '#4a3a2a'); P(new Path2D(`M700 178 L${730 + Math.sin(time * 3) * 2} 182 L${728 + Math.sin(time * 3 + 1) * 2} 198 L700 196 Z`), '#1c1a24', 714, 188, 12);
+    D(E(714, 186, 4, 4), '#f4f1ea'); D(cap(709, 194, 719, 190, 1.4), '#f4f1ea'); D(cap(709, 190, 719, 194, 1.4), '#f4f1ea');
+    P(cap(810, 400, 820, 300, 7), '#8a6a4a', 815, 350, 5); for (let i = 0; i < 5; i++) { const a = -2.6 + i * .55; P(E(820 + Math.cos(a) * 18, 300 + Math.sin(a) * 9, 20, 6, a), '#3a8a3a', 820, 300, 16); }
+  } else if (th === 'meraviglie') {                                        // carte da gioco, scacchiera, tazze da tè, rose bianche e rosse
+    ctx.save(); ctx.clip(new Path2D('M600 380 L820 380 L820 402 L600 402 Z')); for (let x = 600; x < 820; x += 12) for (let y = 380; y < 402; y += 11) if (((x - 600) / 12 + (y - 380) / 11) % 2 < 1) D(RR(x, y, 12, 11, 0), '#1c1a24'); else D(RR(x, y, 12, 11, 0), '#f4f1ea'); ctx.restore();
+    for (const [x, y, c] of [[642, 260, '#d8283a'], [766, 300, '#1c1a24'], [700, 248, '#d8283a']]) { P(RR(x - 8, y - 11, 16, 22, 2), '#f4f1ea', x, y, 10); D(heartP(x, y, 4), c); }
+    P(new Path2D('M738 214 L750 214 L748 206 L740 206 Z'), '#f4f1ea', 744, 210, 5); D(cap(750, 209, 754, 211, 1.4), '#f4f1ea');
+    for (const [x, c] of [[634, '#e83a5a'], [652, '#f4f1ea'], [768, '#e83a5a'], [786, '#f4f1ea']]) { P(cap(x, 380, x, 362, 2), '#3a8a3a', x, 370, 2); D(E(x, 360, 5, 4.5), c); }
+  } else if (th === 'deserto') {                                           // cupole con la mezzaluna, tappeti appesi, palma, dune
+    P(new Path2D('M590 400 Q640 380 690 396 Q760 378 830 398 L832 402 L590 402 Z'), '#f0c880', 710, 392, 60);
+    for (const tx of [612, 752]) { const t = 176 - (CSHAPE.deserto.ext[tx < 700 ? 0 : 1]); const c = new Path2D(); c.arc(tx + 25, t - 70, 6, .6, Math.PI * 2 - .6); c.arc(tx + 28, t - 71, 5, Math.PI * 2 - .9, .9, true); c.closePath(); P(c, '#ffd35a', tx + 25, t - 70, 4); }
+    for (const [x, c1, c2] of [[648, '#c8302a', '#ffd35a'], [758, '#3a6ab8', '#ffd35a']]) { P(new Path2D(`M${x} 236 L${x + 20} 236 L${x + 20} 290 L${x} 290 Z`), c1, x + 10, 262, 14); D(RR(x + 4, 244, 12, 38, 2), c2); D(RR(x + 7, 250, 6, 26, 1), c1); for (let i = 0; i < 4; i++) D(cap(x + 2 + i * 5, 290, x + 2 + i * 5, 296, 1.2), c2); }
+    P(cap(604, 400, 596, 310, 7), '#8a6a4a', 600, 355, 5); for (let i = 0; i < 5; i++) { const a = -2.6 + i * .55; P(E(596 + Math.cos(a) * 18, 310 + Math.sin(a) * 9, 20, 6, a), '#4a8a3a', 596, 310, 16); }
+  } else if (th === 'ghiaccioeterno') {                                    // tutto di ghiaccio: cristalli giganti, fiocco di neve sul portone, gelo che brilla
+    for (const [x, h, w] of [[598, 90, 14], [612, 60, 10], [808, 100, 16], [822, 64, 10]]) P(PL([x - w, 400, x - w * .3, 400 - h * .7, x, 400 - h, x + w * .4, 400 - h * .6, x + w, 400]), '#cfeaff', x, 400 - h / 2, w);
+    for (const x of merlX()) { P(E(x + 7, 214, 9, 4), '#f4faff', x + 7, 213, 8); D(PL([x + 3, 232, x + 5, 250, x + 7, 232]), '#bfe8ff'); }
+    const sf = new Path2D(); for (let i = 0; i < 6; i++) { const a = i * Math.PI / 3; sf.moveTo(710, 316); sf.lineTo(710 + Math.cos(a) * 14, 316 + Math.sin(a) * 14); } ctx.save(); ctx.lineWidth = 3; ctx.lineCap = 'round'; ctx.strokeStyle = MODE === 'normal' ? '#f4faff' : '#000'; ctx.stroke(sf); ctx.restore();
+    if (MODE === 'normal') { ctx.globalCompositeOperation = 'lighter'; glow(ctx, 710, 300, 120, '170,220,255', .2 + .06 * Math.sin(time * 2)); ctx.globalCompositeOperation = 'source-over'; }
+  } else if (th === 'specchi') {                                           // specchi sui muri che luccicano, bordi d'argento, riflesso sul pavimento
+    for (const [x, y, w, h] of [[640, 250, 18, 30], [762, 250, 18, 30], [618, 196, 14, 22], [770, 196, 14, 22], [700, 248, 20, 34]]) {
+      P(RR(x - 3, y - 3, w + 6, h + 6, 4), '#c8d0e8', x + w / 2, y + h / 2, w); D(RR(x, y, w, h, 3), '#8ab8e8');
+      D(PL([x + 3, y + h - 4, x + w * .5, y + 3, x + w * .5 + 5, y + 3, x + 8, y + h - 4]), '#ffffff', {glow:'rgba(255,255,255,.55)'});
+    }
+    if (MODE === 'normal') { ctx.save(); ctx.globalAlpha = .18; ctx.translate(0, 800); ctx.scale(1, -1); ctx.fillStyle = '#c8d8ff'; ctx.fillRect(612, 300, 200, 100); ctx.restore(); }
+  }
+}
+const merlX = () => { const m = []; for (let x = 632; x < 790; x += 22) m.push(x); return m; };
 function drawCastle() {
   if (s.mp === 'duel') { ctx.save(); ctx.translate(1000, 0); ctx.scale(-1, 1); drawTana(s.castle, true); ctx.restore(); return; }   // nel duello di fronte c'è la tana dell'amico
   const c = s.castle, f = c.hp / c.max, sink = c.hp <= 0 ? Math.min(1, endT / 1.2) * 150 : 0;
@@ -2849,7 +2950,7 @@ function drawCastle() {
   }
   P(new Path2D('M684 400 L684 340 Q710 306 736 340 L736 400 Z'), '#6b4524', 708, 360, 30);
   for (const [x, y] of [[625, 200], [765, 200], [660, 266], [742, 266]]) D(new Path2D(`M${x} ${y + 26} L${x} ${y + 9} Q${x + 7} ${y - 1} ${x + 14} ${y + 9} L${x + 14} ${y + 26} Z`), '#ffe9a0', {glow:L.win});
-  castleDeco(TH, T);
+  castleDeco(TH, T); castleDeco2(TH);
   if (f < .66) { ctx.strokeStyle = L.shadow; ctx.lineWidth = 3; ctx.lineJoin = 'round'; ctx.beginPath(); ctx.moveTo(770, 240); ctx.lineTo(758, 270); ctx.lineTo(772, 290); ctx.moveTo(640, 310); ctx.lineTo(656, 330); ctx.lineTo(648, 350); ctx.stroke(); }
   if (f < .33) { ctx.beginPath(); ctx.moveTo(700, 236); ctx.lineTo(690, 270); ctx.lineTo(706, 292); ctx.lineTo(694, 314); ctx.stroke(); }
   ctx.restore();
@@ -2964,6 +3065,18 @@ function drawTrees() {
     } else if (tt === 'thorn') {                                            // rovi con le rose
       FOG = fog; for (let j = 0; j < 4; j++) { const a = -2.4 + j * .5; P(cap(x, y, x + Math.cos(a) * h * .5, y + Math.sin(a) * h * .6, 7), col, x, y - h * .3, 6); D(E(x + Math.cos(a) * h * .5, y + Math.sin(a) * h * .6, 5, 5), '#c42a4a'); }
       FOG = 0;
+    } else if (tt === 'palm') {                                             // palme
+      FOG = fog; const tip = [x + 10, y - h * .8]; P(new Path2D(`M${x - 5} ${y} Q${x + 8} ${y - h * .4} ${tip[0]} ${tip[1]} L${tip[0] + 5} ${tip[1]} Q${x + 14} ${y - h * .4} ${x + 5} ${y} Z`), '#8a6a4a', x + 4, y - h * .4, 6);
+      for (let j = 0; j < 6; j++) { const a = -Math.PI + j * .55 + Math.sin(time + i) * .05; P(E(tip[0] + Math.cos(a) * w * .55, tip[1] + Math.sin(a) * w * .25 + 6, w * .6, w * .14, a), col, tip[0], tip[1], w * .4); } FOG = 0;
+    } else if (tt === 'mush') {                                             // funghi giganti del Paese delle Meraviglie
+      FOG = fog; P(cap(x, y, x, y - h * .5, 12), '#f4ead8', x, y - h * .25, 8); P(E(x, y - h * .55, w * .8, w * .4), i % 2 ? col : '#4ab8e8', x, y - h * .55, w * .6);
+      for (let q = 0; q < 3; q++) D(E(x - w * .4 + q * w * .4, y - h * .6 - (q % 2) * 5, 4, 3), '#fff4f8'); FOG = 0;
+    } else if (tt === 'icespike') {                                         // guglie di ghiaccio eterno
+      FOG = fog; P(PL([x - w * .3, y, x, y - h, x + w * .3, y]), col, x, y - h * .5, w * .3); D(PL([x - w * .1, y - h * .2, x, y - h * .9, x + w * .05, y - h * .2]), '#eef6ff'); FOG = 0;
+      if (L.dark > .2) { ctx.globalCompositeOperation = 'lighter'; glow(ctx, x, y - h * .5, h * .4, '170,210,255', .1 * L.dark); ctx.globalCompositeOperation = 'source-over'; }
+    } else if (tt === 'mirror') {                                           // specchi alti nel buio
+      FOG = fog; P(cap(x, y, x, y - h * .25, 5), '#4a4a6a', x, y - h * .1, 4); P(RR(x - w * .3, y - h * .85, w * .6, h * .6, 8), '#b8c0e0', x, y - h * .55, w * .3); D(RR(x - w * .22, y - h * .8, w * .44, h * .5, 6), col);
+      D(PL([x - w * .15, y - h * .4, x, y - h * .75, x + w * .06, y - h * .75, x - w * .08, y - h * .4]), '#e8ecff'); FOG = 0;
     } else if (tt === 'candy') {                                            // bastoncini di zucchero
       FOG = fog; P(cap(x, y, x, y - h * .6, 10), '#fff4f4', x, y - h * .3, 6);
       const hk = new Path2D(); hk.arc(x + 12, y - h * .6, 12, Math.PI, 0); hk.arc(x + 12, y - h * .6, 2, 0, Math.PI, true); hk.closePath(); P(hk, '#fff4f4', x + 12, y - h * .62, 8);
@@ -3305,6 +3418,262 @@ Object.assign(HEIGHT, {matrigna:100, matrigna_m:100, sorella:76, retopi:92, omin
 Object.assign(DRAW, {medusa, morgana, miraggio:o => { ctx.save(); if (MODE !== 'shadow') ctx.globalAlpha *= .45; morgana(o); ctx.restore(); }, basilisco, grifone, cavaliereverde, spirito, bestia, pandizenzero, ciclope, senzatesta, dracula, pipistrello, mummia, peterpan});
 Object.assign(HEIGHT, {medusa:112, morgana:112, miraggio:112, basilisco:100, grifone:96, cavaliereverde:132, spirito:112, bestia:84, pandizenzero:70, ciclope:142, senzatesta:104, dracula:112, pipistrello:50, mummia:100, peterpan:96});
 Object.assign(SC, {medusa:.86, morgana:.86, miraggio:.86, basilisco:.95, grifone:.9, cavaliereverde:.95, spirito:.88, bestia:.88, pandizenzero:.86, ciclope:.95, senzatesta:.9, dracula:.86, pipistrello:.8, mummia:.86, peterpan:.84});
+// ---- buoni dei mondi 11-15 ----
+function kidBody(o, shirt, pants, skin, hair, extra) {                     // corpo base per ragazzi e ragazze
+  const bob = o.walking ? -Math.abs(Math.cos(o.ph)) * 4 : Math.sin(o.t * 2.8) * 1.2;
+  ctx.save(); ctx.translate(0, bob); ctx.rotate(o.lean * .6);
+  leg(-3, -24, o.ph + Math.PI, o.walking, pants, '#4a2a1a', 1); leg(3, -24, o.ph, o.walking, pants, '#4a2a1a', 0);
+  P(RR(-10, -54, 20, 31, 5), shirt, 0, -40, 15);
+  ctx.save(); ctx.translate(1, -66); ctx.rotate(Math.sin(o.t * 1.5) * .04);
+  P(E(0, 0, 10, 10), skin, 0, 0, 10); P(E(-1, -6, 10.5, 5.5), hair, -1, -6, 9);
+  eye(4, -1, 2.6, 3, 1, o.blink); D(E(7, 4, 2, 1.4), '#e88a8a');
+  if (extra && extra.head) extra.head();
+  ctx.restore();
+  if (extra && extra.arm) { ctx.save(); ctx.translate(6, -46); ctx.rotate(-.5 + o.arm * .9); extra.arm(); ctx.restore(); }
+  ctx.restore();
+}
+function bimbo(o, v) {                                                     // i Bimbi Sperduti: pellicce da animale, fionda o bastone
+  const furs = ['#8a6a4a', '#c8a070', '#6a5a4a', '#d8c8a8'], hairs = ['#c8702a', '#4a3020', '#e8c060', '#2a2020'], vv = (o.id || v || 0) % 4;
+  kidBody(o, furs[vv], '#5a4a3a', '#f4cca8', hairs[vv], {
+    head:() => { P(PL([-9, -6, -6, -16, -2, -8]), furs[vv], -5, -10, 5); P(PL([3, -9, 8, -17, 9, -6]), furs[vv], 6, -11, 5); },
+    arm:() => { P(cap(0, 0, 11, 0, 4.5), '#f4cca8', 5, 0, 4); P(cap(10, 4, 26, -10, 3), '#7a5530', 18, -3, 3); }});
+}
+function bimbi(o) { for (const [ox, sc, v] of [[-26, .8, 1], [26, .8, 2], [-9, .9, 3], [10, 1, 0]]) { ctx.save(); ctx.translate(ox, 0); ctx.scale(sc, sc); bimbo(Object.assign({}, o, {id:v}), v); ctx.restore(); } }
+function wendy(o) {                                                        // Wendy: camicia da notte azzurra, fiocco, un libro di storie
+  const dress = '#9ac8f0', skin = '#f6dcc8', sway = o.walking ? Math.sin(o.ph) * 2.5 : Math.sin(o.t * 2) * 1.2;
+  const bob = o.walking ? -Math.abs(Math.cos(o.ph)) * 3 : Math.sin(o.t * 2.4) * 1;
+  ctx.save(); ctx.translate(0, bob); ctx.rotate(o.lean * .5);
+  leg(-3, -12, o.ph + Math.PI, o.walking, skin, '#5a3a6a', 1); leg(3, -12, o.ph, o.walking, skin, '#5a3a6a', 0);
+  const dr = new Path2D(); dr.moveTo(-7, -56); dr.lineTo(7, -56); dr.quadraticCurveTo(13, -32, 17 + sway, -11); dr.lineTo(-17 + sway, -11); dr.quadraticCurveTo(-13, -32, -7, -56); dr.closePath();
+  P(dr, dress, 0, -34, 18); D(cap(-14 + sway, -14, 14 + sway, -14, 3), '#ffffff');
+  ctx.save(); ctx.translate(1, -68); ctx.rotate(Math.sin(o.t * 1.5) * .05);
+  P(E(-3, -1, 12, 12), '#8a5a2a', -3, -1, 11); P(E(1, 1, 9, 9.5), skin, 1, 1, 9); P(E(0, -6, 9.5, 5), '#8a5a2a', 0, -6, 8);
+  P(PL([-12, -8, -18, -14, -18, -2]), '#4a7ad8', -15, -8, 4); P(PL([-12, -8, -6, -14, -6, -2]), '#4a7ad8', -9, -8, 4);
+  eye(5, 0, 2.5, 3, 1, o.blink); D(E(8, 4, 2, 1.5), '#f08a9a');
+  ctx.restore();
+  ctx.save(); ctx.translate(6, -48); ctx.rotate(-.6 + o.arm);
+  P(cap(0, 0, 11, 0, 4.5), dress, 5, 0, 4); P(E(12, 0, 3, 3), skin, 12, 0, 3);
+  P(RR(11, -9, 14, 11, 2), '#a8323a', 18, -4, 7); D(cap(18, -9, 18, 2, 1), '#f4e8c8');
+  if (MODE === 'normal' && o.arm > .2) { ctx.globalCompositeOperation = 'lighter'; glow(ctx, 18, -6, 22, '255,230,160', .5 * Math.min(1, o.arm)); ctx.globalCompositeOperation = 'source-over'; }
+  ctx.restore();
+  ctx.restore();
+}
+function giglio(o) {                                                       // Giglio Tigrato: trecce, fascia con la piuma, arco
+  const skin = '#d8a070', bob = o.walking ? -Math.abs(Math.cos(o.ph)) * 4 : Math.sin(o.t * 2.8) * 1.2;
+  ctx.save(); ctx.translate(0, bob); ctx.rotate(o.lean * .6);
+  leg(-3, -26, o.ph + Math.PI, o.walking, skin, '#8a5a3a', 1); leg(3, -26, o.ph, o.walking, skin, '#8a5a3a', 0);
+  P(PL([-11, -58, 11, -58, 14, -24, -14, -24]), '#c89a5a', 0, -42, 16);
+  for (let x = -12; x <= 12; x += 4) D(cap(x, -26, x, -20, 1.5), '#8a5a3a');
+  D(cap(-11, -44, 11, -44, 3), '#c8302a');
+  ctx.save(); ctx.translate(1, -70); ctx.rotate(Math.sin(o.t * 1.5) * .04);
+  P(E(0, 0, 10, 10), skin, 0, 0, 10); P(E(-1, -5, 10.5, 6), '#1c1a24', -1, -5, 9);
+  P(cap(-8, 0, -10, 22, 4), '#1c1a24', -9, 11, 3); D(cap(-11, -6, 10, -8, 2.5), '#c8302a');
+  P(PL([-8, -8, -14, -26, -5, -10]), '#f4f1ea', -9, -14, 5); D(cap(-12, -22, -8, -12, 1), '#1c1a24');
+  eye(4, -1, 2.6, 3, 1, o.blink);
+  ctx.restore();
+  const pull = Math.max(0, -o.arm) * 8;
+  ctx.save(); ctx.translate(13, -46);
+  const bow = new Path2D(); bow.arc(-4, 0, 20, -1.15, 1.15); bow.arc(-4, 0, 16, 1.12, -1.12, true); bow.closePath(); P(bow, '#8b5a2b', 10, 0, 10);
+  if (MODE === 'normal') { ctx.beginPath(); ctx.moveTo(4, -18); ctx.lineTo(-4 - pull, 0); ctx.lineTo(4, 18); ctx.lineWidth = 1; ctx.strokeStyle = L.rimTop; ctx.stroke(); }
+  ctx.restore();
+  ctx.restore();
+}
+function cappellaio(o) {                                                   // il Cappellaio Matto: cilindro enorme col cartellino, tazza in mano
+  const coat = '#4a7a5a', skin = '#f4d8c0', bob = o.walking ? -Math.abs(Math.cos(o.ph)) * 3.5 : Math.sin(o.t * 2.6) * 1.2;
+  ctx.save(); ctx.translate(0, bob); ctx.rotate(o.lean * .6);
+  leg(-3, -26, o.ph + Math.PI, o.walking, '#e8c060', '#3a2a2a', 1); leg(3, -26, o.ph, o.walking, '#e8c060', '#3a2a2a', 0);
+  P(PL([-12, -60, 12, -60, 16, -24, -16, -24]), coat, 0, -42, 18); P(PL([-4, -60, 4, -60, 2, -40, -2, -40]), '#f4f1ea', 0, -50, 5); D(PL([-5, -58, 0, -54, 5, -58, 0, -52]), '#c8302a');
+  ctx.save(); ctx.translate(1, -71); ctx.rotate(Math.sin(o.t * 2) * .08);
+  P(E(0, 0, 10, 10.5), skin, 0, 0, 10); P(E(-7, 2, 5, 7), '#e8702a', -7, 2, 5);
+  eye(4, -1, 3, 3.4, 1, o.blink); eye(9, -1.5, 2.4, 3, 1, o.blink); const sm = new Path2D(); sm.arc(5, 4, 4, .2, Math.PI - .3); D(sm, '#7a2a2a');
+  P(RR(-11, -10, 24, 4, 2), '#5a3a2a', 1, -8, 10); P(PL([-8, -10, 10, -10, 12, -36, -10, -36]), '#5a3a2a', 1, -24, 12); D(RR(-9, -16, 20, 4, 1), '#c8302a');
+  P(RR(4, -26, 9, 7, 1), '#f4f1ea', 8, -22, 4); D(cap(6, -24, 11, -24, .8), '#1c1a24');
+  ctx.restore();
+  ctx.save(); ctx.translate(7, -48); ctx.rotate(-.5 + o.arm);
+  P(cap(0, 0, 11, 0, 5), coat, 5, 0, 4); P(E(12, 0, 3, 3), skin, 12, 0, 3);
+  P(new Path2D('M10 -6 L22 -6 L20 4 L12 4 Z'), '#f4f1ea', 16, -1, 6); D(cap(22, -3, 26, 0, 1.6), '#f4f1ea'); D(E(16, -6, 6, 1.6), '#7a4a2a');
+  ctx.restore();
+  ctx.restore();
+}
+function brucaliffo(o) {                                                   // il Brucaliffo: bruco azzurro seduto, narghilè e anelli di fumo
+  const sk = '#5a9ad8', bel = '#9ad0f0', sw = Math.sin(o.t * 2 + (o.walking ? o.ph : 0));
+  ctx.save(); ctx.rotate(o.lean * .4);
+  for (let i = 5; i >= 0; i--) { const x = -24 + i * 7, y = -8 - i * 6 + Math.sin(o.t * 3 - i) * 1.5; P(E(x, y, 9 - i * .3, 8), i % 2 ? sk : mix(sk, '#2a2050', .1), x, y, 8); D(E(x + 2, y + 3, 4, 3), bel); }
+  ctx.save(); ctx.translate(16, -52 + sw * 1.5);
+  P(E(0, 0, 10, 10), sk, 0, 0, 10); eye(4, -2, 2.4, 2.4, 1, o.blink); D(cap(-1, -6, 6, -5, 1.6), '#1c3a6a');
+  D(cap(-4, -9, -10, -20, 1.4), '#1c3a6a'); D(cap(2, -9, 2, -21, 1.4), '#1c3a6a'); D(E(-10, -20, 2, 2), '#1c3a6a'); D(E(2, -21, 2, 2), '#1c3a6a');
+  ctx.restore();
+  P(RR(26, -30, 8, 30, 3), '#c8a050', 30, -15, 5); D(cap(30, -30, 24, -48 + sw, 1.6), '#8a3a3a');
+  if (MODE === 'normal') for (let j = 0; j < 3; j++) { const pr = (o.t * .5 + j / 3) % 1; ctx.strokeStyle = `rgba(230,240,255,${.6 * (1 - pr)})`; ctx.lineWidth = 2; ctx.beginPath(); ctx.arc(22 + pr * 10, -60 - pr * 30, 4 + pr * 6, 0, 7); ctx.stroke(); }
+  ctx.restore();
+}
+function lepre(o) {                                                        // la Lepre Marzolina (e il Bianconiglio da boss): orecchie lunghe, panciotto
+  const fur = '#c8a080', bob = o.walking ? -Math.abs(Math.sin(o.ph * 1.2)) * 9 : Math.sin(o.t * 3) * 1.2;
+  ctx.save(); ctx.translate(0, bob); ctx.rotate(o.lean * .6);
+  leg(-4, -22, o.ph + Math.PI, o.walking, fur, fur, 1); leg(4, -22, o.ph, o.walking, fur, fur, 0);
+  P(E(0, -36, 12, 16), '#c84a4a', 0, -36, 13); D(E(2, -32, 6, 9), '#f4e8d8'); for (const y of [-42, -34]) D(E(-6, y, 1.6, 1.6), '#ffd35a');
+  ctx.save(); ctx.translate(2, -60); ctx.rotate(Math.sin(o.t * 2.2) * .07);
+  P(E(-4, -26, 4, 16, -.2 + Math.sin(o.t * 4) * .1), fur, -4, -26, 4); P(E(5, -27, 4, 16, .15), fur, 5, -27, 4); D(E(5, -27, 1.8, 11, .15), '#f4c0c0');
+  P(E(0, 0, 11, 10), fur, 0, 0, 10); D(E(6, 4, 4.5, 3.5), '#f4e8d8');
+  eye(4, -2, 2.8, 3.2, 1, o.blink); D(E(10, 3, 1.8, 1.4), '#e85a7a');
+  ctx.restore();
+  ctx.save(); ctx.translate(7, -40); ctx.rotate(-.4 + o.arm); P(cap(0, 0, 11, 0, 4.5), fur, 5, 0, 4); P(E(12, 0, 3, 3), '#f4e8d8', 12, 0, 3); ctx.restore();
+  ctx.restore();
+}
+function alibaba(o) {                                                      // Alì Babà: gilet, fusciacca, sacco di monete
+  kidBody(o, '#c8702a', '#e8e0c8', '#d8a070', '#1c1a24', {
+    head:() => { P(E(-1, -8, 11, 6), '#f4f1ea', -1, -8, 10); D(cap(4, 5, 8, 5, 1.3), '#1c1a24'); },
+    arm:() => { P(cap(0, 0, 11, 0, 4.5), '#d8a070', 5, 0, 4); P(E(16, 4, 7, 8), '#a8864a', 16, 4, 7); D(cap(13, -3, 19, -3, 2), '#7a5a2a'); D(E(16, 6, 2.5, 2.5), '#ffd35a'); }});
+}
+function sinbad(o) {                                                       // Sinbad il Marinaio: robusto, turbante rosso, scimitarra
+  const vest = '#2a5a8a', skin = '#c88a5a', bob = o.walking ? -Math.abs(Math.cos(o.ph)) * 3 : Math.sin(o.t * 2.4) * 1;
+  ctx.save(); ctx.translate(0, bob); ctx.rotate(o.lean * .5);
+  leg(-4, -26, o.ph + Math.PI, o.walking, '#f4ead8', '#5a3a22', 1); leg(4, -26, o.ph, o.walking, '#f4ead8', '#5a3a22', 0);
+  P(RR(-15, -62, 30, 38, 8), skin, 0, -44, 20); P(PL([-15, -62, -4, -62, -2, -26, -15, -26]), vest, -8, -44, 10); P(PL([15, -62, 4, -62, 2, -26, 15, -26]), vest, 8, -44, 10);
+  D(RR(-15, -34, 30, 7, 2), '#c8302a');
+  ctx.save(); ctx.translate(1, -74); ctx.rotate(Math.sin(o.t * 1.4) * .04);
+  P(E(0, 0, 11, 11), skin, 0, 0, 11); P(E(4, 7, 7, 4), '#2a1a1a', 4, 7, 6);
+  eye(4, -2, 2.6, 3, 1, o.blink); D(cap(0, -6, 8, -6, 2), '#2a1a1a');
+  P(E(-1, -9, 13, 7), '#c8302a', -1, -9, 12); D(E(4, -10, 3, 3), '#ffd35a');
+  ctx.restore();
+  ctx.save(); ctx.translate(10, -52); ctx.rotate(-.7 + o.arm * 1.1);
+  P(cap(0, 0, 12, 2, 7), skin, 6, 1, 6); const sc = new Path2D(); sc.moveTo(12, 0); sc.quadraticCurveTo(30, -2, 40, -16); sc.quadraticCurveTo(32, 4, 12, 4); sc.closePath(); P(sc, '#d8dbe4', 26, -2, 8); P(E(12, 2, 3, 5), '#ffd35a', 12, 2, 3);
+  ctx.restore();
+  ctx.restore();
+}
+function guardia(o) {                                                      // guardie del Sultano: turbante, gilet, scimitarra
+  kidBody(o, '#7a3a8a', '#e8e0c8', '#c88a5a', '#1c1a24', {
+    head:() => { P(E(-1, -8, 12, 7), '#f4f1ea', -1, -8, 11); P(PL([-1, -14, 3, -22, 5, -14]), '#f4f1ea', 2, -16, 4); D(E(3, -11, 2.5, 2.5), '#c8302a'); D(cap(3, 5, 9, 4, 1.6), '#1c1a24'); },
+    arm:() => { P(cap(0, 0, 11, 0, 4.5), '#c88a5a', 5, 0, 4); const sc = new Path2D(); sc.moveTo(11, 0); sc.quadraticCurveTo(26, -2, 34, -12); sc.quadraticCurveTo(26, 3, 11, 3); sc.closePath(); P(sc, '#d8dbe4', 22, -2, 6); }});
+}
+function guardie(o) { for (const [ox, sc] of [[-22, .85], [22, .85], [0, 1]]) { ctx.save(); ctx.translate(ox, 0); ctx.scale(sc, sc); guardia(o); ctx.restore(); } }
+function renna(o) {                                                        // la Renna: corna ramificate, collare coi campanelli
+  const fur = '#9a6a4a', bel = '#e8d8c0', run = o.walking ? o.ph : 0;
+  ctx.save(); ctx.translate(0, -34 + (o.walking ? -Math.abs(Math.sin(run)) * 4 : 0)); ctx.rotate(o.lean * .4);
+  for (const [x, ph] of [[-20, 0], [-12, Math.PI], [12, Math.PI * .5], [20, Math.PI * 1.5]]) { const a = o.walking ? Math.sin(run + ph) * .5 : 0; P(cap(x, 6, x + Math.sin(a) * 10, 32, 6), x > 0 ? fur : mix(fur, '#2a2050', .2), x, 20, 4); D(E(x + Math.sin(a) * 10, 32, 4, 2.5), '#3a2a1a'); }
+  P(E(0, 0, 28, 14), fur, 0, 0, 22); D(E(4, 6, 16, 6), bel); P(E(-26, -4, 6, 4, -.6), bel, -26, -4, 4);
+  ctx.save(); ctx.translate(24, -16); ctx.rotate(-.3);
+  P(cap(0, 10, 8, -4, 12), fur, 4, 4, 8); P(E(12, -6, 10, 8, .3), fur, 12, -6, 8); D(E(21, -4, 3, 2.5), '#c8302a');
+  eye(13, -9, 2.4, 2.6, 1, o.blink);
+  for (const s of [-1, 1]) { const b = new Path2D(); b.moveTo(6 + s * 2, -12); b.lineTo(2 + s * 6, -34); b.moveTo(4 + s * 4, -24); b.lineTo(-4 + s * 10, -30); b.moveTo(3 + s * 5, -30); b.lineTo(10 + s * 4, -40); ctx.save(); ctx.lineWidth = 3; ctx.lineCap = 'round'; ctx.strokeStyle = MODE === 'normal' ? '#c8a070' : '#000'; ctx.stroke(b); ctx.restore(); }
+  ctx.restore();
+  D(cap(14, -10, 26, -2, 4), '#c8302a'); for (const x of [16, 21]) D(E(x, -3, 2.5, 2.5), '#ffd35a');
+  ctx.restore();
+}
+function fiammiferaia(o) {                                                 // la Piccola Fiammiferaia: scialle, piedi nudi, un fiammifero acceso
+  const shawl = '#6a5a7a', skin = '#f6dcc8', sway = o.walking ? Math.sin(o.ph) * 2 : Math.sin(o.t * 2) * 1;
+  const bob = o.walking ? -Math.abs(Math.cos(o.ph)) * 2.5 : Math.sin(o.t * 2) * 1;
+  ctx.save(); ctx.translate(0, bob); ctx.rotate(o.lean * .5);
+  leg(-3, -12, o.ph + Math.PI, o.walking, skin, skin, 1); leg(3, -12, o.ph, o.walking, skin, skin, 0);
+  const dr = new Path2D(); dr.moveTo(-7, -52); dr.lineTo(7, -52); dr.quadraticCurveTo(12, -30, 15 + sway, -12); dr.lineTo(-15 + sway, -12); dr.quadraticCurveTo(-12, -30, -7, -52); dr.closePath();
+  P(dr, '#8a5a4a', 0, -32, 16); P(PL([-12, -52, 12, -52, 10, -36, -14, -40]), shawl, -1, -46, 12);
+  ctx.save(); ctx.translate(1, -63); ctx.rotate(Math.sin(o.t * 1.5) * .04);
+  P(E(-1, -2, 10.5, 10.5), shawl, -1, -2, 10); P(E(2, 1, 8.5, 9), skin, 2, 1, 8); P(E(1, -5, 8, 3.5), '#e8c060', 1, -5, 7);
+  eye(5, 0, 2.4, 2.8, 1, o.blink); D(E(8, 4, 2, 1.4), '#f08a9a');
+  ctx.restore();
+  ctx.save(); ctx.translate(5, -44); ctx.rotate(-.8 + o.arm * .6);
+  P(cap(0, 0, 11, 0, 4.5), shawl, 5, 0, 4); P(E(12, 0, 3, 3), skin, 12, 0, 3); D(cap(12, 0, 14, -14, 1.4), '#c8a070'); D(E(14, -16, 2.6, 4), '#ffd35a', {glow:'#ffe080'});
+  if (MODE === 'normal') { ctx.globalCompositeOperation = 'lighter'; glow(ctx, 14, -16, 26 + Math.sin(o.t * 9) * 3, '255,170,60', .7); ctx.globalCompositeOperation = 'source-over'; }
+  ctx.restore();
+  ctx.restore();
+}
+function pupazzo(o) {                                                      // soldati di neve: pupazzi con l'elmo a secchio e la scopa
+  const sn = '#f4f8ff', bob = o.walking ? -Math.abs(Math.sin(o.ph)) * 5 : 0;
+  ctx.save(); ctx.translate(0, bob); ctx.rotate(o.lean * .5 + (o.walking ? Math.sin(o.ph) * .06 : 0));
+  P(E(0, -14, 15, 14), sn, 0, -14, 14); P(E(0, -38, 11, 11), sn, 0, -38, 11); for (const y of [-20, -10]) D(E(2, y, 1.8, 1.8), '#2a2a3a');
+  ctx.save(); ctx.translate(1, -58);
+  P(E(0, 0, 9, 9), sn, 0, 0, 9); eye(3, -1, 2.2, 2.2, 1, o.blink); P(PL([5, 2, 14, 3, 5, 5]), '#ff8a2a', 9, 3, 3);
+  P(new Path2D('M-9 -4 L9 -4 L7 -16 L-7 -16 Z'), '#8a8a9a', 0, -10, 8); D(cap(-10, -4, 10, -4, 2), '#5a5a6a');
+  ctx.restore();
+  ctx.save(); ctx.translate(8, -38); ctx.rotate(-.4 + o.arm * .8); D(cap(0, 0, 14, -4, 2), '#6b4524'); D(cap(14, -4, 30, -10, 2.4), '#8a5a2a'); P(PL([28, -14, 38, -16, 38, -6, 30, -6]), '#d8b860', 33, -10, 5); ctx.restore();
+  D(cap(-6, -30, 8, -30, 3.5), '#c8302a');
+  ctx.restore();
+}
+function soldatineve(o) { for (const [ox, sc] of [[-22, .82], [22, .82], [0, 1]]) { ctx.save(); ctx.translate(ox, 0); ctx.scale(sc, sc); pupazzo(o); ctx.restore(); } }
+function cavcristallo(o) {                                                 // il Cavaliere di Cristallo: armatura di vetro azzurra che luccica
+  const gl = '#a8dcf4', dk = '#6aa8d8', bob = o.walking ? -Math.abs(Math.cos(o.ph)) * 3 : Math.sin(o.t * 2.2) * 1;
+  ctx.save(); ctx.translate(0, bob); ctx.rotate(o.lean * .5);
+  leg(-4, -28, o.ph + Math.PI, o.walking, dk, dk, 1); leg(4, -28, o.ph, o.walking, gl, gl, 0);
+  P(RR(-14, -64, 28, 38, 6), gl, 0, -46, 20); D(PL([-8, -60, -2, -60, -10, -32, -14, -38]), '#e8f8ff');
+  ctx.save(); ctx.translate(1, -76);
+  P(RR(-11, -12, 22, 24, 8), gl, 0, 0, 12); D(RR(-2, -4, 13, 4, 1), '#1c3a5a'); P(PL([-3, -12, 0, -24, 3, -12]), '#e8f8ff', 0, -16, 4);
+  ctx.restore();
+  ctx.save(); ctx.translate(-14, -46); P(PL([-6, -16, 8, -16, 8, 8, 1, 18, -6, 8]), dk, 1, 0, 14); D(PL([-2, -12, 4, -12, 4, 4, 1, 10, -2, 4]), '#e8f8ff'); ctx.restore();
+  ctx.save(); ctx.translate(12, -50); ctx.rotate(-.5 + o.arm); P(cap(0, 0, 10, 0, 6), gl, 5, 0, 5); P(cap(10, 0, 40, -6, 3.5), '#e8f8ff', 25, -3, 3); P(cap(9, -6, 11, 6, 3), dk, 10, 0, 3); ctx.restore();
+  if (MODE === 'normal') { ctx.globalCompositeOperation = 'lighter'; glow(ctx, 0, -50, 40, '170,230,255', .18 + .08 * Math.sin(o.t * 3)); ctx.globalCompositeOperation = 'source-over'; }
+  ctx.restore();
+}
+function gemello(o, v) {                                                   // i Gemelli dello Specchio: uguali, uno è il riflesso dell'altro (a colori invertiti)
+  const a = (o.id || v || 0) % 2, c1 = a ? '#c8d8f0' : '#5a6aa8', c2 = a ? '#5a6aa8' : '#c8d8f0';
+  kidBody(o, c1, c2, '#f0d8c8', a ? '#f4f1ea' : '#2a2a3a', {
+    head:() => { D(cap(-9, -10, 9, -10, 2.5), c2); },
+    arm:() => { P(cap(0, 0, 11, 0, 4.5), c1, 5, 0, 4); P(cap(10, 2, 30, -6, 2.6), '#e8f4ff', 20, -2, 3); P(RR(8, -2, 5, 7, 1), c2, 10, 1, 3); }});
+  if (MODE === 'normal') { ctx.globalCompositeOperation = 'lighter'; glow(ctx, 0, -40, 30, '200,220,255', .15); ctx.globalCompositeOperation = 'source-over'; }
+}
+function gemelli(o) { for (const [ox, v] of [[-14, 0], [14, 1]]) { ctx.save(); ctx.translate(ox, 0); ctx.scale(.92, .92); gemello(Object.assign({}, o, {id:v}), v); ctx.restore(); } }
+function pisello(o) {                                                      // la Principessa sul Pisello: assonnata, corona piccola, cuscino in mano
+  const dress = '#e8b8e0', skin = '#fbe4dc', sway = o.walking ? Math.sin(o.ph) * 2.5 : Math.sin(o.t * 2) * 1.2;
+  const bob = o.walking ? -Math.abs(Math.cos(o.ph)) * 2.5 : Math.sin(o.t * 2) * 1;
+  ctx.save(); ctx.translate(0, bob); ctx.rotate(o.lean * .5);
+  leg(-3, -12, o.ph + Math.PI, o.walking, skin, '#c87ab8', 1); leg(3, -12, o.ph, o.walking, skin, '#c87ab8', 0);
+  const dr = new Path2D(); dr.moveTo(-7, -56); dr.lineTo(7, -56); dr.quadraticCurveTo(14, -32, 19 + sway, -11); dr.lineTo(-19 + sway, -11); dr.quadraticCurveTo(-14, -32, -7, -56); dr.closePath();
+  P(dr, dress, 0, -34, 20); D(E(sway * .5, -18, 16, 4), '#f8d8f0');
+  ctx.save(); ctx.translate(1, -68); ctx.rotate(Math.sin(o.t * 1.2) * .06);
+  P(E(-2, -2, 11, 11), '#e8b84a', -2, -2, 11); P(E(1, 1, 8.5, 9), skin, 1, 1, 9); P(E(0, -6, 9, 4), '#e8b84a', 0, -6, 8);
+  D(cap(2, -1, 7, -1, 1.4), '#7a4a4a'); D(E(5, 4, 2, 1.5), '#f08a9a'); D(E(5, 6.5, 1.4, 1.1), '#c8507a');
+  P(PL([-6, -10, -6, -17, -2, -12, 1, -18, 4, -12, 8, -17, 8, -10]), '#ffd35a', 1, -13, 6);
+  ctx.restore();
+  ctx.save(); ctx.translate(5, -50); ctx.rotate(-.5 + o.arm);
+  P(cap(0, 0, 11, 0, 4.5), dress, 5, 0, 4); P(E(12, 0, 3, 3), skin, 12, 0, 3); P(RR(10, -8, 18, 13, 5), '#f4f1ea', 19, -2, 8); D(E(19, -2, 2.5, 2.5), '#5ab84a');
+  if (MODE === 'normal' && o.arm > .2) { ctx.globalCompositeOperation = 'lighter'; glow(ctx, 19, -2, 28, '255,190,240', .6 * Math.min(1, o.arm)); ctx.globalCompositeOperation = 'source-over'; }
+  ctx.restore();
+  ctx.restore();
+}
+function tappeto(o) {                                                      // il Tappeto Volante con un passeggero col turbante
+  const fl = Math.sin(o.t * 2.6) * 5, wv = o.t * 4;
+  ctx.save(); ctx.translate(0, -30 + fl); ctx.rotate(o.lean * .3);
+  const cp = new Path2D(); cp.moveTo(-34, 0); for (let i = 0; i <= 8; i++) cp.lineTo(-34 + i * 8.5, Math.sin(wv + i * .8) * 3); for (let i = 8; i >= 0; i--) cp.lineTo(-34 + i * 8.5, 8 + Math.sin(wv + i * .8) * 3); cp.closePath();
+  P(cp, '#a8283a', 0, 4, 34); for (let i = 1; i < 8; i += 2) D(E(-34 + i * 8.5, 4 + Math.sin(wv + i * .8) * 3, 2.5, 2), '#ffd35a');
+  for (const x of [-34, 34]) for (let j = 0; j < 3; j++) D(cap(x, j * 3 + 1, x + (x < 0 ? -5 : 5), j * 3 + 2, 1.2), '#ffd35a');
+  ctx.save(); ctx.translate(2, -2); ctx.scale(.8, .8);
+  P(RR(-10, -40, 20, 30, 5), '#3a8a8a', 0, -26, 12);
+  ctx.save(); ctx.translate(1, -50); P(E(0, 0, 9, 9), '#d8a070', 0, 0, 9); P(E(-1, -6, 11, 6), '#f4f1ea', -1, -6, 10); eye(4, -1, 2.4, 2.8, 1, o.blink); ctx.restore();
+  ctx.save(); ctx.translate(6, -32); ctx.rotate(-.8 + o.arm); P(cap(0, 0, 12, 0, 5), '#3a8a8a', 6, 0, 4); P(E(13, 0, 3, 3), '#d8a070', 13, 0, 3); ctx.restore();
+  ctx.restore();
+  ctx.restore();
+}
+function aladino(o) {                                                      // Aladino: gilet, fusciacca, piccolo turbante, scimitarra e lampada alla cintura
+  kidBody(o, '#3a8a7a', '#f4ead8', '#d8a070', '#1c1a24', {
+    head:() => { P(E(-1, -9, 10, 5), '#f4f1ea', -1, -9, 9); D(E(3, -10, 2, 2), '#3a8a7a'); },
+    arm:() => { P(cap(0, 0, 11, 0, 4.5), '#d8a070', 5, 0, 4); const sc = new Path2D(); sc.moveTo(11, 0); sc.quadraticCurveTo(28, -2, 36, -14); sc.quadraticCurveTo(28, 3, 11, 3); sc.closePath(); P(sc, '#e8ecf4', 22, -2, 6); P(E(11, 1, 2.5, 4), '#ffd35a', 11, 1, 2); }});
+  D(cap(-10, -30, 10, -30, 5), '#c8302a'); P(new Path2D('M-6 -26 Q-2 -30 2 -26 L8 -28 L4 -23 Q-2 -20 -6 -26 Z'), '#ffd35a', 0, -25, 4);
+}
+function kai(o) {                                                          // Kai: ragazzo col cappotto e la sciarpa, una scheggia di ghiaccio negli occhi
+  kidBody(o, '#5a7ab8', '#3a3a5a', '#f4dcd0', '#c8a060', {
+    head:() => { D(E(4, -1, 1.6, 1.6), '#bfe8ff', {glow:'#e0f6ff'}); P(E(-1, -9, 11, 4), '#a8323a', -1, -9, 10); },
+    arm:() => { ctx.rotate(.5); P(cap(0, 0, 11, 0, 4.5), '#5a7ab8', 5, 0, 4); P(PL([10, -2, 30, -6, 26, 2, 12, 4]), '#bfe8ff', 20, 0, 6); }});
+  D(cap(-8, -54, 8, -54, 5), '#a8323a'); D(cap(6, -54, 10, -40, 4), '#a8323a');
+}
+function gerda(o) {                                                        // Gerda: cappuccio rosso, mantellina, scarpette rosse; cura col calore del cuore
+  const cape = '#c83a3a', dress = '#f4e0c8', skin = '#f8e0d4', sway = o.walking ? Math.sin(o.ph) * 2.5 : Math.sin(o.t * 2) * 1.2;
+  const bob = o.walking ? -Math.abs(Math.cos(o.ph)) * 2.5 : Math.sin(o.t * 2) * 1;
+  ctx.save(); ctx.translate(0, bob); ctx.rotate(o.lean * .5);
+  leg(-3, -12, o.ph + Math.PI, o.walking, skin, '#c8302a', 1); leg(3, -12, o.ph, o.walking, skin, '#c8302a', 0);
+  const dr = new Path2D(); dr.moveTo(-7, -54); dr.lineTo(7, -54); dr.quadraticCurveTo(13, -32, 17 + sway, -11); dr.lineTo(-17 + sway, -11); dr.quadraticCurveTo(-13, -32, -7, -54); dr.closePath();
+  P(dr, dress, 0, -34, 18); P(PL([-12, -56, 10, -56, 14, -30, -16, -26]), cape, -1, -42, 14);
+  ctx.save(); ctx.translate(1, -66); ctx.rotate(Math.sin(o.t * 1.5) * .05);
+  P(E(-2, -2, 12, 12), cape, -2, -2, 11); P(E(2, 1, 8.5, 9), skin, 2, 1, 9); P(E(1, -6, 8, 3.5), '#e8b84a', 1, -6, 7);
+  eye(5, 0, 2.5, 3, 1, o.blink); D(E(8, 4, 2, 1.5), '#f08a9a');
+  ctx.restore();
+  ctx.save(); ctx.translate(5, -46); ctx.rotate(-.6 + o.arm); P(cap(0, 0, 11, 0, 4.5), cape, 5, 0, 4); P(E(12, 0, 3, 3), skin, 12, 0, 3);
+  P(new Path2D('M14 -2 C14 -8 22 -8 22 -2 C22 2 18 5 18 7 C18 5 14 2 14 -2 Z'), '#ff5a7a', 18, -1, 5);
+  if (MODE === 'normal' && o.arm > .2) { ctx.globalCompositeOperation = 'lighter'; glow(ctx, 18, -1, 26, '255,140,170', .6 * Math.min(1, o.arm)); ctx.globalCompositeOperation = 'source-over'; }
+  ctx.restore();
+  ctx.restore();
+}
+Object.assign(DRAW, {bimbi, bimbo:o => bimbo(o, (o.id || 0) % 4), wendy, giglio, cappellaio, brucaliffo, lepre, alibaba, sinbad, guardie, guardia, renna, fiammiferaia, soldatineve, pupazzo, cavcristallo, gemelli, gemello:o => gemello(o, (o.id || 0) % 2), pisello, tappeto, aladino, kai, gerda});
+Object.assign(HEIGHT, {bimbi:76, bimbo:76, wendy:88, giglio:96, cappellaio:110, brucaliffo:76, lepre:96, alibaba:84, sinbad:100, guardie:88, guardia:88, renna:84, fiammiferaia:80, soldatineve:84, pupazzo:84, cavcristallo:104, gemelli:84, gemello:84, pisello:92, tappeto:76, aladino:86, kai:84, gerda:88});
+Object.assign(SC, {bimbi:.84, bimbo:.84, wendy:.84, giglio:.84, cappellaio:.84, brucaliffo:.88, lepre:.84, alibaba:.84, sinbad:.86, guardie:.84, guardia:.84, renna:.88, fiammiferaia:.84, soldatineve:.84, pupazzo:.84, cavcristallo:.86, gemelli:.84, gemello:.84, pisello:.84, tappeto:.9, aladino:.84, kai:.84, gerda:.84});
 Object.assign(DRAW, {reginacuori, reginacuori_q:reginacuoriQ, carta:o => carta(o, (o.id || 0) % 2), stregone, pescecane, diavolo, cappuccetto, robinhood, gattostivali, biancaneve, pinocchio, merlino, alice});
 Object.assign(HEIGHT, {reginacuori:100, reginacuori_q:100, carta:84, stregone:112, pescecane:96, diavolo:112, cappuccetto:84, robinhood:96, gattostivali:92, biancaneve:92, pinocchio:100, merlino:116, alice:88});
 Object.assign(SC, {reginacuori:.84, reginacuori_q:.84, carta:.84, stregone:.86, pescecane:.9, diavolo:.9, cappuccetto:.84, robinhood:.84, gattostivali:.84, biancaneve:.84, pinocchio:.84, merlino:.86, alice:.84});
@@ -3345,6 +3714,7 @@ function drawUnits(dt) {
     if (u.stone > 0) { MODE = 'flash'; FLASHC = '150,150,160'; FLASH = .75; DRAW[vis(u.k)](o); FLASHC = '255,255,255'; MODE = 'normal'; }   // pietrificato
     if (u.mirror) { MODE = 'flash'; FLASHC = '200,190,255'; FLASH = .35; DRAW[vis(u.k)](o); FLASHC = '255,255,255'; MODE = 'normal'; }   // la copia dello specchio luccica d'argento
     if (u.stun > 0 && frostT > 0 && u.side === 1) { MODE = 'flash'; FLASHC = '190,235,255'; FLASH = .45; DRAW[vis(u.k)](o); FLASHC = '255,255,255'; MODE = 'normal'; }   // gelati
+    if (u.goldT > 0 && !u.dead) { MODE = 'flash'; FLASHC = '255,205,60'; FLASH = .7; DRAW[vis(u.k)](o); FLASHC = '255,255,255'; MODE = 'normal'; }   // toccato da Re Mida
     if (u.burnT > 0 && !u.dead) { MODE = 'flash'; FLASHC = '255,130,40'; FLASH = .35 + .15 * Math.sin(time * 12); DRAW[vis(u.k)](o); FLASHC = '255,255,255'; MODE = 'normal'; }   // brucia col fuoco del Diavolo
     if (u.kid) { MODE = 'flash'; FLASHC = '255,205,80'; FLASH = .3; DRAW[vis(u.k)](o); FLASHC = '255,255,255'; MODE = 'normal'; }   // il buono rapito luccica d'oro
     if (el && el.tint) { MODE = 'flash'; FLASHC = hexRgb(el.tint); FLASH = .22; DRAW[vis(u.k)](o); FLASHC = '255,255,255'; MODE = 'normal'; }
@@ -3567,6 +3937,9 @@ function handleEvents() {
     else if (e.type === 'vanish') burst(e.x, dyAt(e.x, e.y) - 50 * CS, 10, 60, .6, 'puff', '220,200,255');
     else if (e.type === 'curse') burst(e.x, dyAt(e.x, e.y) - 50 * CS, 6, 50, .6, 'spark', '150,255,120');
     else if (e.type === 'donkey') { nums.push({x:e.x, y:dyAt(e.x, e.y) - 100 * CS, t:0, txt:'Ih-oh!', gold:1}); burst(e.x, dyAt(e.x, e.y) - 40 * CS, 12, 100, .6, 'puff', '255,240,200'); particles.push({x:e.x, y:dyAt(e.x, e.y) - 20, vx:140, vy:0, life:2.2, max:2.2, kind:'donkey'}); }
+    else if (e.type === 'midas') { wave(e.x, dyAt(e.x, e.y) - 40 * CS, 170, '255,210,80', .9); nums.push({x:e.x, y:dyAt(e.x, e.y) - 140 * CS, t:0, txt:'Oro!', gold:1}); burst(e.x, dyAt(e.x, e.y) - 60 * CS, 22, 160, .8, 'spark', '255,215,90'); vibrate(40); }
+    else if (e.type === 'inspire') { wave(e.x, dyAt(e.x, e.y) - 40 * CS, 130, '255,230,160', .6); }
+    else if (e.type === 'smoke') burst(e.x, dyAt(e.x, e.y) - 50 * CS, 18, 60, 1.2, 'puff', '220,230,255');
     else if (e.type === 'behead') { nums.push({x:e.x, y:dyAt(e.x, e.y) - 110 * CS, t:0, txt:'Via la testa!', gold:1}); burst(e.x, dyAt(e.x, e.y) - 60 * CS, 12, 110, .6, 'spark', '255,90,110'); vibrate(25); }
     else if (e.type === 'swallow') { nums.push({x:e.x, y:dyAt(e.x, e.y) - 100 * CS, t:0, txt:'Gulp!', gold:1}); burst(e.x, dyAt(e.x, e.y) - 30 * CS, 14, 90, .7, 'puff', '170,210,240'); shake = Math.max(shake, 4); vibrate(30); }
     else if (e.type === 'genie') { wave(e.x, dyAt(e.x, e.y) - 30 * CS, 130, '180,120,255', .8); burst(e.x, dyAt(e.x, e.y) - 70 * CS, 22, 160, .8, 'spark', '200,150,255'); nums.push({x:e.x, y:dyAt(e.x, e.y) - 140 * CS, t:0, txt:'Genio!', gold:1}); shake = Math.max(shake, 5); }
@@ -3585,7 +3958,7 @@ function handleEvents() {
     else if (e.type === 'boss') { toast(`Arriva: ${DW.U[e.k].elite ? DW.U[e.k].elite.name : 'il boss'}!`); toastT = 3; shake = 9; vibrate(70); }
   }
   s.ev.length = 0;
-  for (const u of s.units) if (u.id > seenId) { seenId = u.id; if (u.side === 1 && !u.dead) { const d = DW.U[u.k] || {}, bk = u.k === 'nano' ? 'nani' : d.elite ? d.elite.base : u.k; if (VOICE[bk] && (!d.sub || u.k === 'nano')) sfx(bk, {voice:1, vol:.7, rate:VOICE[bk] * (d.elite ? .75 : 1), gap:.5, key:'gvoice'}); }   // i buoni che scendono in campo
+  for (const u of s.units) if (u.id > seenId) { seenId = u.id; if (u.side === 1 && !u.dead) { const d = DW.U[u.k] || {}, bk = u.k === 'nano' ? 'nani' : d.elite ? d.elite.base : u.k; if (VOICE[bk]) sfx(bk, {voice:1, vol:.7, rate:VOICE[bk] * (d.elite ? .75 : 1), gap:.5, key:'gvoice'}); }   // i buoni che scendono in campo
     if (LINES[u.k] && bubbles.length < 2 && Math.random() < .3) bubbles.push({id:u.id, txt:pick(LINES[u.k]), t:0}); }
 }
 function vibrate(ms) { if (typeof SND !== 'undefined' && !SND.set.vib) return; try { navigator.vibrate && navigator.vibrate(ms); } catch (e) {} }
@@ -3726,6 +4099,10 @@ function showWorlds() {
     b.onclick = () => open ? showMap(w) : toast(`Prima batti il boss della mappa ${w}`);
     list.appendChild(b);
   });
+  const cs = document.createElement('button'); cs.className = 'wCard lock soon';   // il prossimo mondo: in arrivo
+  cs.innerHTML = `<span class="num"><svg viewBox="0 0 24 24" width="22" height="22"><rect x="5" y="11" width="14" height="10" rx="2" fill="#fff"/><path d="M8 11V8a4 4 0 0 1 8 0v3" stroke="#fff" stroke-width="2.6" fill="none"/></svg></span><span class="tx"><b>Mondo ${DW.WORLDS.length + 1} · Coming soon</b><small>Una nebbia strana copre la mappa… presto.</small></span>`;
+  cs.onclick = () => toast('Il drago ci sta lavorando. Torna presto!');
+  list.appendChild(cs);
 }
 function showCapr() {
   TH = 'bosco'; HERO = false; toScene(); $('capr').hidden = false;
@@ -3851,18 +4228,23 @@ function renderMiss() {
   }
 }
 document.querySelectorAll('#missTabs button').forEach(b => b.onclick = () => { missTab = b.dataset.t; renderMiss(); });
-const GOODS = ['soldatino', 'arciere', 'principe', 'cacciatore', 'porcellino', 'fata', 'hanselgretel', 'nani', 'raperonzolo', 'pifferaio', 'musicanti', 'carrozza', 'ranocchio', 'pollicino', 'peterpan', 'cappuccetto', 'pinocchio', 'alice', 'gattostivali', 'merlino', 'biancaneve', 'robinhood', 're'];
-const WNAME = {soldatino:'Soldatino di stagno', arciere:'Arciere', principe:'Principe', cacciatore:'Cacciatore', porcellino:'Porcellino', fata:'Fata Turchina', hanselgretel:'Hansel e Gretel', nani:'Sette Nani', raperonzolo:'Raperonzolo', pifferaio:'Pifferaio', musicanti:'Musicanti di Brema', carrozza:'Carrozza', ranocchio:'Ranocchio', pollicino:'Pollicino', peterpan:'Peter Pan', cappuccetto:'Cappuccetto Rosso', pinocchio:'Pinocchio', alice:'Alice', gattostivali:'Gatto con gli Stivali', merlino:'Mago Merlino', biancaneve:'Biancaneve', robinhood:'Robin Hood', re:'Re in armatura'};
+const GOODS = ['soldatino', 'arciere', 'principe', 'cacciatore', 'porcellino', 'fata', 'hanselgretel', 'nani', 'raperonzolo', 'pifferaio', 'musicanti', 'carrozza', 'ranocchio', 'pollicino', 'peterpan', 'cappuccetto', 'pinocchio', 'alice', 'gattostivali', 'merlino', 'biancaneve', 'robinhood', 'bimbi', 'wendy', 'giglio', 'cappellaio', 'brucaliffo', 'lepre', 'alibaba', 'sinbad', 'guardie', 'renna', 'fiammiferaia', 'soldatineve', 'cavcristallo', 'gemelli', 'pisello', 're'];
+const WNAME = {soldatino:'Soldatino di stagno', arciere:'Arciere', principe:'Principe', cacciatore:'Cacciatore', porcellino:'Porcellino', fata:'Fata Turchina', hanselgretel:'Hansel e Gretel', nani:'Sette Nani', raperonzolo:'Raperonzolo', pifferaio:'Pifferaio', musicanti:'Musicanti di Brema', carrozza:'Carrozza', ranocchio:'Ranocchio', pollicino:'Pollicino', peterpan:'Peter Pan', cappuccetto:'Cappuccetto Rosso', pinocchio:'Pinocchio', alice:'Alice', gattostivali:'Gatto con gli Stivali', merlino:'Mago Merlino', biancaneve:'Biancaneve', robinhood:'Robin Hood', bimbi:'Bimbi Sperduti', wendy:'Wendy', giglio:'Giglio Tigrato', cappellaio:'Cappellaio Matto', brucaliffo:'Brucaliffo', lepre:'Lepre Marzolina', alibaba:'Alì Babà', sinbad:'Sinbad il Marinaio', guardie:'Guardie del Sultano', renna:'La Renna', fiammiferaia:'Piccola Fiammiferaia', soldatineve:'Soldati di Neve', cavcristallo:'Cavaliere di Cristallo', gemelli:'Gemelli dello Specchio', pisello:'Principessa sul Pisello', re:'Re in armatura'};
 const WTXT = {soldatino:'Una gamba sola, nessuna paura. Ci stiamo lavorando.', arciere:'Mira al cuore. Prende il ginocchio.', principe:'Cercava una principessa da baciare. Ha trovato un goblin.',
   cacciatore:'Odia i lupi, i coccodrilli e chiunque abbia la coda.', porcellino:'Casa di mattoni, testa di mattoni.', fata:'Ricuce i buoni. Imperdonabile.', hanselgretel:'Mangiano le case altrui. E i cattivi saremmo noi.',
   nani:'Sette contro uno. Comodo così.', raperonzolo:'Picchia coi capelli. Vent’anni di balsamo.', pifferaio:'Una canzoncina e i topi se ne vanno. Ladro di topi.', musicanti:'Cantano. Quella è l’arma.',
   carrozza:'Prima era una zucca. Era meglio prima.', ranocchio:'Un bacio e si è montato la testa.', pollicino:'Lascia briciole ovunque. E sassi in fronte.', peterpan:'Non cresce mai. Neanche di testa.', cappuccetto:'Porta i dolci alla nonna. A noi, niente.', pinocchio:'Di legno, ma la testa è più dura.', alice:'Cresce quando le conviene.',
   gattostivali:'Stivali nuovi, arroganza vecchia.', merlino:'Mille anni di magia. Tutti contro di noi.', biancaneve:'Cura i buoni vicini. E ha una mela pronta.', robinhood:'Ruba la Cattiveria ai cattivi per darla ai buoni.',
+  bimbi:'Non crescono mai. Neanche il buon senso.', wendy:'Racconta storie e i buoni si caricano. Dormite, invece.', giglio:'Corre come il vento, mira come un falco.',
+  cappellaio:'È sempre l’ora del tè. E delle tazze in testa.', brucaliffo:'Fuma e i colpi vanno a vuoto. Chi sei tu?', lepre:'Salta, salta, salta. Arriva sempre in anticipo.',
+  alibaba:'"Apriti sesamo" e la tua Cattiveria sparisce.', sinbad:'Sette viaggi e nessuna paura. Ottavo: noi.', guardie:'Tre scimitarre, zero sorrisi.',
+  renna:'Corna come rami, carica come una valanga.', fiammiferaia:'Un fiammifero acceso e i buoni guariscono.', soldatineve:'Pupazzi in marcia: le frecce rimbalzano sulla neve.',
+  cavcristallo:'Armatura di vetro: frecce e sassi rimbalzano.', gemelli:'Ne abbatti uno e diventano due.', pisello:'Non dorme mai, ma cura tantissimo.',
   re:'Trono, corona e zero senso dell’umorismo.',
   musicanti_re:'Hanno trovato un palco più grande. Purtroppo.', generale:'Di stagno, ma con le medaglie.', fata_ghiaccio:'Non cura: congela. Ti tiene fresco.', capo_nani:'Il più basso dei sette. Il più arrabbiato.',
   principe_supremo:'Tre principesse sposate. Nessuna se lo ricorda.', ranocchio_re:'Si è baciato da solo. Ha funzionato.', re_mare:'Il tridente lo usa anche per la pasta.', pifferaio_re:'Un’orchestra intera, da solo. Male.',
   carrozza_oro:'A mezzanotte torna zucca. Aspettiamo.', fata_madrina:'Una bacchetta, tre desideri, zero per noi.', raperonzolo_oro:'Trecce d’oro, frustate d’oro.', mamma_porcellina:'Tre figli, tre case, una ciabatta.',
-  hansel_giganti:'Cresciuti a marzapane. Si vede.', principe_azzurro:'Azzurro di nome, insopportabile di fatto.', re_oro:'L’ultimo lieto fine. Ancora per poco.', dracula_boss:'Il conte non ama la luce. E nemmeno te.'};
+  hansel_giganti:'Cresciuti a marzapane. Si vede.', principe_azzurro:'Azzurro di nome, insopportabile di fatto.', re_oro:'Tocca i cattivi e li fa diventare oro. Non dategli la mano. Prima era: l’ultimo lieto fine. Ancora per poco.', dracula_boss:'Il conte non ama la luce. E nemmeno te.'};
 function showWanted() {
   toScene(); $('wanted').hidden = false;
   const grid = $('wantedGrid'); grid.innerHTML = '';
@@ -4275,7 +4657,10 @@ const SND = {ctx:null, g:null, vg:null, buf:{}, vbuf:{}, last:{}, track:null, el
 try { const o = JSON.parse(localStorage.getItem('dw_audio') || 'null'); if (o) Object.assign(SND.set, o); } catch (e) {}
 const sndSave = () => { try { localStorage.setItem('dw_audio', JSON.stringify(SND.set)); } catch (e) {} };
 const SFX_FILES = ['hit1', 'hit2', 'hit3', 'hitbig', 'wall1', 'wall2', 'fall', 'die', 'magic1', 'magic2', 'fire', 'coins1', 'coins2', 'gem', 'vroar2', 'vroar4', 'vbeast2'];
-const VOICE = {goblin:1.5, pandizenzero:1.4, topi:1.7, lupo:1.1, gattovolpe:1.0, spaventapasseri:1.0, mummia:0.8, fionda:1.4, gnomo:1.5, matrigna:1.0, fantasma:0.8, strega:1.25, barbablu:1.0, bestia:1.0, uncino:0.9, tremotino:1.35, omino:1.1, stregamare:0.9, grifone:1.3, senzatesta:0.7, coccodrillo:0.7, retopi:1.2, orco:0.9, spirito:0.8, mangiafuoco:0.85, morgana:1.2, ciclope:0.75, medusa:1.2, babajaga:1.0, dracula:0.8, reginacattiva:1.0, reginanevi:1.0, basilisco:0.7, cavaliereverde:0.8, gigante:0.6, reginacuori:1.15, stregone:1.0, pescecane:0.6, diavolo:0.75, soldatino:1.2, arciere:1.1, principe:1.0, cacciatore:1.0, porcellino:1.7, fata:1.6, re:1.0, hanselgretel:1.2, nani:1.0, raperonzolo:1.0, pifferaio:1.0, musicanti:1.3, carrozza:0.9, ranocchio:0.6, peterpan:1.3, pollicino:1.1, cappuccetto:1.2, robinhood:1.0, gattostivali:1.0, biancaneve:1.0, pinocchio:1.0, merlino:0.8, alice:1.3};   // ogni cattivo e ogni buono ha il suo verso (audio/v_nome.mp3) e la sua velocità
+const VOICE = {goblin:1.5, pandizenzero:1.4, topi:1.7, lupo:1.1, gattovolpe:1.0, spaventapasseri:1.0, mummia:0.8, fionda:1.4, gnomo:1.5, matrigna:1.0, fantasma:0.8, strega:1.25, barbablu:1.0, bestia:1.0, uncino:0.9, tremotino:1.35, omino:1.1, stregamare:0.9, grifone:1.3, senzatesta:0.7, coccodrillo:0.7, retopi:1.2, orco:0.9, spirito:0.8, mangiafuoco:0.85, morgana:1.2, ciclope:0.75, medusa:1.2, babajaga:1.0, dracula:0.8, reginacattiva:1.0, reginanevi:1.0, basilisco:0.7, cavaliereverde:0.8, gigante:0.6, reginacuori:1.15, stregone:1.0, pescecane:0.6, diavolo:0.75, soldatino:1.2, arciere:1.1, principe:1.0, cacciatore:1.0, porcellino:1.7, fata:1.6, re:1.0, hanselgretel:1.2, nani:1.0, raperonzolo:1.0, pifferaio:1.0, musicanti:1.3, carrozza:0.9, ranocchio:0.6, peterpan:1.3, pollicino:1.1, cappuccetto:1.2, robinhood:1.0, gattostivali:1.0, biancaneve:1.0, pinocchio:1.0, merlino:0.8, alice:1.3, bimbi:1.5, bimbo:1.6, wendy:.8, giglio:1.3, cappellaio:.7, brucaliffo:.8, lepre:1.6, alibaba:1.3, sinbad:1.3, guardie:.8, guardia:.85, renna:1.2, fiammiferaia:1.2, soldatineve:1.3, pupazzo:1.35,
+  cavcristallo:1.4, gemelli:1.4, gemello:1.45, pisello:.8, tappeto:.8, aladino:1.2, kai:.9, gerda:1.1, alice:1.3};   // ogni cattivo e ogni buono ha il suo verso (audio/v_nome.mp3) e la sua velocità
+const VALIAS = {bimbi:'pollicino', bimbo:'pollicino', wendy:'biancaneve', giglio:'arciere', cappellaio:'hanselgretel', brucaliffo:'ranocchio', lepre:'peterpan', alibaba:'principe', sinbad:'re', guardie:'soldatino', guardia:'soldatino',
+  renna:'carrozza', fiammiferaia:'fata', soldatineve:'nani', pupazzo:'nani', cavcristallo:'biancaneve', gemelli:'cappuccetto', gemello:'cappuccetto', pisello:'fata', tappeto:'raperonzolo', aladino:'robinhood', kai:'cappuccetto', gerda:'pifferaio'};   // i buoni nuovi riusano un suono con un'altra voce
 function sndUnlock() {                                                     // il primo tocco accende l'audio (i browser lo chiedono)
   if (GALLERY) return;
   if (SND.ctx) { if (SND.ctx.state === 'suspended') SND.ctx.resume().catch(() => {}); musicUpdate(); return; }
@@ -4284,12 +4669,12 @@ function sndUnlock() {                                                     // il
   SND.vg = SND.ctx.createGain(); SND.vg.gain.value = 1.5 * SND.set.vox; SND.vg.connect(SND.ctx.destination);
   const load = (url, put) => fetch(url).then(r => r.ok ? r.arrayBuffer() : Promise.reject()).then(a => SND.ctx.decodeAudioData(a)).then(put).catch(() => {});
   for (const n of SFX_FILES) load('audio/' + n + '.mp3', b => { SND.buf[n] = b; });
-  for (const k of Object.keys(VOICE)) load('audio/v_' + k + '.mp3', b => { SND.vbuf[k] = b; });
+  for (const k of Object.keys(VOICE)) if (!VALIAS[k]) load('audio/v_' + k + '.mp3', b => { SND.vbuf[k] = b; });
   musicUpdate();
 }
 for (const ev of ['pointerdown', 'pointerup', 'touchend', 'click', 'keydown']) addEventListener(ev, sndUnlock, true);   // sul telefono l'audio si sblocca al rilascio del dito
 function sfx(n, o = {}) {                                                  // un effetto vero, con un filo di variazione per non stancare
-  const buf = o.voice ? SND.vbuf[n] : SND.buf[n];
+  const buf = o.voice ? SND.vbuf[VALIAS[n] || n] : SND.buf[n];
   if (!SND.ctx || !buf || document.hidden || !(o.voice ? SND.set.vox : SND.set.sfx)) return;
   const now = SND.ctx.currentTime, key = o.key || n;
   if (o.gap && SND.last[key] != null && now - SND.last[key] < o.gap) return; SND.last[key] = now;
@@ -4348,11 +4733,16 @@ function musicWorld() {                                                     // i
 }
 function musicEl(k) {                                                       // ogni brano si prepara una volta sola e resta pronto
   let el = SND.el[k];
-  if (!el) { el = SND.el[k] = new Audio('audio/mus_' + k + '.mp3'); el.loop = true; el.preload = 'auto'; try { el.load(); } catch (e) {} }
+  if (!el) { el = SND.el[k] = new Audio('audio/mus_' + (MUS_FILE[k] || k) + '.mp3'); el.loop = true; el.preload = 'auto'; try { el.load(); } catch (e) {} }
   return el;
 }
-function musicPreload(w) { if (!GALLERY) musicEl('w' + (Math.min(9, Math.max(0, w)) + 1)); }
-function musicWant() { return !SND.set.mus || document.hidden ? null : inStory ? 'story' : (running || !inMenu) ? 'w' + (Math.min(9, Math.max(0, musicWorld())) + 1) : 'menu'; }
+function musicPreload(w) { if (GALLERY) return; const k = 'w' + (Math.min(DW.WORLDS.length - 1, Math.max(0, w)) + 1); musicEl(k); if (MUS_BOSS[k]) musicEl(MUS_BOSS[k]); }
+const MUS_FILE = {w15:'w10'}, MUS_BOSS = {w11:'w11b', w13:'w13b'};          // il mondo 15 usa la musica del 10; nell'Isola e nel Deserto il boss cambia la musica
+function musicWant() {
+  if (!SND.set.mus || document.hidden) return null; if (inStory) return 'story'; if (!(running || !inMenu)) return 'menu';
+  const k = 'w' + (Math.min(DW.WORLDS.length - 1, Math.max(0, musicWorld())) + 1);
+  return MUS_BOSS[k] && s && s.castle && s.castle.bossDone && !NET.g ? MUS_BOSS[k] : k;
+}
 function fadeTo(el, target, ms, done) {                                    // dissolvenza corta e precisa (pochi decimi di secondo)
   clearInterval(el._fade); const v0 = el.volume, t0 = performance.now();
   el._fade = setInterval(() => { const f = Math.min(1, (performance.now() - t0) / ms); el.volume = Math.max(0, Math.min(1, v0 + (target - v0) * f)); if (f >= 1) { clearInterval(el._fade); done && done(); } }, 16);
@@ -4848,7 +5238,7 @@ function renderOnlineFriends(box) {                                        // ne
   }
 }
 const NET_VER = KL.length + ':' + DW.ROSTER.length;
-const ET = ['hit', 'die', 'boom', 'fire', 'legend', 'freeze', 'revive', 'stone', 'dive', 'kidnap', 'donkey', 'mirror', 'mirage', 'summon', 'heal', 'steal', 'overtime', 'grow', 'dodge', 'vanish', 'curse', 'gaze', 'mute', 'fear', 'charm', 'stun', 'leap', 'release', 'rush', 'boss', 'bhit', 'wallet', 'behead', 'swallow', 'genie', 'robbed', 'spawn'];
+const ET = ['hit', 'die', 'boom', 'fire', 'legend', 'freeze', 'revive', 'stone', 'dive', 'kidnap', 'donkey', 'mirror', 'mirage', 'summon', 'heal', 'steal', 'overtime', 'grow', 'dodge', 'vanish', 'curse', 'gaze', 'mute', 'fear', 'charm', 'stun', 'leap', 'release', 'rush', 'boss', 'bhit', 'wallet', 'behead', 'swallow', 'genie', 'robbed', 'spawn', 'midas', 'inspire', 'smoke'];
 const NET = {room:null, db:null, user:null, myId:null, peer:null, peers:[], g:null, invSeen:new Set(), board:{}, boardOk:false, lastBoard:''};
 const MODES = {duel:{name:'Duello', txt:'Cattivi contro cattivi: due tane, vince chi abbatte quella dell’altro.'},
   alt:{name:'Duello alternativo', txt:'Uno fa i cattivi, l’altro i buoni. A ogni rivincita ci si scambia.'},
@@ -5246,8 +5636,9 @@ function tutPlace() {
 }
 
 /* ================= laboratorio personaggi ================= */
-const GSETS = {nuovi:['musicanti', 'carrozza', 'nani', 'pifferaio'], nuovi2:['hanselgretel', 'raperonzolo', 'ranocchio', 'pollicino'], cattivi:['goblin', 'fionda', 'orco', 'strega', 'lupo', 'topi', 'gattovolpe'], cattivi2:['gnomo', 'fantasma', 'uncino', 'coccodrillo', 'barbablu', 'spaventapasseri', 'mangiafuoco', 'gigante', 'tremotino'], rari:['matrigna', 'retopi', 'omino', 'babajaga', 'stregamare', 'reginacattiva', 'reginanevi'], leggende:['pandizenzero', 'mummia', 'morgana', 'grifone', 'spirito', 'bestia'], leggende2:['ciclope', 'senzatesta', 'dracula', 'medusa', 'basilisco', 'cavaliereverde', 'peterpan'], buoni:['soldatino', 'arciere', 'principe', 'cacciatore', 'porcellino', 'fata', 're'], nuovi4:['reginacuori', 'stregone', 'pescecane', 'diavolo'], buoni4:['cappuccetto', 'robinhood', 'gattostivali', 'biancaneve', 'pinocchio', 'merlino', 'alice']};
+const GSETS = {nuovi:['musicanti', 'carrozza', 'nani', 'pifferaio'], nuovi2:['hanselgretel', 'raperonzolo', 'ranocchio', 'pollicino'], cattivi:['goblin', 'fionda', 'orco', 'strega', 'lupo', 'topi', 'gattovolpe'], cattivi2:['gnomo', 'fantasma', 'uncino', 'coccodrillo', 'barbablu', 'spaventapasseri', 'mangiafuoco', 'gigante', 'tremotino'], rari:['matrigna', 'retopi', 'omino', 'babajaga', 'stregamare', 'reginacattiva', 'reginanevi'], leggende:['pandizenzero', 'mummia', 'morgana', 'grifone', 'spirito', 'bestia'], leggende2:['ciclope', 'senzatesta', 'dracula', 'medusa', 'basilisco', 'cavaliereverde', 'peterpan'], buoni:['soldatino', 'arciere', 'principe', 'cacciatore', 'porcellino', 'fata', 're'], nuovi4:['reginacuori', 'stregone', 'pescecane', 'diavolo'], buoni4:['cappuccetto', 'robinhood', 'gattostivali', 'biancaneve', 'pinocchio', 'merlino', 'alice'], buoni5:['bimbi', 'wendy', 'giglio', 'cappellaio', 'brucaliffo', 'lepre', 'alibaba', 'sinbad'], buoni6:['guardie', 'renna', 'fiammiferaia', 'soldatineve', 'cavcristallo', 'gemelli', 'pisello'], boss5:['tappeto', 'aladino', 'kai', 'gerda']};
 const VILLAINS = new Set(['goblin', 'fionda', 'orco', 'strega', 'lupo', 'troll', 'topi', 'topo', 'gattovolpe', 'gnomo', 'fantasma', 'uncino', 'coccodrillo', 'barbablu', 'spaventapasseri', 'mangiafuoco', 'gigante', 'burattino', 'corvo', 'tremotino', 'matrigna', 'matrigna_m', 'sorella', 'retopi', 'omino', 'babajaga', 'stregamare', 'reginacattiva', 'reginanevi', 'morgana', 'miraggio', 'basilisco', 'grifone', 'cavaliereverde', 'spirito', 'bestia', 'pandizenzero', 'ciclope', 'senzatesta', 'dracula', 'pipistrello', 'mummia', 'medusa', 'reginacuori', 'reginacuori_q', 'carta', 'stregone', 'pescecane', 'diavolo']);
+const GNAME = {tappeto:'Tappeto Volante', aladino:'Aladino', kai:'Kai', gerda:'Gerda'};
 const NAMES = {medusa:'Medusa', pandizenzero:'Omino di Pan di Zenzero', mummia:'Mummia', morgana:'Fata Morgana', grifone:'Grifone', spirito:'Spirito nella Bottiglia', bestia:'Bestia Latrante', ciclope:'Ciclope', senzatesta:'Cavaliere senza Testa', dracula:'Conte Dracula', basilisco:'Basilisco', cavaliereverde:'Cavaliere Verde', peterpan:'Peter Pan (buono)', matrigna:'Matrigna e Sorellastre', retopi:'Re dei Topi', omino:'Omino di Burro', babajaga:'Baba Jaga', stregamare:'Strega del Mare', reginacattiva:'Regina Cattiva', reginanevi:'Regina delle Nevi', hanselgretel:'Hansel e Gretel', raperonzolo:'Raperonzolo', ranocchio:'Ranocchio', pollicino:'Pollicino', musicanti:'Musicanti', carrozza:'Carrozza', nani:'Sette Nani', pifferaio:'Pifferaio', uncino:'Uncino', coccodrillo:'Coccodrillo', barbablu:'Barbablù', spaventapasseri:'Spaventapasseri', mangiafuoco:'Mangiafuoco', gigante:'Gigante', burattino:'Burattino', topi:'Topi', gattovolpe:'Gatto e Volpe', gnomo:'Gnomo', fantasma:'Fantasma', goblin:'Goblin', fionda:'Fionda', orco:'Orco', strega:'Strega', lupo:'Lupo', troll:'Troll', soldatino:'Soldatino', arciere:'Arciere', principe:'Principe', cacciatore:'Cacciatore', porcellino:'Porcellino', fata:'Fata', re:'Re', reginacuori:'Regina di Cuori', reginacuori_q:'Regina di Cuori', carta:'Carta-soldato', stregone:'Stregone di Aladino', pescecane:'Pescecane', diavolo:'Diavolo', cappuccetto:'Cappuccetto Rosso', robinhood:'Robin Hood', gattostivali:'Gatto con gli Stivali', biancaneve:'Biancaneve', pinocchio:'Pinocchio', merlino:'Mago Merlino', alice:'Alice'};
 const gal = {set:'nuovi', light:0, atk:true};
 function galBuild() {
@@ -5274,7 +5665,7 @@ function galCamera() {
 }
 function galLabels() {
   ctx.save(); ctx.font = `400 ${Math.max(11, Math.min(20, W / 30))}px "Lilita One", "Trebuchet MS", sans-serif`; ctx.textAlign = 'center';
-  for (const [i, u] of s.units.entries()) { const x = (u.x - cam.x) * k, y = groundY + 26 + (s.units.length > 4 && i % 2 ? 20 : 0); ctx.lineWidth = 4; ctx.lineJoin = 'round'; ctx.strokeStyle = '#0d0a18'; ctx.strokeText(NAMES[u.k], x, y); ctx.fillStyle = '#fff6e0'; ctx.fillText(NAMES[u.k], x, y); }
+  for (const [i, u] of s.units.entries()) { const x = (u.x - cam.x) * k, y = groundY + 26 + (s.units.length > 4 && i % 2 ? 20 : 0); ctx.lineWidth = 4; ctx.lineJoin = 'round'; ctx.strokeStyle = '#0d0a18'; ctx.strokeText((NAMES[u.k] || WNAME[u.k] || GNAME[u.k] || u.k), x, y); ctx.fillStyle = '#fff6e0'; ctx.fillText((NAMES[u.k] || WNAME[u.k] || GNAME[u.k] || u.k), x, y); }
   ctx.restore();
 }
 
