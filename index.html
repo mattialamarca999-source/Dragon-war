@@ -542,7 +542,8 @@ button:focus-visible{outline:3px solid #5aa0ff;outline-offset:2px}
 .cnMine{display:flex;gap:8px}
 .cnMine div{flex:1;background:#fff4d8;border:2px solid var(--ink);border-radius:12px;padding:6px;text-align:center;font:800 12px var(--body)}
 .cnMine b{display:block;font-family:var(--display);font-weight:400;font-size:24px;color:var(--evil)}
-.cnEd{gap:10px;padding:14px}
+.cnEd{gap:10px;padding:14px;overflow-y:auto}
+.cnEd>*,#cnPickBox>*{flex-shrink:0}
 .cnEd h2{text-align:center}
 .cnEmbBig{display:flex;justify-content:center}
 .cnNameRo{font-family:var(--display)}
@@ -556,7 +557,7 @@ button:focus-visible{outline:3px solid #5aa0ff;outline-offset:2px}
 .cnSeg button{font-family:var(--display);font-size:14px;border:2px solid var(--ink);border-radius:10px;background:#fff8e6;color:var(--ink);padding:7px 2px;box-shadow:0 2px 0 #000;cursor:pointer}
 .cnSeg button.on{background:var(--gold2)}
 .cnSel{font:800 15px var(--body);border:3px solid var(--ink);border-radius:12px;padding:8px 10px;background:#fff8e6;color:var(--ink);width:100%}
-#cnEdErr{color:#c8303e;min-height:0}
+#cnEdErr{color:#c8303e!important;font-weight:800;margin:2px 0 4px!important;line-height:1.35;position:relative;z-index:1}
 #cnEdErr:empty{display:none}
 .cnRules{font:700 14px/1.4 var(--body);margin:0;padding-left:18px}
 .cnRules li{margin:3px 0}
@@ -7045,7 +7046,7 @@ function clanLeader() {                                                        /
   if (me && me.r === 2 && own !== FBX.uid) { fbRef('clanMembers/' + CL.cid + '/' + FBX.uid).update({r:1}).catch(() => {}); return; }
   if (own === FBX.uid || (o && Date.now() - (o.s || 0) < CLAN_IDLE)) return;
   const others = Object.entries(CL.mem).filter(([u]) => u !== own).sort((a, b) => (b[1].r || 0) - (a[1].r || 0) || (a[1].j || 0) - (b[1].j || 0));
-  if (others.length && others[0][0] === FBX.uid) fbRef().update({[`clans/${CL.cid}/own`]:FBX.uid, [`clanMembers/${CL.cid}/${FBX.uid}/r`]:2})
+  if (others.length && others[0][0] === FBX.uid) fbRef('clans/' + CL.cid + '/own').set(FBX.uid).then(() => fbRef('clanMembers/' + CL.cid + '/' + FBX.uid + '/r').set(2))
     .then(() => clanSys(`${clanMe().n} è il nuovo capo del clan`)).catch(() => {});
 }
 const clanMe = () => CL.mem[FBX.uid] || {};
@@ -7093,7 +7094,7 @@ function clanDot() {                                                           /
 }
 
 /* ---------- azioni ---------- */
-const clanErr = e => /permission/i.test((e && (e.code || e.message)) || '') ? 'Il server del gioco non lo permette (regole del database da aggiornare).' : 'Controlla la connessione e riprova.';
+const clanErr = (e, step) => (/permission/i.test((e && (e.code || e.message)) || '') ? 'Il server non lo permette: controlla che su Firebase ci siano le regole nuove (Passo 1 della guida).' : 'Controlla la connessione e riprova.') + (step ? ` [codice C${step}]` : '');
 async function clanCreate(d) {
   const n = (d.n || '').replace(/\s+/g, ' ').trim();
   if (!/^[A-Za-z0-9À-ÿ' ]{3,20}$/.test(n)) return 'Il nome: da 3 a 20 lettere o numeri.';
@@ -7102,13 +7103,21 @@ async function clanCreate(d) {
   const nl = n.toLowerCase();
   try { if ((await fbRef('clanNames/' + nl).once('value')).exists()) return 'C’è già un clan con questo nome.'; } catch (e) {}
   const cid = fbRef('clans').push().key, wk = weekKey(), me = (FBX.me && FBX.me.name) || 'Capo';
-  try {
-    await fbRef().update({
-      [`clans/${cid}`]:{n, nl, e:{f:d.f, c:d.c, s:d.s}, d:d.d, t:d.t, xp:0, cnt:1, own:FBX.uid, ct:fbNow(), wk:{k:wk, p:0}},
-      [`clanNames/${nl}`]:cid,
-      [`clanMembers/${cid}/${FBX.uid}`]:{n:me, r:2, j:fbNow(), s:fbNow(), w:0, wk, wt:0, dn:0},
-      [`users/${FBX.uid}/clan`]:cid});
-  } catch (e) { return clanErr(e); }
+  // un pezzo alla volta: ogni passo il server lo controlla da solo (se uno fallisce, tolgo quelli già fatti)
+  const steps = [
+    () => fbRef('clans/' + cid).set({n, nl, e:{f:d.f, c:d.c, s:d.s}, d:d.d, t:d.t, xp:0, cnt:1, own:FBX.uid, ct:fbNow(), wk:{k:wk, p:0}}),
+    () => fbRef('clanMembers/' + cid + '/' + FBX.uid).set({n:me, r:2, j:fbNow(), s:fbNow(), w:0, wk, wt:0, dn:0}),
+    () => fbRef('clanNames/' + nl).set(cid),
+    () => fbRef('users/' + FBX.uid + '/clan').set(cid)];
+  for (let i = 0; i < steps.length; i++) {
+    try { await steps[i](); }
+    catch (e) {
+      if (i >= 2) await fbRef('clanNames/' + nl).remove().catch(() => {});
+      if (i >= 1) await fbRef('clanMembers/' + cid + '/' + FBX.uid).remove().catch(() => {});
+      if (i >= 1) await fbRef('clans/' + cid).remove().catch(() => {});
+      return i === 2 ? 'C’è già un clan con questo nome.' : clanErr(e, i + 1);
+    }
+  }
   save.gold -= CLAN_COST; persist(); UIS.up(); CL.list = null;
   setTimeout(() => clanSys(`${me} ha fondato il clan «${n}»`), 400);
   return null;
@@ -7147,7 +7156,7 @@ async function clanLeave(silent) {                                            //
     } else {
       if (info.own === FBX.uid) {
         const nx = others.sort((a, b) => (b[1].r || 0) - (a[1].r || 0) || (a[1].j || 0) - (b[1].j || 0))[0];
-        await fbRef().update({[`clanMembers/${cid}/${nx[0]}/r`]:2, [`clans/${cid}/own`]:nx[0]});
+        await fbRef('clanMembers/' + cid + '/' + nx[0] + '/r').set(2); await fbRef('clans/' + cid + '/own').set(nx[0]);
         if (!silent) clanSys(`${nx[1].n} è il nuovo capo del clan`);
       }
       if (!silent) await fbRef('clanChat/' + cid).push({u:FBX.uid, n:me.n || '?', k:'s', x:`${me.n || 'Qualcuno'} è uscito dal clan`, t:fbNow()}).catch(() => {});
@@ -7222,7 +7231,7 @@ async function clanUnmute(u) { try { await fbRef('clanMembers/' + CL.cid + '/' +
 async function clanSetRole(u, r) {
   const m = CL.mem[u]; if (!m || clanRole() < 2) return;
   try {
-    if (r === 2) { await fbRef().update({[`clanMembers/${CL.cid}/${u}/r`]:2, [`clans/${CL.cid}/own`]:u}); await fbRef('clanMembers/' + CL.cid + '/' + FBX.uid).update({r:1}); clanSys(`${m.n} è il nuovo capo del clan`); }
+    if (r === 2) { await fbRef('clanMembers/' + CL.cid + '/' + u + '/r').set(2); await fbRef('clans/' + CL.cid + '/own').set(u); await fbRef('clanMembers/' + CL.cid + '/' + FBX.uid).update({r:1}); clanSys(`${m.n} è il nuovo capo del clan`); }
     else { await fbRef('clanMembers/' + CL.cid + '/' + u).update({r}); clanSys(r ? `${m.n} ora è vice` : `${m.n} non è più vice`); }
   } catch (e) { toast(clanErr(e)); }
 }
@@ -7442,10 +7451,10 @@ async function clanRenderFind(box) {
       const q = CL.q ? fbRef('clans').orderByChild('nl').startAt(CL.q).endAt(CL.q + '').limitToFirst(25) : fbRef('clans').orderByChild('xp').limitToLast(60);
       const s = await q.once('value'), a = []; s.forEach(c => { a.push(Object.assign({id:c.key}, c.val())); });
       CL.list = {q:CL.q, t:Date.now(), a:CL.q ? a : a.filter(c => c.t !== 2 && (c.cnt || 0) < clanCap(clanLv(c.xp))).sort((x, y) => (y.xp || 0) - (x.xp || 0)).slice(0, 20)};
-    } catch (e) { CL.list = {q:CL.q, t:Date.now(), a:[], err:1}; }
+    } catch (e) { CL.list = {q:CL.q, t:Date.now(), a:[], err:/permission/i.test((e && (e.code || e.message)) || '') ? 2 : 1}; }
   }
   const res = $('cnRes'); if (!res) return; res.innerHTML = '';
-  if (!CL.list.a.length) { res.innerHTML = `<p class="note cnNote">${CL.list.err ? 'Non riesco a caricare i clan.' : CL.q ? 'Nessun clan con questo nome.' : 'Ancora nessun clan: crea il primo!'}</p>`; return; }
+  if (!CL.list.a.length) { res.innerHTML = `<p class="note cnNote">${CL.list.err === 2 ? 'Il Clan non è ancora attivo sul server: vanno pubblicate su Firebase le regole nuove (Passo 1 della guida).' : CL.list.err ? 'Non riesco a caricare i clan.' : CL.q ? 'Nessun clan con questo nome.' : 'Ancora nessun clan: crea il primo!'}</p>`; return; }
   for (const c of CL.list.a) {
     const lv = clanLv(c.xp), full = (c.cnt || 0) >= clanCap(lv), row = document.createElement('div'); row.className = 'cnRow';
     row.innerHTML = `${clanEmblem(c.e || {f:0, c:0, s:0}, lv, 50)}<div class="tx"><b></b><small>Liv ${lv} · ${c.cnt || 0}/${clanCap(lv)} membri · <span class="cnTipo t${c.t || 0}">${CLAN_TYPE[c.t || 0]}</span></small><small class="ds">«${clanEsc(CLAN_DESC[c.d || 0])}»</small></div>${full ? '<small>Pieno</small>' : c.t === 2 ? '<small>Su invito</small>' : `<button class="upBtn" ${pend ? 'disabled' : ''}>${c.t === 1 ? 'Chiedi' : 'Entra'}</button>`}`;

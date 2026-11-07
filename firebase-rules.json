@@ -70,21 +70,18 @@
    ],
    "$cid": {
     ".write": "auth != null && ((!data.exists() && newData.child('own').val() === auth.uid && newData.child('cnt').val() === 1 && newData.child('xp').val() === 0) || (data.exists() && !newData.exists() && (data.child('own').val() === auth.uid || root.child('admins/'+auth.uid).exists()) && data.child('cnt').val() <= 1))",
-    ".validate": "newData.hasChildren(['n','nl','own','cnt','xp']) && newData.child('n').isString() && newData.child('n').val().length >= 3 && newData.child('n').val().length <= 20 && newData.child('nl').val() === newData.child('n').val().toLowerCase()",
+    ".validate": "newData.hasChildren(['n','own','cnt','xp']) && newData.child('n').isString() && newData.child('n').val().length >= 3 && newData.child('n').val().length <= 20",
     "e": {
-     ".write": "auth != null && data.parent().child('own').val() === auth.uid"
+     ".write": "auth != null && root.child('clans/'+$cid+'/own').val() === auth.uid"
     },
     "d": {
-     ".write": "auth != null && data.parent().child('own').val() === auth.uid",
-     ".validate": "newData.isNumber()"
+     ".write": "auth != null && root.child('clans/'+$cid+'/own').val() === auth.uid"
     },
     "t": {
-     ".write": "auth != null && data.parent().child('own').val() === auth.uid",
-     ".validate": "newData.val() === 0 || newData.val() === 1 || newData.val() === 2"
+     ".write": "auth != null && root.child('clans/'+$cid+'/own').val() === auth.uid"
     },
     "own": {
-     ".write": "auth != null && newData.exists() && (data.val() === auth.uid || (newData.val() === auth.uid && root.child('clanMembers/'+$cid+'/'+auth.uid).exists() && (!root.child('clanMembers/'+$cid+'/'+data.val()).exists() || root.child('clanMembers/'+$cid+'/'+data.val()).child('s').val() < now - 1209600000)))",
-     ".validate": "root.child('clanMembers/'+$cid+'/'+newData.val()).exists() || newData.parent().parent().parent().child('clanMembers/'+$cid+'/'+newData.val()).exists()"
+     ".write": "auth != null && newData.isString() && (data.val() === auth.uid || (newData.val() === auth.uid && root.child('clanMembers/'+$cid+'/'+auth.uid).exists() && (!root.child('clanMembers/'+$cid+'/'+data.val()).exists() || root.child('clanMembers/'+$cid+'/'+data.val()+'/s').val() < now - 1209600000)))"
     },
     "xp": {
      ".write": "auth != null && root.child('clanMembers/'+$cid+'/'+auth.uid).exists() && newData.isNumber() && newData.val() > data.val() && newData.val() <= data.val() + 40"
@@ -93,25 +90,22 @@
      ".write": "auth != null && newData.isNumber() && newData.val() >= 0 && newData.val() <= 50 && (newData.val() === data.val() + 1 || newData.val() === data.val() - 1)"
     },
     "wk": {
-     ".write": "auth != null && root.child('clanMembers/'+$cid+'/'+auth.uid).exists() && newData.child('k').isString() && newData.child('p').isNumber() && (newData.child('p').val() === 1 || newData.child('p').val() === data.child('p').val() + 1)"
-    },
-    "$other": {
-     ".validate": "$other === 'n' || $other === 'nl' || $other === 'ct'"
+     ".write": "auth != null && root.child('clanMembers/'+$cid+'/'+auth.uid).exists()"
     }
    }
   },
   "clanNames": {
    ".read": "auth != null",
    "$nl": {
-    ".write": "auth != null && ((!data.exists() && newData.isString() && newData.parent().parent().child('clans/'+newData.val()+'/own').val() === auth.uid) || (data.exists() && !newData.exists() && (root.child('clans/'+data.val()+'/own').val() === auth.uid || !root.child('clans/'+data.val()).exists() || root.child('admins/'+auth.uid).exists())))"
+    ".write": "auth != null && ((!data.exists() && newData.isString() && root.child('clans/'+newData.val()+'/own').val() === auth.uid) || (data.exists() && !newData.exists() && (root.child('clans/'+data.val()+'/own').val() === auth.uid || !root.child('clans/'+data.val()).exists() || root.child('admins/'+auth.uid).exists())))"
    }
   },
   "clanMembers": {
    "$cid": {
     ".read": "auth != null",
     "$uid": {
-     ".write": "auth != null && ((auth.uid === $uid && ((!data.exists() && newData.child('r').val() === 0 && (root.child('clans/'+$cid+'/t').val() === 0 || root.child('clanInv/'+$cid+'/'+$uid).exists())) || (!data.exists() && newData.child('r').val() === 2 && !root.child('clans/'+$cid).exists() && newData.parent().parent().parent().child('clans/'+$cid+'/own').val() === auth.uid) || (data.exists() && !newData.exists()) || (data.exists() && newData.exists() && newData.child('r').val() <= data.child('r').val() && newData.child('mu').val() === data.child('mu').val()) || (data.exists() && newData.child('r').val() === 2 && newData.child('mu').val() === data.child('mu').val() && newData.parent().parent().parent().child('clans/'+$cid+'/own').val() === auth.uid))) || (auth.uid !== $uid && (root.child('clanMembers/'+$cid+'/'+auth.uid).exists() ? root.child('clanMembers/'+$cid+'/'+auth.uid).child('r').val() : -1) >= 1 && ((!data.exists() && newData.child('r').val() === 0 && root.child('clanReq/'+$cid+'/'+$uid).exists()) || (data.exists() && !newData.exists() && data.child('r').val() < (root.child('clanMembers/'+$cid+'/'+auth.uid).exists() ? root.child('clanMembers/'+$cid+'/'+auth.uid).child('r').val() : -1)) || (data.exists() && newData.exists() && data.child('r').val() < (root.child('clanMembers/'+$cid+'/'+auth.uid).exists() ? root.child('clanMembers/'+$cid+'/'+auth.uid).child('r').val() : -1) && newData.child('r').val() === data.child('r').val() && newData.child('n').val() === data.child('n').val()) || ((root.child('clanMembers/'+$cid+'/'+auth.uid).exists() ? root.child('clanMembers/'+$cid+'/'+auth.uid).child('r').val() : -1) === 2 && root.child('clans/'+$cid+'/own').val() === auth.uid && data.exists() && newData.exists() && data.child('r').val() < 2 && newData.child('n').val() === data.child('n').val()))) || root.child('admins/'+auth.uid).exists())",
-     ".validate": "newData.hasChildren(['n','r']) && newData.child('n').isString() && newData.child('n').val().length <= 20 && (newData.child('r').val() === 0 || newData.child('r').val() === 1 || newData.child('r').val() === 2)"
+     ".write": "auth != null && ((auth.uid === $uid && ((!data.exists() && newData.child('r').val() === 0 && (root.child('clans/'+$cid+'/t').val() === 0 || root.child('clanInv/'+$cid+'/'+$uid).exists())) || (newData.child('r').val() === 2 && root.child('clans/'+$cid+'/own').val() === auth.uid) || (data.exists() && !newData.exists()) || (data.exists() && newData.exists() && newData.child('r').val() <= data.child('r').val() && newData.child('mu').val() === data.child('mu').val()))) || (auth.uid !== $uid && (root.child('clanMembers/'+$cid+'/'+auth.uid).exists() && root.child('clanMembers/'+$cid+'/'+auth.uid).child('r').val() >= 1) && ((!data.exists() && newData.child('r').val() === 0 && root.child('clanReq/'+$cid+'/'+$uid).exists()) || (data.exists() && !newData.exists() && data.child('r').val() < root.child('clanMembers/'+$cid+'/'+auth.uid).child('r').val()) || (data.exists() && newData.exists() && data.child('r').val() < root.child('clanMembers/'+$cid+'/'+auth.uid).child('r').val() && newData.child('r').val() === data.child('r').val()) || (root.child('clans/'+$cid+'/own').val() === auth.uid && data.exists() && newData.exists() && data.child('r').val() < 2))) || root.child('admins/'+auth.uid).exists())",
+     ".validate": "newData.hasChildren(['n','r']) && newData.child('n').isString() && (newData.child('r').val() === 0 || newData.child('r').val() === 1 || newData.child('r').val() === 2)"
     }
    }
   },
@@ -119,7 +113,7 @@
    "$cid": {
     ".read": "auth != null",
     "$uid": {
-     ".write": "auth != null && (auth.uid === $uid || (root.child('clanMembers/'+$cid+'/'+auth.uid).exists() ? root.child('clanMembers/'+$cid+'/'+auth.uid).child('r').val() : -1) >= 1)"
+     ".write": "auth != null && (auth.uid === $uid || (root.child('clanMembers/'+$cid+'/'+auth.uid).exists() && root.child('clanMembers/'+$cid+'/'+auth.uid).child('r').val() >= 1))"
     },
     ".write": "auth != null && !newData.exists() && (root.child('clans/'+$cid+'/own').val() === auth.uid || root.child('admins/'+auth.uid).exists())"
    }
@@ -128,7 +122,7 @@
    "$cid": {
     ".read": "auth != null",
     "$uid": {
-     ".write": "auth != null && ((auth.uid === $uid && !newData.exists()) || (root.child('clanMembers/'+$cid+'/'+auth.uid).exists() ? root.child('clanMembers/'+$cid+'/'+auth.uid).child('r').val() : -1) >= 1)"
+     ".write": "auth != null && ((auth.uid === $uid && !newData.exists()) || (root.child('clanMembers/'+$cid+'/'+auth.uid).exists() && root.child('clanMembers/'+$cid+'/'+auth.uid).child('r').val() >= 1))"
     },
     ".write": "auth != null && !newData.exists() && (root.child('clans/'+$cid+'/own').val() === auth.uid || root.child('admins/'+auth.uid).exists())"
    }
@@ -141,8 +135,8 @@
      "t"
     ],
     "$mid": {
-     ".write": "auth != null && (root.child('admins/'+auth.uid).exists() || (root.child('clanMembers/'+$cid+'/'+auth.uid).exists() && ((!data.exists() && newData.child('u').val() === auth.uid && !root.child('bans/'+auth.uid).exists() && (!root.child('clanMembers/'+$cid+'/'+auth.uid).child('mu').exists() || root.child('clanMembers/'+$cid+'/'+auth.uid).child('mu').val() < now)) || (data.exists() && newData.exists() && newData.child('u').val() === data.child('u').val() && newData.child('x').val() === data.child('x').val() && newData.child('t').val() === data.child('t').val() && newData.child('k').val() === data.child('k').val() && newData.child('h').val() === data.child('h').val()) || (data.exists() && !newData.exists() && (data.child('u').val() === auth.uid || (root.child('clanMembers/'+$cid+'/'+auth.uid).exists() ? root.child('clanMembers/'+$cid+'/'+auth.uid).child('r').val() : -1) >= 1)))))",
-     ".validate": "newData.hasChildren(['u','t','k']) && (!newData.child('x').exists() || (newData.child('x').isString() && newData.child('x').val().length <= 200))"
+     ".write": "auth != null && (root.child('admins/'+auth.uid).exists() || (root.child('clanMembers/'+$cid+'/'+auth.uid).exists() && ((!data.exists() && newData.child('u').val() === auth.uid && !root.child('bans/'+auth.uid).exists() && (!root.child('clanMembers/'+$cid+'/'+auth.uid).child('mu').exists() || root.child('clanMembers/'+$cid+'/'+auth.uid).child('mu').val() < now)) || (data.exists() && newData.exists() && newData.child('u').val() === data.child('u').val() && newData.child('x').val() === data.child('x').val() && newData.child('t').val() === data.child('t').val() && newData.child('h').val() === data.child('h').val()) || (data.exists() && !newData.exists() && (data.child('u').val() === auth.uid || root.child('clanMembers/'+$cid+'/'+auth.uid).child('r').val() >= 1)))))",
+     ".validate": "newData.hasChildren(['u','t'])"
     }
    }
   },

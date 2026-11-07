@@ -100,7 +100,7 @@ $('del').onclick = async () => {
     if (cid) { try {
       const mem = (await R('clanMembers/' + cid).once('value')).val() || {}, info = (await R('clans/' + cid).once('value')).val() || {}, others = Object.entries(mem).filter(([k]) => k !== uid);
       if (!others.length) { for (const p of ['clanChat', 'clanReq', 'clanInv']) await R(p + '/' + cid).remove().catch(() => {}); await R('clans/' + cid).remove().catch(() => {}); if (info.nl) await R('clanNames/' + info.nl).remove().catch(() => {}); }
-      else if (info.own === uid) { const nx = others.sort((a, b) => (b[1].r || 0) - (a[1].r || 0) || (a[1].j || 0) - (b[1].j || 0))[0][0]; await R().update({[`clanMembers/${cid}/${nx}/r`]:2, [`clans/${cid}/own`]:nx}).catch(() => {}); }
+      else if (info.own === uid) { const nx = others.sort((a, b) => (b[1].r || 0) - (a[1].r || 0) || (a[1].j || 0) - (b[1].j || 0))[0][0]; await R('clanMembers/' + cid + '/' + nx + '/r').set(2).catch(() => {}); await R('clans/' + cid + '/own').set(nx).catch(() => {}); }
       await R('clanMembers/' + cid + '/' + uid).remove().catch(() => {});
       if (others.length) await R('clans/' + cid + '/cnt').transaction(c => Math.max(0, (c || 1) - 1)).catch(() => {});
     } catch (e) {} }
