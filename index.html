@@ -146,6 +146,8 @@ body.inMenu .top, body.inMenu .hud{display:none}
 .modeSw button[aria-pressed="true"]{background:#f2b33d}
 .modeSw button.hero[aria-pressed="true"]{background:#c42a3a;color:#fff}
 .wCard.cap{background:linear-gradient(120deg,#3a1050,#c84a2a)!important}
+.passMini{color:#f2b33d;-webkit-text-stroke:1px #1c1a24}
+.wCard.inf{background:linear-gradient(120deg,#0a1a3a,#2a6ab8 60%,#7ee0ff)!important}
 .wCard .pz{display:flex;align-items:center;gap:4px}
 .wCard .pz canvas{width:26px;height:24px}
 .wCard.done .num{background:#2a7a3a}
@@ -655,7 +657,7 @@ button:focus-visible{outline:3px solid #5aa0ff;outline-offset:2px}
       <div class="card">
         <h2 id="endTitle">Castello conquistato!</h2>
         <div class="stars" id="endStars"></div>
-        <div class="reward"><span class="coin"></span><span id="endGold">+150 oro</span></div>
+        <div class="reward"><span class="coin" id="endCoin"></span><span id="endGold">+150 oro</span></div>
         <div class="stats">
           <div><b id="stTime">0:00</b><span>tempo</span></div>
           <div><b id="stKills">0</b><span>buoni battuti</span></div>
@@ -957,7 +959,7 @@ const DW = (() => {
   const L = {base:70, castle:930};
 
   function create(o = {}) {
-    const lv = o.coop != null ? coopLevel(o.coop) : levelOf(o.world || 0, o.level || 0), squad = (o.squad || START).slice(0, DECK);
+    const lv = o.inf ? infLevel() : o.coop != null ? coopLevel(o.coop) : levelOf(o.world || 0, o.level || 0), squad = (o.squad || START).slice(0, DECK);
     const up = o.up || {}, ut = up.tana || {}, ud = up.drago || {};       // potenziamenti della Fucina del Drago
     const baseHp = Math.round(1200 * (1 + .1 * (ut.hp || 0)));
     const s = {
@@ -969,7 +971,7 @@ const DW = (() => {
       rateMul:1 + .05 * (ut.rate || 0), fireMul:1 + .08 * (ud.dmg || 0), uLv:up.units || {},
       cds:{}, timers:lv.waves.map(w => w[1]), eMul:(lv.eMul || 1) * (o.hard === true ? HARD : o.hard || 1), hard:!!o.hard,
       rule:o.rule || {}, boss:(o.rule && o.rule.boss) || lv.boss, bossAt:(o.rule && o.rule.bossAt) || lv.bossAt, extra:((o.rule && o.rule.extra) || []).map(e => e.slice()),
-      units:[], shots:[], ev:[],
+      units:[], shots:[], ev:[], inf:o.inf ? {wave:0, next:2, q:[], qt:0} : null,
       stats:{kills:0, lost:0, spent:0, stolen:0, spawns:0, fires:0, kidnaps:0, beaten:{}}
     };
     for (const k of squad) s.cds[k] = 0;
@@ -1096,6 +1098,7 @@ const DW = (() => {
     if (a && a.steal) { gain(s, a.steal); s.stats.stolen++; s.ev.push({type:'steal', x:tgt.x, y:tgt.y, n:a.steal}); }
   }
   function hurtBuilding(s, side, dmg, ak) {                        // side = chi viene colpito
+    if (s.inf && side === 1) return;                               // nella Modalità Infinita il castello non si conquista: si resiste
     const b = side ? s.castle : s.base;
     if (side) dmg = Math.round(dmg * 1.6 * ((U[ak] && U[ak].siege) || 1));   // le truppe d'assedio picchiano forte sulle mura
     if (s.overtime) dmg = Math.round(dmg * (side ? 1 : 1.6) * 3);                // assedio finale nei duelli
@@ -1104,7 +1107,27 @@ const DW = (() => {
     if (b.hp <= 0 && !s.over) { s.over = side ? 1 : -1; s.ev.push({type:'end', win:s.over > 0}); }
   }
 
+  // ---- Modalità Infinita: ondate numerate senza fine ogni 20 secondi, un boss ogni 3 ondate ----
+  const INF_POOL = [[1, ['soldatino', 'arciere', 'cacciatore', 'nani', 'porcellino']], [5, ['ranocchio', 'raperonzolo', 'fata', 'pollicino', 'hanselgretel', 'principe']],
+    [10, ['carrozza', 'musicanti', 'pifferaio', 'merlino', 'peterpan', 'gattostivali', 'robinhood', 'cappuccetto', 'spiritista']], [15, ['biancaneve', 'alice', 'wendy', 'cappellaio', 'sinbad', 'renna', 'cavcristallo', 'gemelli']]];
+  const INF_WAVE = 20;
+  const infBosses = () => Object.keys(ELITE).filter(k => U[k] && !/dracula/.test(k)).sort((a, b) => ELITE[a].hp - ELITE[b].hp);
+  const infLevel = () => ({world:5, castle:0, g:40, name:'Modalità Infinita', hp:1e9, gold:0, eMul:1, waves:[], rush:[], shard:null, shardN:0, boss:null, bossAt:1e9, semi:false, inf:true});
+  const infMul = n => 1.15 * (.85 + .07 * (n - 1) + .0025 * (n - 1) * (n - 1));
+  function infAI(s, dt) {
+    const I = s.inf;
+    if ((I.next -= dt) <= 0) {
+      const n = ++I.wave; I.next = INF_WAVE; I.qt = 0; s.eMul = infMul(n);
+      const pool = INF_POOL.filter(p => n >= p[0]).flatMap(p => p[1]), cnt = Math.min(16, 3 + Math.floor(n * 1.1));
+      for (let i = 0; i < cnt; i++) I.q.push([i * 16 / cnt, pool[Math.floor(Math.random() * pool.length)]]);
+      s.ev.push({type:'wave', n});
+      if (n % 3 === 0) { const B = infBosses(), b = B[(n / 3 - 1) % B.length]; addUnit(s, b); s.ev.push({type:'boss', k:b}); }
+    }
+    I.qt += dt;
+    while (I.q.length && I.q[0][0] <= I.qt && s.units.filter(u => u.side === 1 && !u.dead).length < 24) addGroup(s, I.q.shift()[1]);
+  }
   function castleAI(s, dt) {
+    if (s.inf) infAI(s, dt);
     const lv = s.lv, ramp = (1 + Math.max(0, s.t - 30) / 170) * (s.mp || (s.lv.world || 0) < NIGHT.from ? 1 : 1 + NIGHT.pace * nightP(s.t));
     const enemies = s.units.filter(u => u.side === 1 && !u.dead).length;
     if (enemies < 16) lv.waves.forEach((w, i) => { if ((s.timers[i] -= dt) <= 0) { addGroup(s, w[0]); s.timers[i] = w[2] / ramp; } });
@@ -1336,7 +1359,7 @@ const DW = (() => {
     const f = s.base.hp / s.base.max;
     return f >= .9 ? 3 : f >= .5 ? 2 : 1;
   }
-  const reward = s => (s.hard ? 2 : 1) * (s.over > 0 ? s.lv.gold + 50 * stars(s) + s.stats.stolen * 2 : 20 + Math.round((30 + 3 * (s.lv.g || 0)) * (1 - s.castle.hp / s.castle.max)));
+  const reward = s => s.inf ? 0 : (s.hard ? 2 : 1) * (s.over > 0 ? s.lv.gold + 50 * stars(s) + s.stats.stolen * 2 : 20 + Math.round((30 + 3 * (s.lv.g || 0)) * (1 - s.castle.hp / s.castle.max)));
 
   // I Capricci del Drago: battaglie con una regola storta. Se ne apre uno per ogni mappa completata
   const BCOST = {soldatino:40, arciere:60, pollicino:55, hanselgretel:60, ranocchio:70, raperonzolo:80, peterpan:80, cacciatore:90, fata:100, pifferaio:100, nani:110, porcellino:120, carrozza:130, musicanti:140, principe:180, bimbi:70, wendy:90, giglio:70, cappellaio:100, brucaliffo:100, lepre:70, alibaba:90, sinbad:150, guardie:120, renna:130, fiammiferaia:100, soldatineve:110, cavcristallo:170, gemelli:120, pisello:120, cappuccetto:55, pinocchio:70, robinhood:90, gattostivali:90, alice:90, biancaneve:100, merlino:120};   // i buoni costano Bontà
@@ -1369,7 +1392,7 @@ const DW = (() => {
     {name:'Parata dei boss',       txt:'Tre semiboss in fila. Nessuno li ha invitati.',             w:9, c:0, rule:{extra:[['generale', 30], ['capo_nani', 80], ['carrozza_oro', 130]]}, prize:'gigante'}
   ];
   CAPRICCI.forEach((c, i) => { c.fr = 10; c.gold = 300 + 100 * i; });
-  return {nightP, BCOST, COOP, coopLevel, costOf, LEG, DECK, HAND, HARD, CAPRICCI, EK, U, ELITE, ROSTER, START, LEVELS, WORLDS, TOTAL, levelOf, firstIdx, FIRE, WALLET_MAX_LV, walletMax, walletRate, walletCost, create, spawn, canSpawn, upgradeWallet, fire, step, stars, reward};
+  return {INF_WAVE, nightP, BCOST, COOP, coopLevel, costOf, LEG, DECK, HAND, HARD, CAPRICCI, EK, U, ELITE, ROSTER, START, LEVELS, WORLDS, TOTAL, levelOf, firstIdx, FIRE, WALLET_MAX_LV, walletMax, walletRate, walletCost, create, spawn, canSpawn, upgradeWallet, fire, step, stars, reward};
 })();
 
 const BETA = false;
@@ -4502,6 +4525,7 @@ function handleEvents() {
     }
     else if (e.type === 'bhit') shakeB[e.side] = .15;
     else if (e.type === 'fire') { dragon.phase = 'antic'; dragon.pt = 0; dragon.fireT = 1.15; shake = 9; hitstop = .08; vibrate(40); }
+    else if (e.type === 'wave') { toast(e.n % 3 === 0 ? `Ondata ${e.n}: arriva un boss!` : `Ondata ${e.n}`); toastT = 2; if (e.n > 1) shake = Math.max(shake, 3); }
     else if (e.type === 'rush') { toast('Il castello chiama i rinforzi!'); shake = 5; }
     else if (e.type === 'wallet') toast(`Cattiveria livello ${e.lv}!`);
     else if (e.type === 'end') { endT = 0; shake = 10; vibrate(80); }
@@ -4683,6 +4707,12 @@ function showWorlds() {
   TH = 'bosco'; HERO = false; toScene(); $('worlds').hidden = false;
   $('worldsGold').textContent = save.gold.toLocaleString('it-IT');
   const list = $('wList'); list.innerHTML = '';
+  const infOpen = BETA || bossBeaten(0), ib = document.createElement('button'), IB = save.inf || {};
+  ib.className = 'wCard inf' + (infOpen ? '' : ' lock');
+  ib.innerHTML = `<span class="num"><svg viewBox="0 0 24 24" width="28" height="28"><path d="M6.5 8.5C3 8.5 3 15.5 6.5 15.5S10 12 12 12s3.5 3.5 5.5 3.5S21 8.5 17.5 8.5 14 12 12 12 10 8.5 6.5 8.5z" fill="none" stroke="#7ee0ff" stroke-width="2.6"/></svg></span>
+    <span class="tx"><b>Modalità Infinita</b><small>${infOpen ? (IB.best ? `Record: ondata ${IB.best} · ${fmtT(IB.bestT || 0)}` : 'Ondate senza fine · 1 vita a partita') : 'Si apre quando completi la mappa 1'}</small></span>`;
+  ib.onclick = () => infOpen ? showSquad(0, 0, {inf:true}) : toast('Prima batti il boss della mappa 1');
+  list.appendChild(ib);
   const nOpen = DW.CAPRICCI.filter((_, i) => capOpen(i)).length, nDone = DW.CAPRICCI.filter((_, i) => save.capr[i]).length, cb = document.createElement('button');
   cb.className = 'wCard cap' + (nOpen ? '' : ' lock');
   cb.innerHTML = `<span class="num"><svg viewBox="0 0 24 24" width="26" height="26"><path d="M3 18 L4 7 L9 12 L12 5 L15 12 L20 7 L21 18 Z" fill="#ffd35a" stroke="#1c1a24" stroke-width="1.6" stroke-linejoin="round"/></svg></span>
@@ -5198,7 +5228,7 @@ function showSquad(w, i, opt = {}) {
   musicPreload(w);
   sqOpt = opt; HERO = !!opt.hard; sqMax = opt.cap != null && DW.CAPRICCI[opt.cap].pick || DW.DECK;
   TH = DW.WORLDS[w].theme; toScene(); $('squad').hidden = false; sqLevel = i; sqWorld = w;
-  $('sqLevel').textContent = opt.cap != null ? `Capriccio · ${DW.CAPRICCI[opt.cap].name}` : `${opt.hard ? 'Eroica · ' : ''}${w + 1}-${i + 1} · ${DW.levelOf(w, i).name}`;
+  $('sqLevel').textContent = opt.inf ? 'Modalità Infinita' : opt.cap != null ? `Capriccio · ${DW.CAPRICCI[opt.cap].name}` : `${opt.hard ? 'Eroica · ' : ''}${w + 1}-${i + 1} · ${DW.levelOf(w, i).name}`;
   sqSel = save.squad.filter(isUnlocked).slice(0, sqMax);
   if (sqMax !== DW.DECK || save.deckI === 0) for (const kk of DW.START.concat(DW.ROSTER)) if (sqSel.length < sqMax && isUnlocked(kk) && !sqSel.includes(kk)) sqSel.push(kk);   // i mazzi 2 e 3 partono vuoti
   renderDecks();
@@ -5359,7 +5389,7 @@ function showNoLives() {
 }
 function newBattle(world = curWorld, level = curLevel, opt = curOpt) {
   abandonBattle();
-  if (!BETA) { livesTick(); if (save.lives.n <= 0) { if (running) { running = false; backFromBattle(); } showNoLives(); return; } battleCharged = isReplay(world, level, opt); if (battleCharged) { livesUse(); toast('Castello già vinto: -1 vita'); } }
+  if (!BETA) { livesTick(); if (save.lives.n <= 0) { if (running) { running = false; backFromBattle(); } showNoLives(); return; } battleCharged = !!opt.inf || isReplay(world, level, opt); if (battleCharged) { livesUse(); toast(opt.inf ? 'Modalità Infinita: -1 vita' : 'Castello già vinto: -1 vita'); } }
   curLevel = level; curWorld = world; curOpt = opt; TH = DW.WORLDS[world].theme; HERO = !!opt.hard;
   const cp = opt.cap != null ? DW.CAPRICCI[opt.cap] : null;
   const W0 = DW.WORLDS[world];
@@ -5368,18 +5398,34 @@ function newBattle(world = curWorld, level = curLevel, opt = curOpt) {
   const squad = cp && cp.squad ? cp.squad.slice() : (sqSel.length ? sqSel : save.squad).filter(isUnlocked).slice(0, cp && cp.pick || DW.DECK);
   tutHide(); tut = !save.tutorialDone && world === 0 && level === 0 && !cp && !opt.hard ? {i:0, shown:false, t:0} : null; resize();
   const secret = !cp && opt.hard && world === DW.WORLDS.length - 1 && level === W0.n - 1 && draculaReady(squad);   // la notte giusta, al Trono del Drago, arriva il Conte
-  s = DW.create(Object.assign({world, level, squad, up:save.up, hard:!!opt.hard, rule:cp ? cp.rule : secret ? {extra:[['dracula_boss', 35]]} : null}, BETA ? {beta:true, walletLv:DW.WALLET_MAX_LV, startCat:DW.walletMax(DW.WALLET_MAX_LV)} : {}));
+  s = DW.create(Object.assign({world, level, squad, up:save.up, hard:!!opt.hard, inf:!!opt.inf, rule:cp ? cp.rule : secret ? {extra:[['dracula_boss', 35]]} : null}, BETA ? {beta:true, walletLv:DW.WALLET_MAX_LV, startCat:DW.walletMax(DW.WALLET_MAX_LV)} : {}));
   if (!BETA && save.boost.fire > 0) { s.fire.v = 1; save.boost.fire--; persist(); setTimeout(() => toast(`Fiammata pronta! (ne restano ${save.boost.fire})`), 400); }   // potenziamento del negozio
   buildButtons();
   if (secret) setTimeout(() => { if (running) toast('Qualcuno ti osserva dal buio…'); }, 4200);
-  $('lvlName').textContent = cp ? cp.name : s.lv.name; $('lvlSub').textContent = cp ? 'Capriccio del Drago' : `${opt.hard ? 'Eroica · ' : ''}${DW.WORLDS[world].name} · ${level + 1}/${DW.WORLDS[world].n}`;
+  $('lvlName').textContent = cp ? cp.name : s.lv.name; $('lvlSub').textContent = opt.inf ? `Ondate senza fine · record ${(save.inf && save.inf.best) || 0}` : cp ? 'Capriccio del Drago' : `${opt.hard ? 'Eroica · ' : ''}${DW.WORLDS[world].name} · ${level + 1}/${DW.WORLDS[world].n}`;
   particles = []; nums = []; bubbles = []; hooks = []; seenId = 0; endT = 0; ended = false; dragon.fireT = 0; dragon.phase = 'idle';
   running = true; paused = false; countT = 3; viaT = 0; lightP = 0; setTimeout(musicUpdate, 0);
 }
 function pause() { if (!running || ended || inMenu) return; if (NET.g) { $('restartBtn').hidden = true; $('ovPause').hidden = false; return; } $('restartBtn').hidden = false; paused = true; $('ovPause').hidden = false; }   // online la battaglia non si ferma
 function resume() { paused = false; $('ovPause').hidden = true; if (!ended) countT = 3; }
+const fmtT = t => `${Math.floor(t / 60)}:${String(Math.floor(t % 60)).padStart(2, '0')}`;
+function finishInf() {                                                      // Modalità Infinita: record, punti del Pass
+  const n = s.inf.wave, done = Math.max(0, n - 1), I = save.inf = save.inf || {best:0, bestT:0}, rec = n > I.best || (n === I.best && s.t > I.bestT);
+  if (rec) { I.best = n; I.bestT = s.t; }
+  const pts = 10 * Math.floor(done / 5); if (pts) passXp(pts);
+  trackBattle({win:false, st:0, kills:s.stats.kills, fires:s.stats.fires, kidnaps:s.stats.kidnaps, beaten:s.stats.beaten, deck:s.squad, t:s.t, boss:false, cap:false, hard:false});
+  persist(); UIS.lose();
+  $('endTitle').textContent = rec ? `Nuovo record: ondata ${n}!` : `Sei arrivato all’ondata ${n}`;
+  $('endStars').hidden = true; $('endCoin').hidden = true; $('endGold').innerHTML = pts ? `<span class="passMini">★</span> +${pts} punti del Pass` : 'Arriva all’ondata 6 per i punti del Pass';
+  $('stTime').textContent = fmtT(s.t); $('stKills').textContent = s.stats.kills; $('stLost').textContent = s.stats.lost;
+  $('endUnlock').innerHTML = ''; $('endUnlock').hidden = true;
+  $('endNote').textContent = `Record: ondata ${I.best} · ${fmtT(I.bestT)}. Ogni 5 ondate superate: +10 punti del Pass.`;
+  $('endMenuBtn').textContent = 'Mondi'; $('againBtn').textContent = 'Riprova';
+  $('ovEnd').hidden = false;
+}
 function finish() {
   if (NET.g) return mpFinish();
+  if (curOpt.inf) { ended = true; $('againBtn').disabled = false; return finishInf(); }
   ended = true; $('againBtn').disabled = false;
   if (!BETA && s.over <= 0 && !battleCharged) { battleCharged = true; livesUse(); }   // persa: -1 vita
   const g2 = !BETA && s.over > 0 && save.boost.gold2 > 0; if (g2) save.boost.gold2--;   // oro doppio dal negozio
@@ -5419,7 +5465,7 @@ function finish() {
   const timeout = !win && s.rule.timeLimit && s.t >= s.rule.timeLimit;
   (win ? UIS.win : UIS.lose)();
   $('endTitle').textContent = timeout ? 'Tempo scaduto!' : finale ? 'Il Trono del Drago' : win ? (ci != null ? 'Capriccio accontentato!' : s.lv.boss ? `${DW.U[s.lv.boss].elite.name}: giù!` : 'Castello conquistato!') : 'La tana è caduta!';
-  $('endStars').innerHTML = hard ? crownHtml(st) : starHtml(st); $('endStars').hidden = !win;
+  $('endCoin').hidden = false; $('endStars').innerHTML = hard ? crownHtml(st) : starHtml(st); $('endStars').hidden = !win;
   $('endGold').innerHTML = `+${g + bonus} oro` + (ruGot ? ` · <span class="ruby"></span> +${ruGot}` : '');
   $('stTime').textContent = `${Math.floor(s.t / 60)}:${String(Math.floor(s.t % 60)).padStart(2, '0')}`;
   $('stKills').textContent = s.stats.kills; $('stLost').textContent = s.stats.lost;
@@ -5435,7 +5481,7 @@ function finish() {
   $('againBtn').textContent = win ? 'Rigioca' : 'Riprova';
   $('ovEnd').hidden = false;
 }
-const backFromBattle = () => curOpt.cap != null ? showCapr() : showMap(curWorld, !!curOpt.hard);
+const backFromBattle = () => curOpt.inf ? showWorlds() : curOpt.cap != null ? showCapr() : showMap(curWorld, !!curOpt.hard);
 $('menuPlay').onclick = showWorlds; $('againBtn').onclick = () => NET.g ? mpRematch() : newBattle(); $('restartBtn').onclick = () => newBattle();
 $('menuBtn').onclick = () => NET.g ? leaveGame() : (abandonBattle(), backFromBattle()); $('endMenuBtn').onclick = () => NET.g ? leaveGame() : backFromBattle();
 /* ================= suoni e musica ================= */
@@ -5666,7 +5712,8 @@ function drawBars() {
   };
   const w = Math.min(170, (W - 48) / 2);
   bar(12, w, s.base.hp / s.base.max, '#b07be0', `Tana ${Math.ceil(s.base.hp)}`, false);
-  bar(W - 12 - w, w, s.castle.hp / s.castle.max, s.mp === 'duel' ? '#e8453a' : '#5aa0ff', `${s.mp === 'duel' ? 'Amico' : 'Castello'} ${Math.ceil(s.castle.hp)}`, true);
+  if (s.inf) bar(W - 12 - w, w, 1 - s.inf.next / DW.INF_WAVE, '#3ab8e8', `Ondata ${s.inf.wave} · ${fmtT(s.t)}`, true);
+  else bar(W - 12 - w, w, s.castle.hp / s.castle.max, s.mp === 'duel' ? '#e8453a' : '#5aa0ff', `${s.mp === 'duel' ? 'Amico' : 'Castello'} ${Math.ceil(s.castle.hp)}`, true);
   if (s.rule.timeLimit) {                                                  // conto alla rovescia
     const left = Math.max(0, s.rule.timeLimit - s.t), txt = `${Math.floor(left / 60)}:${String(Math.floor(left % 60)).padStart(2, '0')}`;
     ctx.font = '400 22px "Lilita One", sans-serif'; ctx.textAlign = 'center'; ctx.lineWidth = 5; ctx.strokeStyle = '#0d0a18'; ctx.fillStyle = left < 20 ? '#ff6a5a' : '#fff';
@@ -6029,7 +6076,7 @@ function renderOnlineFriends(box) {                                        // ne
   }
 }
 const NET_VER = KL.length + ':' + DW.ROSTER.length;
-const ET = ['hit', 'die', 'boom', 'fire', 'legend', 'freeze', 'revive', 'stone', 'dive', 'kidnap', 'donkey', 'mirror', 'mirage', 'summon', 'heal', 'steal', 'overtime', 'grow', 'dodge', 'vanish', 'curse', 'gaze', 'mute', 'fear', 'charm', 'stun', 'leap', 'release', 'rush', 'boss', 'bhit', 'wallet', 'behead', 'swallow', 'genie', 'robbed', 'spawn', 'midas', 'inspire', 'smoke', 'chain', 'tentacle', 'betray', 'hyde', 'spring', 'roll', 'cookie', 'song', 'dash', 'stomp', 'bounce'];
+const ET = ['hit', 'die', 'boom', 'fire', 'legend', 'freeze', 'revive', 'stone', 'dive', 'kidnap', 'donkey', 'mirror', 'mirage', 'summon', 'heal', 'steal', 'overtime', 'grow', 'dodge', 'vanish', 'curse', 'gaze', 'mute', 'fear', 'charm', 'stun', 'leap', 'release', 'rush', 'boss', 'bhit', 'wallet', 'behead', 'swallow', 'genie', 'robbed', 'spawn', 'midas', 'inspire', 'smoke', 'chain', 'tentacle', 'betray', 'hyde', 'spring', 'roll', 'cookie', 'song', 'dash', 'stomp', 'bounce', 'wave'];
 const NET = {room:null, db:null, user:null, myId:null, peer:null, peers:[], g:null, invSeen:new Set(), board:{}, boardOk:false, lastBoard:''};
 const MODES = {duel:{name:'Duello', txt:'Cattivi contro cattivi: due tane, vince chi abbatte quella dell’altro.'},
   alt:{name:'Duello alternativo', txt:'Uno fa i cattivi, l’altro i buoni. A ogni rivincita ci si scambia.'},
