@@ -457,6 +457,111 @@ button:focus-visible{outline:3px solid #5aa0ff;outline-offset:2px}
 .fgProg small{opacity:.75;font-size:11px}
 .fgDet .tx .mn{display:inline;font-family:var(--body);font-weight:900;font-size:inherit;line-height:inherit;color:#7b3fb3}
 .fgProg.stuck{border-radius:0 0 12px 12px}
+
+/* ---------- Clan ---------- */
+#clan *,#ovClanEd *,#ovClanPick *,#ovClanRules *,#cnPop *{box-sizing:border-box}
+.cnBody{flex:1;min-height:0;display:flex;flex-direction:column;gap:10px;width:min(560px,100%);align-self:center}
+.cnNote{color:#e8dcff!important;padding:10px}
+.cnHead{display:flex;align-items:center;gap:10px;background:var(--glass);border:2px solid rgba(255,211,90,.45);border-radius:16px;padding:8px 10px;box-shadow:0 3px 0 #000;text-align:left;color:#fff;font:inherit;cursor:pointer;position:relative;flex:none}
+.cnHead .tx{flex:1;min-width:0;display:flex;flex-direction:column;gap:3px}
+.cnHead b{font-family:var(--display);font-weight:400;font-size:22px;line-height:1;color:#fff;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.cnHead small{font:800 12px var(--body);color:#d9c8ff}
+.cnEdit{position:absolute;right:8px;top:6px;font-style:normal;font-size:14px}
+.cnLvRow{display:flex;align-items:center;gap:6px}
+.cnBar{flex:1;height:12px;border-radius:99px;background:#0d0a18;border:2px solid var(--ink);overflow:hidden;position:relative}
+.cnBar i{position:absolute;inset:0 auto 0 0;background:linear-gradient(90deg,#b07be0,#ffd35a);border-radius:99px}
+.cnLv{font-family:var(--display);font-size:13px;color:var(--ink);background:var(--gold2);border:2px solid var(--ink);border-radius:8px;padding:1px 6px;white-space:nowrap;flex:none}
+.cnTabs{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;flex:none}
+.cnTabs button{font-family:var(--display);font-size:15px;border:2px solid var(--ink);border-radius:12px;background:var(--parch2);color:var(--ink);padding:8px 2px;box-shadow:0 3px 0 #000;position:relative;cursor:pointer}
+.cnTabs button[aria-selected="true"]{background:var(--gold2)}
+.cnTabs em{position:absolute;top:-7px;right:-4px;font:900 11px var(--body);font-style:normal;background:#e8304a;color:#fff;border:2px solid var(--ink);border-radius:99px;padding:0 5px}
+.cnPane{flex:1;min-height:0;display:flex;flex-direction:column;gap:8px}
+.cnChat{flex:1;min-height:0;overflow-y:auto;display:flex;flex-direction:column;gap:8px;padding:2px 2px 6px;-webkit-user-select:text;user-select:text}
+.cnMsg{display:flex;gap:8px;align-items:flex-end;max-width:88%;flex:none}
+.cnMsg.me{align-self:flex-end;flex-direction:row-reverse}
+.cnBub{background:var(--parch);color:var(--ink);border:2px solid var(--ink);border-radius:14px 14px 14px 4px;padding:6px 10px;box-shadow:0 2px 0 #000;font:700 14px/1.3 var(--body);min-width:0;overflow-wrap:anywhere;cursor:pointer}
+.cnMsg.me .cnBub{background:#e9d6ff;border-radius:14px 14px 4px 14px;cursor:default}
+.cnBub .who{display:flex;align-items:center;gap:5px;font:900 12px var(--body);color:var(--evil);margin-bottom:1px}
+.cnRole{font:900 10px var(--body);text-transform:uppercase;letter-spacing:.5px;border-radius:6px;padding:0 4px;border:1.5px solid var(--ink);color:var(--ink)}
+.cnRole.r2{background:var(--gold2)}.cnRole.r1{background:#9cc0ff}
+.cnBub time{display:block;text-align:right;font:700 10px var(--body);color:var(--muted)}
+.cnSys{align-self:center;text-align:center;font:800 12px var(--body);color:#d9c8ff;background:rgba(20,14,36,.75);border-radius:99px;padding:3px 10px;flex:none}
+.cnMsg.hid .cnBub{background:#d9d2c4;color:#6b5b44;font-style:italic}
+.cnReq{align-self:stretch;max-width:none}
+.cnReq.me{flex-direction:row}
+.cnReq .cnBub{flex:1;display:flex;align-items:center;gap:10px;background:#fff4d8;border-radius:14px}
+.cnReq.me .cnBub{background:#efe2ff}
+.cnReq canvas{width:52px;height:48px;border-radius:10px;border:2px solid var(--ink);background:#2a2140;flex:none}
+.cnReq .tx{flex:1;min-width:0}
+.cnReq .kn{font-family:var(--display);font-weight:400;font-size:17px}
+.cnReq small{font:800 11px var(--body);color:var(--muted)}
+.cnPbar{display:block;height:10px;border-radius:99px;background:#d8c49a;border:2px solid var(--ink);overflow:hidden;margin:4px 0 2px}
+.cnPbar i{display:block;height:100%;background:#7b3fb3}
+.cnReq .upBtn{padding:6px 10px;font-size:15px}
+.coin.sm{width:12px;height:12px;vertical-align:-2px}
+.cnRar{font:900 10px var(--body);text-transform:uppercase;border-radius:6px;padding:0 4px;color:#fff;border:1.5px solid var(--ink);vertical-align:2px}
+.cnRar.r0{background:#6b8a5a}.cnRar.r1{background:#3d6fd1}.cnRar.r2{background:#7b3fb3}
+.cnIn{display:flex;gap:6px;flex:none}
+.cnIn input{flex:1;min-width:0;font:700 16px var(--body);border:3px solid var(--ink);border-radius:12px;padding:8px 10px;background:var(--parch);color:var(--ink)}
+.cnIn .upBtn{padding:8px 10px}
+.upBtn.alt{background:var(--parch2)}
+.cnPop{position:absolute;z-index:31;background:var(--parch);border:3px solid var(--ink);border-radius:14px;box-shadow:0 5px 0 #000;display:flex;flex-direction:column;overflow:hidden;min-width:200px;max-width:calc(100% - 24px)}
+.cnPop button{font:800 15px var(--body);color:var(--ink);background:none;border:0;border-bottom:2px solid rgba(28,26,36,.15);padding:11px 14px;text-align:left;cursor:pointer}
+.cnPop button:last-child{border-bottom:0}.cnPop button.red{color:#c8303e}
+.cnPop small{font:800 11px var(--body);color:var(--muted);padding:6px 14px 2px}
+.cnDim{position:absolute;inset:0;z-index:30;background:rgba(8,6,20,.45)}
+.cnList{flex:1;min-height:0;overflow-y:auto;display:flex;flex-direction:column;gap:9px;padding:2px 2px 8px}
+.cnRow{background:var(--parch);color:var(--ink);border:3px solid var(--ink);border-radius:14px;padding:8px 10px;display:flex;align-items:center;gap:10px;box-shadow:0 4px 0 #000;flex:none}
+.cnRow .tx{flex:1;min-width:0;display:flex;flex-direction:column;gap:1px}
+.cnRow b{font-family:var(--display);font-weight:400;font-size:19px;line-height:1.05;overflow-wrap:anywhere}
+.cnRow small{font:700 12px var(--body);color:var(--muted)}
+.cnRow small.ds{font-style:italic}
+.cnRow .upBtn{padding:6px 10px;font-size:15px}
+.cnRow.me{background:#ffe9a8}
+.cnRow.cnIntro{background:#e9d6ff}
+.cnTipo{font:900 11px var(--body);border-radius:6px;padding:0 5px;border:1.5px solid var(--ink);background:#c9f0c0;color:var(--ink)}
+.cnTipo.t1{background:#ffe1a0}.cnTipo.t2{background:#ffc0c8}
+.cnRank{width:30px;height:30px;border-radius:50%;background:var(--ink);color:var(--gold2);display:flex;align-items:center;justify-content:center;font-family:var(--display);font-size:16px;flex:none}
+.cnRank.g1{background:#ffd35a;color:var(--ink)}.cnRank.g2{background:#d8dde8;color:var(--ink)}.cnRank.g3{background:#e0a46a;color:var(--ink)}
+.cnSec{font-family:var(--display);font-size:17px;color:var(--gold2);-webkit-text-stroke:3px var(--ink);paint-order:stroke fill;margin-top:2px}
+.cnNew{display:flex;align-items:center;justify-content:center;gap:8px;flex:none}
+.cnActs{display:flex;flex-direction:column;gap:8px;margin-top:6px}
+.cnLeave{color:#c8303e}
+.cnChest{background:var(--parch);color:var(--ink);border:3px solid var(--ink);border-radius:18px;padding:14px;box-shadow:0 5px 0 #000;display:flex;flex-direction:column;gap:12px;flex:none}
+.cnChest h3{margin:0;font-family:var(--display);font-weight:400;font-size:24px;line-height:1;text-align:center}
+.cnChest .note{margin-top:-4px}
+.cnChestImg{display:flex;justify-content:center}
+.cnTrack{position:relative;height:18px;border-radius:99px;background:#d8c49a;border:3px solid var(--ink);margin:28px 16px 62px}
+.cnTrack>i{position:absolute;inset:0 auto 0 0;background:linear-gradient(90deg,#ff8a3a,#ffd35a);border-radius:99px}
+.cnMs{position:absolute;top:50%;transform:translate(-50%,-50%);display:flex;flex-direction:column;align-items:center}
+.cnMs .pin{width:26px;height:26px;border-radius:50%;background:#fff8e6;border:3px solid var(--ink);display:flex;align-items:center;justify-content:center;font:900 12px var(--body)}
+.cnMs.done .pin{background:#5fae4c;color:#fff}
+.cnMs .lb{position:absolute;top:-25px;font:900 12px var(--body);white-space:nowrap}
+.cnMs .rw{position:absolute;top:22px;display:flex;flex-direction:column;align-items:center;gap:1px;font:900 11px/1.1 var(--body);white-space:nowrap;text-align:center}
+.cnMs .rw .eggI{width:22px;height:auto}
+.cnMine{display:flex;gap:8px}
+.cnMine div{flex:1;background:#fff4d8;border:2px solid var(--ink);border-radius:12px;padding:6px;text-align:center;font:800 12px var(--body)}
+.cnMine b{display:block;font-family:var(--display);font-weight:400;font-size:24px;color:var(--evil)}
+.cnEd{gap:10px;padding:14px}
+.cnEd h2{text-align:center}
+.cnEmbBig{display:flex;justify-content:center}
+.cnNameRo{font-family:var(--display)}
+.cnOpt{display:flex;flex-direction:column;gap:6px}
+.cnOpt>span{font:900 13px var(--body);color:var(--muted);text-transform:uppercase;letter-spacing:.5px}
+.cnPick{display:flex;flex-wrap:wrap;gap:6px}
+.cnPick button{border:2px solid var(--ink);border-radius:10px;background:#fff8e6;padding:2px;display:flex;box-shadow:0 2px 0 #000;cursor:pointer}
+.cnPick button.on{outline:3px solid var(--lava);outline-offset:1px;background:#ffe1a0}
+.cnPick .sw{width:30px;height:30px;border-radius:8px;border:2px solid var(--ink)}
+.cnSeg{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+.cnSeg button{font-family:var(--display);font-size:14px;border:2px solid var(--ink);border-radius:10px;background:#fff8e6;color:var(--ink);padding:7px 2px;box-shadow:0 2px 0 #000;cursor:pointer}
+.cnSeg button.on{background:var(--gold2)}
+.cnSel{font:800 15px var(--body);border:3px solid var(--ink);border-radius:12px;padding:8px 10px;background:#fff8e6;color:var(--ink);width:100%}
+#cnEdErr{color:#c8303e;min-height:0}
+#cnEdErr:empty{display:none}
+.cnRules{font:700 14px/1.4 var(--body);margin:0;padding-left:18px}
+.cnRules li{margin:3px 0}
+.cnPickGrid{max-height:52vh;overflow-y:auto;padding:4px}
+.mGrid.n9{grid-template-columns:repeat(3,1fr)}
 </style>
 
 <div id="app">
@@ -482,7 +587,7 @@ button:focus-visible{outline:3px solid #5aa0ff;outline-offset:2px}
       <div class="mFoot">
         <button class="forgeBtn" id="menuForge"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 10h13a4 4 0 0 1-4 4H8l1 3h6v3H6v-3h1l-1-3a4 4 0 0 1-3-4z" fill="#1c1a24"/><path d="M17 4c1.5 2 3 3 3 5a3 3 0 0 1-6 0c0-1 .5-2 1-2.5.3 1 .8 1.5 1.5 1.5C16 7 16 5.5 17 4z" fill="#ff6a2a"/></svg>La Fucina del Drago</button>
         <button class="playMain" id="menuPlay"><span>Gioca</span><small id="menuSub">Bosco incantato</small></button>
-        <div class="mGrid">
+        <div class="mGrid n9">
           <button class="mb" id="menuCal"><em class="dot" hidden>!</em><svg viewBox="0 0 28 28" aria-hidden="true"><rect x="4" y="6" width="20" height="19" rx="3" fill="#f6e7c4" stroke="#1c1a24" stroke-width="2"/><path d="M4 11h20" stroke="#1c1a24" stroke-width="2"/><path d="M9 3v6M19 3v6" stroke="#1c1a24" stroke-width="2.4" stroke-linecap="round"/><rect x="8" y="14" width="5" height="4" rx="1" fill="#e8453a"/><rect x="15" y="14" width="5" height="4" rx="1" fill="#f2b33d"/><rect x="8" y="19.5" width="5" height="3.5" rx="1" fill="#f2b33d"/></svg>Calendario</button>
           <button class="mb" id="menuPass"><em class="dot" hidden>!</em><svg viewBox="0 0 28 28" aria-hidden="true"><path d="M4 7h20v5a2.5 2.5 0 0 0 0 5v5H4v-5a2.5 2.5 0 0 0 0-5z" fill="#f2b33d" stroke="#1c1a24" stroke-width="2" stroke-linejoin="round"/><path d="M14 10l1.6 3.2 3.4.4-2.5 2.3.7 3.4L14 17.6l-3.2 1.7.7-3.4L9 13.6l3.4-.4z" fill="#7b3fb3"/></svg>Pass</button>
           <button class="mb" id="menuMiss"><svg viewBox="0 0 28 28" aria-hidden="true"><rect x="5" y="3" width="18" height="23" rx="3" fill="#f6e7c4" stroke="#1c1a24" stroke-width="2"/><path d="M9 10l2 2 4-4M9 17l2 2 4-4" stroke="#7b3fb3" stroke-width="2.4" fill="none" stroke-linecap="round" stroke-linejoin="round"/><path d="M17 11h3M17 18h3" stroke="#1c1a24" stroke-width="2" stroke-linecap="round"/></svg>Missioni<em class="dot" hidden>!</em></button>
@@ -491,6 +596,7 @@ button:focus-visible{outline:3px solid #5aa0ff;outline-offset:2px}
           <button class="mb" id="menuFriends"><em class="dot" id="frDot" hidden>1</em><svg viewBox="0 0 28 28" aria-hidden="true"><circle cx="10" cy="10" r="4" fill="#b07be0" stroke="#1c1a24" stroke-width="2"/><circle cx="19" cy="11" r="3.5" fill="#5fae4c" stroke="#1c1a24" stroke-width="2"/><path d="M3 24c0-5 3-8 7-8s7 3 7 8z" fill="#b07be0" stroke="#1c1a24" stroke-width="2"/><path d="M15 24c0-4 2-7 5-7s5 3 5 7z" fill="#5fae4c" stroke="#1c1a24" stroke-width="2"/></svg>Amici</button>
           <button class="mb" id="menuBoard"><svg viewBox="0 0 28 28" aria-hidden="true"><rect x="10" y="8" width="8" height="17" fill="#f2b33d" stroke="#1c1a24" stroke-width="2"/><rect x="2" y="14" width="8" height="11" fill="#c9ccd6" stroke="#1c1a24" stroke-width="2"/><rect x="18" y="17" width="8" height="8" fill="#c58a4a" stroke="#1c1a24" stroke-width="2"/><path d="M14 2l1.4 2.8 3 .4-2.2 2 .6 3-2.8-1.5-2.8 1.5.6-3-2.2-2 3-.4z" fill="#ffd35a" stroke="#1c1a24" stroke-width="1.2"/></svg>Classifica</button>
           <button class="mb" id="menuOnline"><svg viewBox="0 0 28 28" aria-hidden="true"><circle cx="14" cy="14" r="11" fill="#3d6fd1" stroke="#1c1a24" stroke-width="2"/><path d="M3 14h22M14 3c-4 4-4 18 0 22M14 3c4 4 4 18 0 22" stroke="#bfe0ff" stroke-width="1.8" fill="none"/></svg>Online</button>
+          <button class="mb" id="menuClan"><em class="dot" hidden>1</em><svg viewBox="0 0 28 28" aria-hidden="true"><path d="M14 2 L24 5 V13 C24 20 19 24 14 26 C9 24 4 20 4 13 V5 Z" fill="#7b3fb3" stroke="#1c1a24" stroke-width="2" stroke-linejoin="round"/><path d="M9 8 L12 12 L14 7 L16 12 L19 8 L18 16 H10 Z" fill="#ffd35a" stroke="#1c1a24" stroke-width="1.5" stroke-linejoin="round"/><path d="M10 19 H18" stroke="#ffd35a" stroke-width="2" stroke-linecap="round"/></svg>Clan</button>
         </div>
       </div>
     </div>
@@ -528,6 +634,21 @@ button:focus-visible{outline:3px solid #5aa0ff;outline-offset:2px}
     <div class="scr" id="online" hidden>
       <div class="scrHead"><button class="ib" id="onBack" aria-label="Torna al menu">‹</button><b>Online</b><div class="mGold2"><span class="coin"></span><span id="onGold">0</span></div></div>
       <div class="wList" id="onList"></div>
+    </div>
+
+    <div class="scr" id="clan" hidden>
+      <div class="scrHead"><button class="ib" id="cnBack" aria-label="Torna al menu">‹</button><b>Clan</b><div class="mGold2"><span class="coin"></span><span id="cnGold">0</span></div></div>
+      <div class="cnBody" id="cnBody"></div>
+    </div>
+    <div class="cnDim" id="cnDim" hidden></div>
+    <div class="cnPop" id="cnPop" hidden></div>
+    <div class="ov" id="ovClanEd" hidden><div class="card cnEd" id="cnEdBox"></div></div>
+    <div class="ov" id="ovClanPick" hidden><div class="card" id="cnPickBox"></div></div>
+    <div class="ov" id="ovClanRules" hidden>
+      <div class="card"><h2>Regole della chat</h2>
+        <ul class="cnRules"><li>Rispetta tutti: niente insulti, minacce o prese in giro.</li><li>Niente parolacce: vengono coperte con ***.</li><li>Non scrivere mai dati personali: telefono, indirizzo, scuola, social.</li><li>Niente link, pubblicità o richieste di soldi.</li><li>Se qualcuno ti dà fastidio: tocca il suo messaggio → <b>Segnala</b> o <b>Blocca</b>.</li><li>Chi non rispetta le regole può essere silenziato, cacciato o bloccato dalla chat.</li></ul>
+        <p class="note">Un messaggio segnalato da 3 giocatori sparisce subito. Le segnalazioni arrivano anche a chi gestisce il gioco.</p>
+        <button class="big" id="cnRulesOk">Ho capito, accetto</button><button class="big alt" id="cnRulesNo">Non ora</button></div>
     </div>
 
     <div class="scr" id="friends" hidden>
@@ -4781,7 +4902,7 @@ function toScene() {                                                       // sc
   setTimeout(musicUpdate, 0);
   dragon.glasses = 1; dragon.sad = 0; dragon.rear = 0;
   inMenu = true; inStory = false; running = false; paused = false; ended = false; tutHide();
-  for (const id of ['story', 'menu', 'worlds', 'capr', 'miss', 'wanted', 'shop', 'map', 'squad', 'forge', 'ovPause', 'ovEnd', 'ovGift', 'ovEgg', 'ovOdds', 'online', 'board', 'bpick', 'ovWait', 'ovInvite', 'friends', 'ovName', 'ovPick', 'ovSet', 'ovLives', 'pass', 'ovCal']) $(id).hidden = true;
+  for (const id of ['story', 'menu', 'worlds', 'capr', 'miss', 'wanted', 'shop', 'map', 'squad', 'forge', 'ovPause', 'ovEnd', 'ovGift', 'ovEgg', 'ovOdds', 'online', 'board', 'bpick', 'ovWait', 'ovInvite', 'friends', 'clan', 'ovClanEd', 'ovClanPick', 'ovClanRules', 'cnPop', 'cnDim', 'ovName', 'ovPick', 'ovSet', 'ovLives', 'pass', 'ovCal']) $(id).hidden = true;
   document.body.classList.add('inMenu'); resize();
   s = DW.create(); particles = []; nums = []; bubbles = []; hooks = []; dragon.fireT = 0; dragon.phase = 'idle';
 }
@@ -4793,7 +4914,7 @@ function showMenu() {
   $('menuMiss').querySelector('.dot').hidden = !missReady();
   $('menuRu').textContent = save.ru.toLocaleString('it-IT');
   $('menuShop').querySelector('.dot').hidden = !shopReady();
-  paintMenuDots();
+  paintMenuDots(); clanDot();
   if (calReady() && save.calSeen !== today() && save.seenStory) { save.calSeen = today(); persist(); setTimeout(() => { if (!$('menu').hidden) showCal(); }, 500); }
 }
 function showWorlds() {
@@ -4875,7 +4996,7 @@ function showGift(title, gold, items, extra = {}) {
   for (const kk of fresh) { const d = document.createElement('div'); d.className = 'nu'; d.innerHTML = `<small>Nuovo cattivo</small><canvas width="112" height="104"></canvas><b>${SHORT[kk]}</b>`; drawIcon(d.querySelector('canvas'), kk); box.appendChild(d); }
   $('ovGift').hidden = false; vibrate(30);
 }
-$('giftOk').onclick = () => { $('ovGift').hidden = true; if (!$('miss').hidden) renderMiss(); if (!$('shop').hidden) renderShop(); };
+$('giftOk').onclick = () => { $('ovGift').hidden = true; if (!$('clan').hidden) clanPaint(); if (!$('miss').hidden) renderMiss(); if (!$('shop').hidden) renderShop(); };
 $('oddsOk').onclick = () => { $('ovOdds').hidden = true; };
 const MISS = [
   {id:'win3', txt:'Vinci 3 castelli', need:3, gold:75, add:b => b.win && !b.cap ? 1 : 0},
@@ -5581,7 +5702,7 @@ function newBattle(world = curWorld, level = curLevel, opt = curOpt) {
   const cp = opt.cap != null ? DW.CAPRICCI[opt.cap] : null;
   const W0 = DW.WORLDS[world];
   inMenu = false; inStory = false; document.body.classList.remove('inMenu');
-  for (const id of ['story', 'menu', 'worlds', 'capr', 'miss', 'wanted', 'shop', 'map', 'squad', 'forge', 'ovPause', 'ovEnd', 'ovGift', 'ovEgg', 'ovOdds', 'online', 'board', 'bpick', 'ovWait', 'ovInvite', 'friends', 'ovName', 'ovPick', 'ovSet', 'ovLives', 'pass', 'ovCal']) $(id).hidden = true;
+  for (const id of ['story', 'menu', 'worlds', 'capr', 'miss', 'wanted', 'shop', 'map', 'squad', 'forge', 'ovPause', 'ovEnd', 'ovGift', 'ovEgg', 'ovOdds', 'online', 'board', 'bpick', 'ovWait', 'ovInvite', 'friends', 'clan', 'ovClanEd', 'ovClanPick', 'ovClanRules', 'cnPop', 'cnDim', 'ovName', 'ovPick', 'ovSet', 'ovLives', 'pass', 'ovCal']) $(id).hidden = true;
   const squad = cp && cp.squad ? cp.squad.slice() : (sqSel.length ? sqSel : save.squad).filter(isUnlocked).slice(0, cp && cp.pick || DW.DECK);
   tutHide(); tut = !save.tutorialDone && world === 0 && level === 0 && !cp && !opt.hard ? {i:0, shown:false, t:0} : null; resize();
   const secret = !cp && opt.hard && world === DW.WORLDS.length - 1 && level === W0.n - 1 && draculaReady(squad);   // la notte giusta, al Trono del Drago, arriva il Conte
@@ -5650,6 +5771,7 @@ function finish() {
   if (hard) save.streak = win && s.base.hp >= s.base.max ? save.streak + 1 : 0;   // la serie si rompe se la tana prende anche un graffio
   if (win && s.stats.beaten.dracula_boss && !save.unlocked.includes('dracula')) { save.unlocked.push('dracula'); save.shards.dracula = 0; fresh.push('dracula'); if (save.squad.length < DW.DECK) save.squad.push('dracula'); }
   trackBattle({win, st, kills:s.stats.kills, fires:s.stats.fires, kidnaps:s.stats.kidnaps, beaten:s.stats.beaten, deck:s.squad, t:s.t, boss:!!s.boss, cap:ci != null, hard, lost:s.stats.lost, spawns:s.stats.spawns, stolen:s.stats.stolen, ab:abCnt, avg:deckAvg(s.squad)});
+  if (win && !BETA) clanWin();                                            // un punto per il baule e l'esperienza del clan
   persist(); syncBoard();
   const timeout = !win && s.rule.timeLimit && s.t >= s.rule.timeLimit;
   (win ? UIS.win : UIS.lose)();
@@ -5811,6 +5933,7 @@ document.addEventListener('click', e => {                                  // og
   else UIS.click();
 }, true);
 sndWire();
+$('menuClan').onclick = showClan; $('cnBack').onclick = showMenu;
 $('menuFriends').onclick = () => window.DW_FB ? showFriends() : showOnline(true); $('frBack').onclick = showMenu; $('pickNo').onclick = () => { $('ovPick').hidden = true; }; $('menuOnline').onclick = () => showOnline(); $('menuBoard').onclick = showBoard;
 $('onBack').onclick = showMenu; $('boardBack').onclick = showMenu; $('waitLeave').onclick = () => leaveGame(); $('caprBack').onclick = showWorlds;
 $('worldsBack').onclick = showMenu; $('mapBack').onclick = showWorlds; $('sqBack').onclick = () => sqOpt.cap != null ? showCapr() : showMap(sqWorld, !!sqOpt.hard);
@@ -6157,7 +6280,9 @@ $('cloudGoogle').onclick = async () => {                                     // 
 async function deleteAccount() {                                             // cancella account, nome, codice, amici, posta, classifica e salvataggio online
   const u = firebase.auth().currentUser; if (!u) return false;
   const uid = u.uid, me = FBX.me || {}, ops = [];
-  CLOUD = null; FBX.deleting = true;
+  if (CL.cid) await clanLeave(true).catch(() => {});                       // prima esco dal clan (passandolo a un altro se ero il capo)
+  if (save.clan && save.clan.pend) await fbRef('clanReq/' + save.clan.pend + '/' + uid).remove().catch(() => {});
+  clanOff(); CLOUD = null; FBX.deleting = true;
   for (const p of ['users/' + uid, 'friends/' + uid, 'mail/' + uid, 'status/' + uid]) fbRef(p).off();   // niente più ascolti: non deve ricrearsi nulla                                                              // niente più salvataggi online
   for (const f of Object.keys(FBX.friends || {})) { ops.push(fbRef(`friends/${f}/${uid}`).remove()); ops.push(fbRef(`friends/${uid}/${f}`).remove()); }
   for (const m of Object.keys(FBX.mail || {})) ops.push(fbRef(`mail/${uid}/${m}`).remove());
@@ -6170,7 +6295,7 @@ async function deleteAccount() {                                             // 
   try { localStorage.removeItem(SAVE_KEY); } catch (e) {}
   return true;
 }
-$('cloudDel').onclick = () => clAsk('Eliminare l’account?', `<p class="note">Verranno cancellati per sempre: il tuo nome, il codice amico, gli amici, la posta, la classifica e il salvataggio online, e anche i progressi su questo telefono. Non si può tornare indietro.</p><p class="note">Per confermare scrivi <b>ELIMINA</b>:</p><input id="clIn" placeholder="ELIMINA" autocomplete="off" spellcheck="false">`,
+$('cloudDel').onclick = () => clAsk('Eliminare l’account?', `<p class="note">Verranno cancellati per sempre: il tuo nome, il codice amico, gli amici, la posta, la classifica, il posto nel clan e il salvataggio online, e anche i progressi su questo telefono. Non si può tornare indietro.</p><p class="note">Per confermare scrivi <b>ELIMINA</b>:</p><input id="clIn" placeholder="ELIMINA" autocomplete="off" spellcheck="false">`,
   'Elimina tutto', 'Annulla', async () => {
     if (($('clIn').value || '').trim().toUpperCase() !== 'ELIMINA') return clAsk('Non eliminato', '<p class="note">Non hai scritto ELIMINA: il tuo account è al sicuro.</p>', 'OK');
     const ok = await deleteAccount();
@@ -6187,7 +6312,7 @@ async function fbInit() {
     NET.user = {id:async () => FBX.uid, profiles:async ids => { const out = {}; await Promise.all(ids.map(async id => { const n = (FBX.fdata[id] || {}).name || (id === FBX.uid && FBX.me ? FBX.me.name : null) || (await fbRef('users/' + id + '/name').once('value')).val(); if (n) out[id] = {name:n}; })); return out; }};
     NET.db = {collection:p => ({onSnapshot:(cb, err) => fbRef(p).on('value', snap => { const docs = []; snap.forEach(c => { docs.push({id:c.key, data:() => c.val()}); }); cb({docs}); }, err)}), doc:p => ({set:v => fbRef(p).set(v)})};
     NET.room = {join:async name => fbRoom(name), presence:async () => {}, onPeers:() => () => {}};
-    fbRef('users/' + FBX.uid).on('value', snap => { FBX.me = snap.val() || {}; if (!FBX.me.code) fbClaimCode(); fbPaint(); });
+    fbRef('users/' + FBX.uid).on('value', snap => { FBX.me = snap.val() || {}; if (!FBX.me.code) fbClaimCode(); fbPaint(); clanSync(); });
     fbRef('.info/connected').on('value', snap => { if (!snap.val()) return; const r = fbRef('status/' + FBX.uid); r.onDisconnect().remove(); r.set({st:NET.g ? 'gioca' : 'libero', t:fbNow()}); });
     fbRef('friends/' + FBX.uid).on('value', snap => { FBX.friends = snap.val() || {}; fbWatchFriends(); fbPaint(); });
     fbRef('mail/' + FBX.uid).on('value', snap => { FBX.mail = snap.val() || {}; fbMailArrived(); fbPaint(); });
@@ -6321,14 +6446,15 @@ function renderFriends() {
     if (!mails.length) note('Casella vuota. Nessuno ti scrive? Strano, sei così simpatico.');
     for (const [id, m] of mails) {
       const old = m.type === 'inv' && Date.now() - (m.t || 0) > FB_INV_TTL;
-      const txt = m.type === 'req' ? 'vuole essere tuo amico' : m.type === 'acc' ? 'ha accettato: ora siete amici!' : m.type === 'inv' ? (old ? 'ti aveva sfidato (invito scaduto)' : 'ti sfida: ' + (MODES[m.mode] ? MODES[m.mode].name : 'partita')) : m.type === 'gift' ? `ti regala ${m.n || FB_GIFT} oro` : m.type === 'life' ? 'ti regala 1 vita ❤️' : '“' + (FB_MSGS[m.i] || '…') + '”';
-      const btns = m.type === 'req' ? '<button class="upBtn frNo">No</button><button class="upBtn frYes">Accetta</button>' : m.type === 'inv' && !old ? '<button class="upBtn frNo">No</button><button class="upBtn frYes">Gioca</button>' : m.type === 'gift' || m.type === 'life' ? '<button class="upBtn frYes">Ritira</button>' : m.type === 'msg' && FBX.friends[m.from] ? '<button class="upBtn frNo">Ok</button><button class="upBtn frYes">Rispondi</button>' : '<button class="upBtn frNo">Ok</button>';
-      const r = frRow(`<span class="frAva">${m.type === 'gift' ? '🎁' : m.type === 'life' ? '❤️' : m.type === 'inv' ? '⚔️' : m.type === 'msg' ? '💬' : '✉️'}</span><div class="tx"><b></b><small></small></div>${btns}`);
+      const txt = m.type === 'clan' ? `ti invita nel clan «${m.cn || '?'}»` : m.type === 'req' ? 'vuole essere tuo amico' : m.type === 'acc' ? 'ha accettato: ora siete amici!' : m.type === 'inv' ? (old ? 'ti aveva sfidato (invito scaduto)' : 'ti sfida: ' + (MODES[m.mode] ? MODES[m.mode].name : 'partita')) : m.type === 'gift' ? `ti regala ${m.n || FB_GIFT} oro` : m.type === 'life' ? 'ti regala 1 vita ❤️' : '“' + (FB_MSGS[m.i] || '…') + '”';
+      const btns = m.type === 'clan' ? '<button class="upBtn frNo">No</button><button class="upBtn frYes">Entra</button>' : m.type === 'req' ? '<button class="upBtn frNo">No</button><button class="upBtn frYes">Accetta</button>' : m.type === 'inv' && !old ? '<button class="upBtn frNo">No</button><button class="upBtn frYes">Gioca</button>' : m.type === 'gift' || m.type === 'life' ? '<button class="upBtn frYes">Ritira</button>' : m.type === 'msg' && FBX.friends[m.from] ? '<button class="upBtn frNo">Ok</button><button class="upBtn frYes">Rispondi</button>' : '<button class="upBtn frNo">Ok</button>';
+      const r = frRow(`<span class="frAva">${m.type === 'clan' ? '🛡️' : m.type === 'gift' ? '🎁' : m.type === 'life' ? '❤️' : m.type === 'inv' ? '⚔️' : m.type === 'msg' ? '💬' : '✉️'}</span><div class="tx"><b></b><small></small></div>${btns}`);
       r.querySelector('b').textContent = m.name || 'Un amico'; r.querySelector('small').textContent = txt;
       const no = r.querySelector('.frNo'), yes = r.querySelector('.frYes');
       if (no) no.onclick = () => fbDrop(id);
       if (yes) yes.onclick = async () => {
-        if (m.type === 'req') { await fbRef('friends/' + FBX.uid + '/' + m.from).set(true); await fbRef('friends/' + m.from + '/' + FBX.uid).set(true); fbSend(m.from, {type:'acc'}); fbDrop(id); toast('Nuovo amico!'); }
+        if (m.type === 'clan') { fbDrop(id); if (await clanJoin(m.cid, true)) showClan(); }
+        else if (m.type === 'req') { await fbRef('friends/' + FBX.uid + '/' + m.from).set(true); await fbRef('friends/' + m.from + '/' + FBX.uid).set(true); fbSend(m.from, {type:'acc'}); fbDrop(id); toast('Nuovo amico!'); }
         else if (m.type === 'inv') { fbDrop(id); guestJoin(m.code); }
         else if (m.type === 'life') { livesAdd(1); fbDrop(id); toast('+1 vita!'); }
         else if (m.type === 'gift') { save.gold += m.n || FB_GIFT; persist(); fbDrop(id); $('frGold').textContent = save.gold.toLocaleString('it-IT'); toast(`+${m.n || FB_GIFT} oro!`); }
@@ -6558,7 +6684,7 @@ function startMp() {                                                       // l'
 function battleUi() {
   setTimeout(musicUpdate, 0);
   inMenu = false; inStory = false; document.body.classList.remove('inMenu');
-  for (const id of ['story', 'menu', 'worlds', 'capr', 'miss', 'wanted', 'shop', 'online', 'board', 'bpick', 'map', 'squad', 'forge', 'ovPause', 'ovEnd', 'ovGift', 'ovEgg', 'ovOdds', 'ovWait', 'ovInvite', 'friends', 'ovName', 'ovPick', 'ovSet', 'ovLives', 'pass', 'ovCal']) $(id).hidden = true;
+  for (const id of ['story', 'menu', 'worlds', 'capr', 'miss', 'wanted', 'shop', 'online', 'board', 'bpick', 'map', 'squad', 'forge', 'ovPause', 'ovEnd', 'ovGift', 'ovEgg', 'ovOdds', 'ovWait', 'ovInvite', 'friends', 'clan', 'ovClanEd', 'ovClanPick', 'ovClanRules', 'cnPop', 'cnDim', 'ovName', 'ovPick', 'ovSet', 'ovLives', 'pass', 'ovCal']) $(id).hidden = true;
   tutHide(); tut = null; resize(); speed = 1;
   particles = []; nums = []; bubbles = []; hooks = []; seenId = 0; endT = 0; ended = false; dragon.fireT = 0; dragon.phase = 'idle';
   running = true; paused = false; countT = 3; viaT = 0; lightP = 0; setTimeout(musicUpdate, 0);
@@ -6761,6 +6887,602 @@ function tutPlace() {
   tip.style.left = Math.max(16, Math.min(innerWidth - tw - 16, r.left + r.width / 2 - tw / 2)) + 'px';
   tip.style.top = Math.max(10, r.top - th - 22) + 'px';
   hand.style.left = (r.left + r.width / 2 - 14) + 'px'; hand.style.top = (r.top + r.height * .42) + 'px';
+}
+
+/* ================= stemma del clan: forma + colore + simbolo, bordo che cresce col livello ================= */
+const EMB_COL = [                                     // [scuro, medio, chiaro]
+  ['#3d1b63', '#7b3fb3', '#c99cf0'],   // viola
+  ['#6a1020', '#c8303e', '#ff8a8a'],   // rosso
+  ['#153a7a', '#3d6fd1', '#9cc0ff'],   // blu
+  ['#164a26', '#3f9a4a', '#9fe08f'],   // verde
+  ['#7a3d06', '#e8862a', '#ffc77a'],   // arancio
+  ['#0e4a4a', '#26a69a', '#8ff0e0'],   // acqua
+  ['#5a0e40', '#c23a8a', '#ff9ad2'],   // magenta
+  ['#1b1824', '#3b3548', '#8c84a3'],   // notte
+];
+const EMB_FORM = ['Scudo', 'Tondo', 'Stendardo', 'Esagono', 'Rombo', 'Corona'];
+const EMB_SYM = ['Drago', 'Teschio', 'Corona', 'Spada', 'Luna', 'Fiamma', 'Cappello da strega', 'Ragno', 'Pipistrello', 'Occhio', 'Artiglio', 'Testa di lupo'];
+const EMB_PATH = [
+  'M50 6 L90 16 L90 50 C90 74 72 88 50 96 C28 88 10 74 10 50 L10 16 Z',                       // scudo
+  'M50 6 A44 44 0 1 1 49.9 6 Z',                                                                 // tondo
+  'M14 6 H86 V78 L50 96 L14 78 Z',                                                               // stendardo
+  'M50 5 L89 27 L89 73 L50 95 L11 73 L11 27 Z',                                                  // esagono
+  'M50 4 L94 50 L50 96 L6 50 Z',                                                                 // rombo
+  'M10 26 L26 8 L38 22 L50 4 L62 22 L74 8 L90 26 L90 56 C90 78 70 90 50 96 C30 90 10 78 10 56 Z', // corona
+];
+const EMB_SYMS = [
+  // volto di drago di fronte: corna ad anelli, pinne laterali, baffi lunghi, sopracciglia a V, occhi gialli a fessura, narici fumanti, zanne grandi, mento a punte
+  (d, l) => { const m = h => `${h}<g transform="translate(100 0) scale(-1 1)">${h}</g>`;
+    const back = m(`<path d="M34 76 C24 78 15 86 9 98 C17 90 25 84 36 81 Z" fill="${d}" stroke="#1c1a24" stroke-width="2.4" stroke-linejoin="round"/><path d="M40 28 C30 20 20 12 12 -2 C13 12 19 25 29 38 Z" fill="#f6e7c4" stroke="#1c1a24" stroke-width="3" stroke-linejoin="round"/><path d="M33 24 L26 28 M27 17 L21 20 M21 9 L16 12" stroke="#b08a4a" stroke-width="2.2" stroke-linecap="round"/><path d="M28 41 C20 37 10 35 1 37 C9 41 15 47 21 53 Z" fill="#f6e7c4" stroke="#1c1a24" stroke-width="3" stroke-linejoin="round"/><path d="M27 50 L6 52 L15 57 L5 65 L17 65 L11 73 L30 64 Z" fill="${d}" stroke="#1c1a24" stroke-width="3" stroke-linejoin="round"/>`);
+    const head = `<path d="M50 19 L60 21 L68 27 L74 37 L76 47 L72 55 L69 62 L67 70 L64 80 L36 80 L33 70 L31 62 L28 55 L24 47 L26 37 L32 27 L40 21 Z" fill="${l}" stroke="#1c1a24" stroke-width="3" stroke-linejoin="round"/>`;
+    const face = m(`<path d="M31 58 L18 61 L31 65 Z" fill="${d}" stroke="#1c1a24" stroke-width="2" stroke-linejoin="round"/><path d="M50 24 L54 29 L50 34 Z M43 26 L47 30 L43 34 L39 30 Z M50 50 L53 54 L50 58 Z" fill="${d}" stroke="#1c1a24" stroke-width="1.6" stroke-linejoin="round"/><path d="M29 42 L46 47 L41 52 L33 50 Z" fill="none" stroke="#ffd35a" stroke-width="6" stroke-linejoin="round" opacity=".4"/><path d="M29 42 L46 47 L41 52 L33 50 Z" fill="#ffd35a" stroke="#1c1a24" stroke-width="2.2" stroke-linejoin="round"/><path d="M39 45 C37.5 47 37.5 49 38.6 51.2" fill="none" stroke="#1c1a24" stroke-width="2.6" stroke-linecap="round"/><path d="M25 35 L49 42 L47 47 L28 41 Z" fill="${d}" stroke="#1c1a24" stroke-width="2.4" stroke-linejoin="round"/><path d="M47 66 C43 65 40 68 41 72 C43 73 46 72 48 70" fill="none" stroke="#1c1a24" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/><path d="M44 68.5 L46 70.5" stroke="#1c1a24" stroke-width="2.8" stroke-linecap="round"/>`);
+    const mouth = `<path d="M37 78 L63 78 L61 89 L39 89 Z" fill="#6a0d1e" stroke="#1c1a24" stroke-width="2.4" stroke-linejoin="round"/><path d="M43 86 C47 84 53 84 57 86" fill="none" stroke="#e8607a" stroke-width="2.6" stroke-linecap="round"/><path d="M39 87 L61 87 L58 95 L50 99 L42 95 Z" fill="${l}" stroke="#1c1a24" stroke-width="3" stroke-linejoin="round"/>`;
+    const teeth = m(`<path d="M38.5 78 L41.5 89 L45 79 Z M46 79 L47.2 83 L48.4 79 Z" fill="#fff" stroke="#1c1a24" stroke-width="1.4" stroke-linejoin="round"/><path d="M42.5 88.5 L44.5 83 L46.5 88.5 Z" fill="#fff" stroke="#1c1a24" stroke-width="1.2" stroke-linejoin="round"/><path d="M44 95 L41 101 L47 97 Z" fill="${d}" stroke="#1c1a24" stroke-width="1.8" stroke-linejoin="round"/>`);
+    return back + head + face + mouth + teeth; },
+  // teschio
+  (d, l) => `<path d="M30 46 C30 30 40 22 50 22 C60 22 70 30 70 46 C70 54 66 58 62 60 V70 H38 V60 C34 58 30 54 30 46 Z" fill="${l}" stroke="#1c1a24" stroke-width="3" stroke-linejoin="round"/><ellipse cx="41" cy="46" rx="6" ry="7" fill="#1c1a24"/><ellipse cx="59" cy="46" rx="6" ry="7" fill="#1c1a24"/><path d="M50 52 L46 58 H54 Z" fill="#1c1a24"/><path d="M44 62 V70 M50 62 V70 M56 62 V70" stroke="#1c1a24" stroke-width="2.5"/>`,
+  // corona
+  (d, l) => `<path d="M24 66 L20 34 L36 46 L50 26 L64 46 L80 34 L76 66 Z" fill="${l}" stroke="#1c1a24" stroke-width="3" stroke-linejoin="round"/><rect x="24" y="64" width="52" height="9" rx="2" fill="${d}" stroke="#1c1a24" stroke-width="3"/><circle cx="50" cy="52" r="4.5" fill="#e8304a" stroke="#1c1a24" stroke-width="2"/><circle cx="20" cy="33" r="3.5" fill="${l}" stroke="#1c1a24" stroke-width="2"/><circle cx="50" cy="24" r="3.5" fill="${l}" stroke="#1c1a24" stroke-width="2"/><circle cx="80" cy="33" r="3.5" fill="${l}" stroke="#1c1a24" stroke-width="2"/>`,
+  // spada
+  (d, l) => `<path d="M50 14 L57 24 V62 H43 V24 Z" fill="${l}" stroke="#1c1a24" stroke-width="3" stroke-linejoin="round"/><path d="M50 22 V58" stroke="rgba(28,26,36,.35)" stroke-width="2"/><rect x="31" y="61" width="38" height="8" rx="3" fill="${d}" stroke="#1c1a24" stroke-width="3"/><rect x="46" y="68" width="8" height="14" fill="#7a4a24" stroke="#1c1a24" stroke-width="3"/><circle cx="50" cy="86" r="5" fill="${d}" stroke="#1c1a24" stroke-width="3"/>`,
+  // luna con stellina
+  (d, l) => `<path d="M60 20 C42 22 30 36 30 52 C30 68 44 80 60 80 C50 74 44 64 44 52 C44 38 50 28 60 20 Z" fill="${l}" stroke="#1c1a24" stroke-width="3" stroke-linejoin="round"/><path d="M68 36 L70.5 42 L77 42.5 L72 46.5 L73.5 53 L68 49.5 L62.5 53 L64 46.5 L59 42.5 L65.5 42 Z" fill="${l}" stroke="#1c1a24" stroke-width="2" stroke-linejoin="round"/>`,
+  // fiamma
+  (d, l) => `<path d="M50 14 C54 28 70 34 70 54 C70 70 60 80 50 80 C38 80 30 70 30 56 C30 44 38 38 40 28 C44 36 46 40 48 42 C50 32 48 22 50 14 Z" fill="#ff6a2a" stroke="#1c1a24" stroke-width="3" stroke-linejoin="round"/><path d="M50 44 C54 54 62 58 60 68 C58 75 54 78 50 78 C44 78 40 73 41 66 C42 60 46 58 48 52 Z" fill="#ffd35a"/>`,
+  // cappello da strega con la fibbia e la punta piegata
+  (d, l) => `<path d="M14 72 C26 64 74 64 86 72 C80 80 20 80 14 72 Z" fill="#2b2734" stroke="#1c1a24" stroke-width="3" stroke-linejoin="round"/><path d="M30 68 L44 30 C46 22 52 16 62 14 C70 13 74 18 72 22 C66 20 60 24 58 30 L70 68 Z" fill="#3b3548" stroke="#1c1a24" stroke-width="3" stroke-linejoin="round"/><path d="M33 60 C44 56 58 56 67 60 L69 66 C58 62 42 62 31 66 Z" fill="${l}" stroke="#1c1a24" stroke-width="2.5" stroke-linejoin="round"/><rect x="45" y="56" width="11" height="10" rx="2" fill="#ffd35a" stroke="#1c1a24" stroke-width="2.5"/><rect x="48.5" y="59" width="4" height="4" fill="#3b3548"/><path d="M47 40 C50 36 54 34 57 34" fill="none" stroke="rgba(255,255,255,.25)" stroke-width="3" stroke-linecap="round"/><path d="M72 22 L78 26 L74 18 Z" fill="${l}" stroke="#1c1a24" stroke-width="2" stroke-linejoin="round"/>`,
+  // ragno
+  (d, l) => `<path d="M50 6 V30" stroke="#1c1a24" stroke-width="2"/><g stroke="#1c1a24" stroke-width="3.5" fill="none" stroke-linecap="round"><path d="M44 48 L30 38 L22 46 M44 54 L28 52 L20 60 M44 58 L30 64 L26 76 M56 48 L70 38 L78 46 M56 54 L72 52 L80 60 M56 58 L70 64 L74 76"/></g><ellipse cx="50" cy="58" rx="12" ry="14" fill="${l}" stroke="#1c1a24" stroke-width="3"/><circle cx="50" cy="38" r="8" fill="${l}" stroke="#1c1a24" stroke-width="3"/><circle cx="47" cy="37" r="1.8" fill="#e8304a"/><circle cx="53" cy="37" r="1.8" fill="#e8304a"/><path d="M50 52 L46 58 L50 64 L54 58 Z" fill="#e8304a"/>`,
+  // pipistrello ad ali spiegate: dita delle ali, bordo a festoni, orecchie a punta, zanne
+  (d, l) => `<path d="M46 46 L28 26 L4 34 Q10 42 10 54 Q18 48 26 53 Q30 56 32 64 Q38 56 46 58 Z M54 46 L72 26 L96 34 Q90 42 90 54 Q82 48 74 53 Q70 56 68 64 Q62 56 54 58 Z" fill="${l}" stroke="#1c1a24" stroke-width="3" stroke-linejoin="round"/><path d="M28 27 L10 53 M28 27 L26 52 M28 27 L32 63 M72 27 L90 53 M72 27 L74 52 M72 27 L68 63" stroke="${d}" stroke-width="2.2" stroke-linecap="round"/><ellipse cx="50" cy="56" rx="8" ry="13" fill="${d}" stroke="#1c1a24" stroke-width="3"/><path d="M42 36 L41 22 L47 30 Z M58 36 L59 22 L53 30 Z" fill="${d}" stroke="#1c1a24" stroke-width="2.5" stroke-linejoin="round"/><circle cx="50" cy="38" r="8" fill="${d}" stroke="#1c1a24" stroke-width="3"/><circle cx="46.8" cy="37" r="1.9" fill="#ff3a4a"/><circle cx="53.2" cy="37" r="1.9" fill="#ff3a4a"/><path d="M47.5 42 L48.5 45 L49.5 42 M50.5 42 L51.5 45 L52.5 42" fill="#fff" stroke="#fff" stroke-width="1" stroke-linejoin="round"/>`,
+  // occhio
+  (d, l) => `<path d="M16 50 C28 32 72 32 84 50 C72 68 28 68 16 50 Z" fill="#fff8e6" stroke="#1c1a24" stroke-width="3" stroke-linejoin="round"/><circle cx="50" cy="50" r="14" fill="${l}" stroke="#1c1a24" stroke-width="3"/><ellipse cx="50" cy="50" rx="4" ry="11" fill="#1c1a24"/><circle cx="55" cy="44" r="3" fill="#fff"/><path d="M30 34 L26 26 M50 30 V20 M70 34 L74 26" stroke="#1c1a24" stroke-width="3" stroke-linecap="round"/>`,
+  // artiglio (tre graffi)
+  (d, l) => `${[[-16, 0], [0, -4], [16, 0]].map(([x, y]) => `<path d="M${42 + x} ${22 + y} C${50 + x} ${40 + y} ${52 + x} ${58 + y} ${46 + x} ${80 + y} C${58 + x} ${64 + y} ${60 + x} ${42 + y} ${42 + x} ${22 + y} Z" fill="${l}" stroke="#1c1a24" stroke-width="3" stroke-linejoin="round"/>`).join('')}`,
+  // lupo di fronte che ringhia: orecchie alte, ciuffi di pelo sulle guance, maschera scura sulla fronte, occhi gialli, zanne
+  (d, l) => `<path d="M30 42 L22 6 L46 27 Z M70 42 L78 6 L54 27 Z" fill="${l}" stroke="#1c1a24" stroke-width="3" stroke-linejoin="round"/><path d="M30 36 L26 15 L40 28 Z M70 36 L74 15 L60 28 Z" fill="#e8a0b0" stroke="#1c1a24" stroke-width="1.8" stroke-linejoin="round"/><path d="M50 22 C62 22 71 29 75 40 L88 50 L77 53 L85 61 L71 62 C66 73 59 84 50 90 C41 84 34 73 29 62 L15 61 L23 53 L12 50 L25 40 C29 29 38 22 50 22 Z" fill="${l}" stroke="#1c1a24" stroke-width="3" stroke-linejoin="round"/><path d="M50 22 C59 22 66 26 70 33 L58 46 L50 44 L42 46 L30 33 C34 26 41 22 50 22 Z" fill="${d}" opacity=".85"/><path d="M33 45 L46 50 L42 55 C38 54 35 51 33 45 Z M67 45 L54 50 L58 55 C62 54 65 51 67 45 Z" fill="#ffd35a" stroke="#1c1a24" stroke-width="2.2" stroke-linejoin="round"/><path d="M41 49.5 L42.5 54 M59 49.5 L57.5 54" stroke="#1c1a24" stroke-width="2.4" stroke-linecap="round"/><path d="M30 42 L46 47 M70 42 L54 47" stroke="#1c1a24" stroke-width="3" stroke-linecap="round"/><path d="M43 55 L57 55 L61 70 C59 77 55 81 50 82 C45 81 41 77 39 70 Z" fill="#f3ead8" stroke="#1c1a24" stroke-width="2.2" stroke-linejoin="round"/><path d="M45 63 C45 60 55 60 55 63 L50 68 Z" fill="#1c1a24" stroke="#1c1a24" stroke-width="2" stroke-linejoin="round"/><path d="M50 68 L50 71" stroke="#1c1a24" stroke-width="2"/><path d="M42 72 Q50 69 58 72 L56 78 Q50 81 44 78 Z" fill="#8a1028" stroke="#1c1a24" stroke-width="2" stroke-linejoin="round"/><path d="M44 72 L45.5 77 L47 72.3 Z M56 72 L54.5 77 L53 72.3 Z" fill="#fff" stroke="#1c1a24" stroke-width="1" stroke-linejoin="round"/><path d="M22 53 L30 55 M24 59 L31 59 M78 53 L70 55 M76 59 L69 59" stroke="${d}" stroke-width="2" stroke-linecap="round"/>`,
+];
+let embN = 0;
+// e = {f:forma, c:colore, s:simbolo}, lv = livello del clan (3 argento, 6 oro, 10 fuoco)
+function clanEmblem(e, lv = 1, px = 56) {
+  const id = 'emb' + (++embN), [d, m, l] = EMB_COL[e.c % EMB_COL.length], p = EMB_PATH[e.f % EMB_PATH.length];
+  const rim = lv >= 10 ? 'fuoco' : lv >= 6 ? 'oro' : lv >= 3 ? 'argento' : '';
+  const rimCol = {argento:['#f4f6fb', '#9aa3b5'], oro:['#fff2a8', '#d99a1e'], fuoco:['#ffe066', '#ff4a1a']}[rim];
+  const flames = rim === 'fuoco' ? `<g fill="#ff6a2a" stroke="#1c1a24" stroke-width="2" stroke-linejoin="round">${[18, 34, 50, 66, 82].map((x, i) => `<path d="M${x - 7} ${i % 2 ? 12 : 8} C${x - 6} ${i % 2 ? 2 : -2} ${x} ${i % 2 ? 0 : -6} ${x} ${i % 2 ? -4 : -10} C${x + 3} ${i % 2 ? 0 : -4} ${x + 7} ${i % 2 ? 2 : 0} ${x + 7} ${i % 2 ? 12 : 8} Z"/>`).join('')}</g>` : '';
+  return `<svg class="emb" viewBox="-6 -14 112 116" width="${px}" height="${px}" aria-hidden="true"><defs>
+    <linearGradient id="${id}g" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="${m}"/><stop offset="1" stop-color="${d}"/></linearGradient>
+    ${rimCol ? `<linearGradient id="${id}r" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="${rimCol[0]}"/><stop offset="1" stop-color="${rimCol[1]}"/></linearGradient>` : ''}
+    <clipPath id="${id}c"><path d="${p}"/></clipPath></defs>
+    ${flames}
+    <path d="${p}" fill="url(#${id}g)" stroke="${rimCol ? `url(#${id}r)` : '#1c1a24'}" stroke-width="${rimCol ? 9 : 4}" stroke-linejoin="round"/>
+    ${rimCol ? `<path d="${p}" fill="none" stroke="#1c1a24" stroke-width="2.5" stroke-linejoin="round"/>` : ''}
+    <g clip-path="url(#${id}c)"><path d="M0 0 H100 V40 C70 30 30 30 0 40 Z" fill="rgba(255,255,255,.12)"/></g>
+    <g transform="translate(50 52) scale(.78) translate(-50 -50)">${EMB_SYMS[e.s % EMB_SYMS.length](d, l)}</g>
+  </svg>`;
+}
+/* ================= Clan: gruppi di giocatori con chat, frammenti, baule della settimana e classifica ================= */
+const CLAN_XP = [0, 100, 300, 600, 1000, 1500, 2100, 2800, 3600, 4500];       // esperienza per i livelli 1-10
+const clanLv = xp => { let l = 1; for (let i = 1; i < CLAN_XP.length; i++) if ((xp || 0) >= CLAN_XP[i]) l = i + 1; return l; };
+const clanCap = lv => Math.min(50, 20 + 5 * (lv - 1));                         // 20 posti, +5 a livello, fino a 50
+const clanAskMax = (lv, rar) => (rar >= 2 ? 4 : 8) + Math.floor((lv - 1) / 2);      // frammenti chiedibili: +1 ogni 2 livelli
+const CLAN_DESC = ['Cattivi si nasce, non si diventa', 'Qui si gioca per vincere', 'Si gioca quando si può, senza stress', 'Ci aiutiamo coi frammenti', 'Solo i più cattivi', 'Le fiabe tremano quando arriviamo', 'Nuovi giocatori benvenuti!', 'Si gioca tutti i giorni', 'Amici prima di tutto', 'Il drago comanda'];
+const CLAN_TYPE = ['Aperto', 'Su richiesta', 'Solo invito'];
+const CLAN_ROLE = ['', 'vice', 'capo'];
+const CLAN_TIERS = [50, 150, 300, 600];
+const CLAN_PRIZE = [{gold:150}, {gold:300}, {ru:5}, {egg:'big'}];
+const clanTiers = n => CLAN_TIERS.map(t => Math.max(1, Math.ceil(t * Math.max(1, n || 1) / 10)));   // con 10 membri come sopra, con 5 la metà
+const CLAN_REQ_CD = 8 * 3600e3, CLAN_IDLE = 14 * 86400e3, CLAN_COST = 1000, CLAN_MUTE = 24 * 3600e3;
+const CL = {cid:null, info:null, mem:{}, chat:[], reqs:{}, tab:'chat', on:[], pend:null, banned:false, list:null, q:'', board:null, lastSend:0, ed:null, fresh:true, pruned:0};
+save.clan = Object.assign({wk:'', got:0, seen:0, recv:{}, pend:null, ok:0}, save.clan || {});
+save.blocked = save.blocked || [];
+const clanOpen = () => BETA || worldOpen(1);                                   // si apre dopo il boss del mondo 1
+
+/* ---------- filtro: parolacce, numeri di telefono, email e link diventano *** ---------- */
+const CLAN_BAD_IN = ['cazz', 'minchi', 'stronz', 'merd', 'puttan', 'coglion', 'troia', 'zoccol', 'vaffan', 'fanculo', 'porcodio', 'diocane', 'porcamadonna', 'ricchion', 'culatton', 'bocchin', 'pompin', 'leccacul', 'fuck', 'shit', 'cunt', 'nigg', 'bitch', 'asshole', 'motherf', 'whore'];   // parolacce anche dentro altre parole
+const CLAN_BAD_START = ['figa', 'fica', 'fottut', 'bastard', 'froci', 'negro', 'negri', 'mongoloid', 'ritardat', 'handicappat', 'suca', 'succhia', 'sega', 'cornut', 'dick', 'puss', 'fag', 'slut', 'wank', 'retard', 'porn', 'sex', 'nazi', 'hitler', 'kys', 'ammazzati', 'suicid'];   // solo a inizio parola
+const CLAN_OK = ['segal', 'segat', 'segar', 'segn', 'fagiol', 'fagott', 'faggi', 'fagian', 'figat', 'negroni', 'ficat', 'sextant', 'dickens', 'fottutament', 'puss in'];
+const CLAN_BAD_PHRASE = ['porco dio', 'dio cane', 'porca madonna', 'testa di cazzo', 'pezzo di merda', 'kill yourself', 'figlio di puttana'];
+const clanNorm = t => t.toLowerCase().replace(/[0@]/g, 'o').replace(/[1!|]/g, 'i').replace(/3/g, 'e').replace(/4/g, 'a').replace(/[5$]/g, 's').replace(/7/g, 't').replace(/[^a-zàèéìòù ]/g, '');
+const clanBadWord = w => { const n = clanNorm(w); if (!n || CLAN_OK.some(o => n.startsWith(o))) return false; return CLAN_BAD_IN.some(b => n.includes(b)) || CLAN_BAD_START.some(b => n.startsWith(b)); };
+function clanClean(t) {
+  t = t.replace(/\s+/g, ' ').trim().slice(0, 200);
+  t = t.replace(/(https?:\/\/\S+|www\.\S+|\b\S+\.(com|it|net|org|io|gg|me|ly|tv|app)\b\S*)/gi, '***');      // niente link
+  t = t.replace(/\S+@\S+\.\S+/g, '***');                                                                   // niente email
+  t = t.replace(/(\+?\d[\d .-]{6,}\d)/g, '***');                                                          // niente numeri di telefono
+  t = t.split(/(\s+)/).map(w => clanBadWord(w) ? '*'.repeat(Math.max(3, w.length)) : w).join('');
+  return t.replace(new RegExp(CLAN_BAD_PHRASE.join('|'), 'gi'), m => '*'.repeat(m.length));
+}
+const clanBadName = n => n.split(/\s+/).some(clanBadWord) || CLAN_BAD_IN.some(b => clanNorm(n).replace(/ /g, '').includes(b)) || CLAN_BAD_PHRASE.some(b => clanNorm(n).includes(b));
+
+/* ---------- collegamento ai dati online ---------- */
+const clP = p => 'clan' + p;                                                    // percorsi: clans, clanMembers, clanChat...
+function clanOff() { for (const [ref, ev, h] of CL.on) ref.off(ev, h); CL.on = []; CL.info = null; CL.mem = {}; CL.chat = []; CL.reqs = {}; }
+function clanOnRef(ref, cb) { const h = ref.on('value', cb); CL.on.push([ref, 'value', h]); }
+function clanSync() {                                                           // chiamata quando cambia il mio profilo online
+  if (!FBX.on || FBX.deleting) return;
+  const cid = (FBX.me && FBX.me.clan) || null;
+  if (cid === CL.cid && (cid || !save.clan.pend || CL.pend === save.clan.pend)) return;
+  clanOff(); CL.cid = cid; CL.fresh = true;
+  if (cid) {
+    if (save.clan.pend) { save.clan.pend = null; persist(); }
+    fbRef('bans/' + FBX.uid).once('value').then(s => { CL.banned = s.exists(); }).catch(() => {});
+    clanOnRef(fbRef('clans/' + cid), snap => {
+      CL.info = snap.val();
+      if (!CL.info) { fbRef('users/' + FBX.uid + '/clan').remove().catch(() => {}); toast('Il tuo clan non esiste più'); return; }
+      clanFixCnt(); clanPaint();
+    });
+    clanOnRef(fbRef('clanMembers/' + cid), snap => {
+      CL.mem = snap.val() || {};
+      if (!CL.mem[FBX.uid]) {                                                   // non ci sono più: cacciato (ricontrollo per sicurezza)
+        fbRef('clanMembers/' + cid + '/' + FBX.uid).once('value').then(s => { if (!s.exists() && CL.cid === cid) { fbRef('users/' + FBX.uid + '/clan').remove().catch(() => {}); toast('Non fai più parte del clan'); } }).catch(() => {});
+        return;
+      }
+      if (CL.fresh) { CL.fresh = false; fbRef('clanMembers/' + cid + '/' + FBX.uid).update({s:fbNow(), n:(FBX.me && FBX.me.name) || CL.mem[FBX.uid].n}).catch(() => {}); }
+      clanLeader(); clanFixCnt(); clanPaint();
+    });
+    clanOnRef(fbRef('clanChat/' + cid).orderByChild('t').limitToLast(60), snap => {
+      const out = []; snap.forEach(c => { out.push(Object.assign({id:c.key}, c.val())); }); out.sort((a, b) => (a.t || 0) - (b.t || 0));
+      CL.chat = out; clanReceive(); clanPaint(true);
+    });
+    clanOnRef(fbRef('clanReq/' + cid), snap => { CL.reqs = snap.val() || {}; clanPaint(); });
+  } else if (save.clan.pend) {                                                  // ho chiesto di entrare: aspetto che il capo accetti
+    const pend = CL.pend = save.clan.pend;
+    clanOnRef(fbRef('clanMembers/' + pend + '/' + FBX.uid), snap => {
+      if (snap.exists()) { fbRef('users/' + FBX.uid + '/clan').set(pend).then(() => { fbRef('clanReq/' + pend + '/' + FBX.uid).remove().catch(() => {}); toast('Sei entrato nel clan!'); UIS.win && UIS.win(); }).catch(() => {}); }
+    });
+    clanOnRef(fbRef('clanReq/' + pend + '/' + FBX.uid), snap => {
+      if (!snap.exists() && save.clan.pend === pend) setTimeout(async () => {
+        const m = await fbRef('clanMembers/' + pend + '/' + FBX.uid).once('value').catch(() => null);
+        if (m && !m.exists() && save.clan.pend === pend && !CL.cid) { save.clan.pend = null; persist(); CL.pend = null; clanOff(); toast('La richiesta per il clan non è stata accettata'); clanPaint(); }
+      }, 1500);
+    });
+  }
+  clanPaint();
+}
+function clanLeader() {                                                        // il capo non gioca da 14 giorni: tocca al vice (o al membro) più vecchio
+  if (!CL.info) return;
+  const me = CL.mem[FBX.uid], own = CL.info.own, o = CL.mem[own];
+  if (me && me.r === 2 && own !== FBX.uid) { fbRef('clanMembers/' + CL.cid + '/' + FBX.uid).update({r:1}).catch(() => {}); return; }
+  if (own === FBX.uid || (o && Date.now() - (o.s || 0) < CLAN_IDLE)) return;
+  const others = Object.entries(CL.mem).filter(([u]) => u !== own).sort((a, b) => (b[1].r || 0) - (a[1].r || 0) || (a[1].j || 0) - (b[1].j || 0));
+  if (others.length && others[0][0] === FBX.uid) fbRef().update({[`clans/${CL.cid}/own`]:FBX.uid, [`clanMembers/${CL.cid}/${FBX.uid}/r`]:2})
+    .then(() => clanSys(`${clanMe().n} è il nuovo capo del clan`)).catch(() => {});
+}
+const clanMe = () => CL.mem[FBX.uid] || {};
+const clanN = () => Math.max(1, Object.keys(CL.mem).length);
+function clanFixCnt() {                                                         // il capo tiene giusto il numero dei membri (se un telefono si è spento a metà)
+  if (!CL.info || CL.info.own !== FBX.uid || CL.fixing || !CL.mem[FBX.uid]) return;
+  const n = Object.keys(CL.mem).length; if ((CL.info.cnt || 0) === n) return;
+  CL.fixing = true; clanCnt(CL.cid, n > (CL.info.cnt || 0) ? 1 : -1).catch(() => {}).then(() => { CL.fixing = false; });
+}
+const clanRole = () => CL.info && CL.info.own === FBX.uid ? 2 : Math.min(1, clanMe().r || 0);
+const clanLvNow = () => clanLv(CL.info ? CL.info.xp : 0);
+function clanSys(x) { if (CL.cid) fbRef('clanChat/' + CL.cid).push({u:FBX.uid, n:clanMe().n || (FBX.me && FBX.me.name) || '?', k:'s', x, t:fbNow()}).catch(() => {}); }
+function clanXp(n) { if (CL.cid) fbRef('clans/' + CL.cid + '/xp').transaction(x => (x || 0) + n).catch(() => {}); }
+function clanCnt(cid, d) { return fbRef('clans/' + cid + '/cnt').transaction(c => Math.max(0, (c || 0) + d)); }
+function clanWin() {                                                           // ogni vittoria: un punto per il baule e per l'esperienza del clan
+  if (!CL.cid || !FBX.on) return;
+  const wk = weekKey(), me = clanMe();
+  fbRef('clans/' + CL.cid + '/wk').transaction(c => (!c || c.k !== wk) ? {k:wk, p:1} : {k:wk, p:(c.p || 0) + 1}).catch(() => {});
+  clanXp(1);
+  fbRef('clanMembers/' + CL.cid + '/' + FBX.uid).update({w:me.wk === wk ? (me.w || 0) + 1 : 1, wk, wt:(me.wt || 0) + 1, s:fbNow()}).catch(() => {});
+}
+function clanReceive() {                                                       // i frammenti che gli altri mi hanno regalato
+  let got = 0, last = null;
+  for (const m of CL.chat) if (m.k === 'q' && m.u === FBX.uid && m.q) {
+    const had = save.clan.recv[m.id] || 0, n = (m.q.got || 0) - had;
+    if (n > 0) { save.shards[m.q.k] = (save.shards[m.q.k] || 0) + n; save.clan.recv[m.id] = m.q.got; got += n; last = m.q.k; }
+  }
+  if (got) {
+    const ids = new Set(CL.chat.map(m => m.id)); for (const id of Object.keys(save.clan.recv)) if (!ids.has(id) && Object.keys(save.clan.recv).length > 30) delete save.clan.recv[id];
+    const fresh = checkUnlocks(); persist();
+    toast(`+${got} frammenti di ${SHORT[last]} dal clan!`); if (fresh.length) setTimeout(() => toast(`${SHORT[fresh[0]]} sbloccato!`), 2300);
+  }
+}
+const clanUnread = () => CL.chat.filter(m => m.u !== FBX.uid && (m.t || 0) > (save.clan.seen || 0) && !save.blocked.includes(m.u)).length;
+function clanChestState() {
+  const wk = weekKey(), info = CL.info || {}, p = info.wk && info.wk.k === wk ? info.wk.p || 0 : 0, tiers = clanTiers(clanN());
+  const me = clanMe(), mine = me.wk === wk ? me.w || 0 : 0, got = save.clan.wk === wk ? save.clan.got : 0;
+  const reached = tiers.filter(t => p >= t).length;
+  return {wk, p, tiers, mine, got, reached, ready:mine > 0 ? Math.max(0, reached - got) : 0};
+}
+function clanDot() {                                                           // il puntino sul tasto Clan del menu
+  const d = $('menuClan') && $('menuClan').querySelector('.dot'); if (!d) return;
+  const n = CL.cid ? clanUnread() + clanChestState().ready + (clanRole() >= 1 ? Object.keys(CL.reqs).length : 0) : 0;
+  d.hidden = !n; d.textContent = n > 9 ? '9+' : n || '';
+}
+
+/* ---------- azioni ---------- */
+const clanErr = e => /permission/i.test((e && (e.code || e.message)) || '') ? 'Il server del gioco non lo permette (regole del database da aggiornare).' : 'Controlla la connessione e riprova.';
+async function clanCreate(d) {
+  const n = (d.n || '').replace(/\s+/g, ' ').trim();
+  if (!/^[A-Za-z0-9À-ÿ' ]{3,20}$/.test(n)) return 'Il nome: da 3 a 20 lettere o numeri.';
+  if (clanBadName(n)) return 'Questo nome non si può usare.';
+  if (save.gold < CLAN_COST) return `Servono ${CLAN_COST} oro per creare un clan.`;
+  const nl = n.toLowerCase();
+  try { if ((await fbRef('clanNames/' + nl).once('value')).exists()) return 'C’è già un clan con questo nome.'; } catch (e) {}
+  const cid = fbRef('clans').push().key, wk = weekKey(), me = (FBX.me && FBX.me.name) || 'Capo';
+  try {
+    await fbRef().update({
+      [`clans/${cid}`]:{n, nl, e:{f:d.f, c:d.c, s:d.s}, d:d.d, t:d.t, xp:0, cnt:1, own:FBX.uid, ct:fbNow(), wk:{k:wk, p:0}},
+      [`clanNames/${nl}`]:cid,
+      [`clanMembers/${cid}/${FBX.uid}`]:{n:me, r:2, j:fbNow(), s:fbNow(), w:0, wk, wt:0, dn:0},
+      [`users/${FBX.uid}/clan`]:cid});
+  } catch (e) { return clanErr(e); }
+  save.gold -= CLAN_COST; persist(); UIS.up(); CL.list = null;
+  setTimeout(() => clanSys(`${me} ha fondato il clan «${n}»`), 400);
+  return null;
+}
+async function clanJoin(cid, inv) {
+  if (!FBX.on) return toast('Online non raggiungibile');
+  if (!(FBX.me && FBX.me.name)) return fbAskName(true);
+  if (CL.cid) return toast('Esci prima dal tuo clan');
+  let c = null; try { c = (await fbRef('clans/' + cid).once('value')).val(); } catch (e) {}
+  if (!c) return toast('Questo clan non esiste più');
+  if ((c.cnt || 0) >= clanCap(clanLv(c.xp))) return toast('Il clan è pieno');
+  let ok = c.t === 0 || inv; if (!ok && c.t === 2) { try { ok = (await fbRef('clanInv/' + cid + '/' + FBX.uid).once('value')).exists(); } catch (e) {} }
+  if (c.t === 1 && !ok) {                                                       // su richiesta: il capo o il vice decidono
+    try { await fbRef('clanReq/' + cid + '/' + FBX.uid).set({n:FBX.me.name, t:fbNow()}); } catch (e) { return toast(clanErr(e)); }
+    save.clan.pend = cid; persist(); clanSync(); toast('Richiesta mandata: aspetta che il capo accetti'); return clanPaint();
+  }
+  if (!ok) return toast('In questo clan si entra solo su invito');
+  const wk = weekKey();
+  try {
+    await fbRef('clanMembers/' + cid + '/' + FBX.uid).set({n:FBX.me.name, r:0, j:fbNow(), s:fbNow(), w:0, wk, wt:0, dn:0});
+    await clanCnt(cid, 1); await fbRef('users/' + FBX.uid + '/clan').set(cid);
+    fbRef('clanInv/' + cid + '/' + FBX.uid).remove().catch(() => {});
+  } catch (e) { return toast(clanErr(e)); }
+  UIS.up(); CL.tab = 'chat';
+  setTimeout(() => clanSys(`${FBX.me.name} è entrato nel clan 👋`), 400);
+  return true;
+}
+async function clanLeave(silent) {                                            // esco; se ero il capo passo il clan al vice/membro più vecchio
+  const cid = CL.cid; if (!cid) return;
+  const mem = Object.assign({}, CL.mem), info = CL.info || {}, me = clanMe(), others = Object.entries(mem).filter(([u]) => u !== FBX.uid);
+  try {
+    if (!others.length) {                                                       // ero l'ultimo: il clan sparisce
+      for (const p of ['clanChat', 'clanReq', 'clanInv']) await fbRef(p + '/' + cid).remove().catch(() => {});
+      await fbRef('clans/' + cid).remove(); if (info.nl) await fbRef('clanNames/' + info.nl).remove().catch(() => {});
+      await fbRef('clanMembers/' + cid + '/' + FBX.uid).remove();
+    } else {
+      if (info.own === FBX.uid) {
+        const nx = others.sort((a, b) => (b[1].r || 0) - (a[1].r || 0) || (a[1].j || 0) - (b[1].j || 0))[0];
+        await fbRef().update({[`clanMembers/${cid}/${nx[0]}/r`]:2, [`clans/${cid}/own`]:nx[0]});
+        if (!silent) clanSys(`${nx[1].n} è il nuovo capo del clan`);
+      }
+      if (!silent) await fbRef('clanChat/' + cid).push({u:FBX.uid, n:me.n || '?', k:'s', x:`${me.n || 'Qualcuno'} è uscito dal clan`, t:fbNow()}).catch(() => {});
+      await fbRef('clanMembers/' + cid + '/' + FBX.uid).remove(); await clanCnt(cid, -1).catch(() => {});
+    }
+    await fbRef('users/' + FBX.uid + '/clan').remove();
+  } catch (e) { if (!silent) toast(clanErr(e)); return false; }
+  CL.list = null; return true;
+}
+async function clanKick(u) {
+  const m = CL.mem[u]; if (!m || clanRole() <= (m.r || 0)) return;
+  try { await fbRef('clanMembers/' + CL.cid + '/' + u).remove(); await clanCnt(CL.cid, -1); clanSys(`${m.n} è stato cacciato dal clan`); } catch (e) { toast(clanErr(e)); }
+}
+async function clanAccept(u, yes) {
+  const r = CL.reqs[u]; if (!r) return;
+  try {
+    if (yes) {
+      const lv = clanLvNow(); if (clanN() >= clanCap(lv)) return toast('Il clan è pieno');
+      await fbRef('clanMembers/' + CL.cid + '/' + u).set({n:r.n, r:0, j:fbNow(), s:fbNow(), w:0, wk:weekKey(), wt:0, dn:0});
+      await clanCnt(CL.cid, 1); clanSys(`${r.n} è entrato nel clan 👋`);
+    }
+    await fbRef('clanReq/' + CL.cid + '/' + u).remove();
+  } catch (e) { toast(clanErr(e)); }
+}
+async function clanSend(txt) {
+  if (!CL.cid) return;
+  if (!save.clan.ok) return clanRules(() => clanSend(txt));
+  if (CL.banned) return toast('Non puoi più scrivere nella chat: hai violato le regole');
+  const me = clanMe(); if ((me.mu || 0) > Date.now()) return toast(`Sei silenziato fino a ${new Date(me.mu).toDateString() === new Date().toDateString() ? 'oggi' : 'domani'} alle ${new Date(me.mu).toLocaleTimeString('it-IT', {hour:'2-digit', minute:'2-digit'})}`);
+  const x = clanClean(txt || ''); if (!x.replace(/\*/g, '').trim()) return;
+  if (Date.now() - CL.lastSend < 1500) return toast('Piano! Un messaggio alla volta');
+  CL.lastSend = Date.now();
+  try { await fbRef('clanChat/' + CL.cid).push({u:FBX.uid, n:me.n || FBX.me.name, r:clanRole(), k:'m', x, t:fbNow()}); } catch (e) { toast(clanErr(e)); }
+}
+function clanCanAsk() { const me = clanMe(); return Date.now() - (me.rq || 0) >= CLAN_REQ_CD; }
+async function clanAsk(k) {
+  const me = clanMe(), rar = RAR[k] || 0, need = clanAskMax(clanLvNow(), rar);
+  if (!clanCanAsk()) return toast('Puoi chiedere frammenti ogni 8 ore');
+  try {
+    await fbRef('clanMembers/' + CL.cid + '/' + FBX.uid).update({rq:fbNow()});
+    await fbRef('clanChat/' + CL.cid).push({u:FBX.uid, n:me.n || FBX.me.name, r:clanRole(), k:'q', q:{k, need, got:0, rar}, t:fbNow()});
+    UIS.card(); toast('Richiesta mandata al clan');
+  } catch (e) { toast(clanErr(e)); }
+}
+async function clanDonate(m) {
+  const k = m.q.k; if ((save.shards[k] || 0) < 1) return toast(`Non hai frammenti di ${SHORT[k]} da regalare`);
+  let ok = false;
+  try {
+    const r = await fbRef('clanChat/' + CL.cid + '/' + m.id + '/q').transaction(q => { if (!q || (q.got || 0) >= q.need) return; const by = Object.assign({}, q.by || {}); by[FBX.uid] = (by[FBX.uid] || 0) + 1; return Object.assign({}, q, {got:(q.got || 0) + 1, by}); });
+    ok = r.committed;
+  } catch (e) { return toast(clanErr(e)); }
+  if (!ok) return toast('Questa richiesta è già completa');
+  const g = (m.q.rar || 0) >= 2 ? 20 : 5;
+  save.shards[k] = Math.max(0, (save.shards[k] || 0) - 1); save.gold += g; persist(); UIS.coin(); vibrate(15);
+  clanXp(1); fbRef('clanMembers/' + CL.cid + '/' + FBX.uid).update({dn:(clanMe().dn || 0) + 1}).catch(() => {});
+  toast(`Grazie! +${g} oro`);
+}
+async function clanReport(m) {
+  try {
+    await fbRef(`clanChat/${CL.cid}/${m.id}/rp/${FBX.uid}`).set(true);
+    await fbRef('reports').push({cid:CL.cid, cn:(CL.info && CL.info.n) || '', mid:m.id, a:m.u, an:m.n || '', x:m.x || '', by:FBX.uid, t:fbNow()});
+    toast('Segnalato. Grazie: lo controlliamo.');
+  } catch (e) { toast(clanErr(e)); }
+}
+function clanBlock(u, n) {
+  const i = save.blocked.indexOf(u);
+  if (i >= 0) { save.blocked.splice(i, 1); toast(`${n} sbloccato`); } else { save.blocked.push(u); toast(`${n} bloccato: non vedrai più i suoi messaggi`); }
+  persist(); clanPaint(true);
+}
+async function clanMute(u) { const m = CL.mem[u]; if (!m) return; try { await fbRef('clanMembers/' + CL.cid + '/' + u).update({mu:Date.now() + CLAN_MUTE}); clanSys(`${m.n} è stato silenziato per 24 ore`); } catch (e) { toast(clanErr(e)); } }
+async function clanUnmute(u) { try { await fbRef('clanMembers/' + CL.cid + '/' + u).update({mu:0}); } catch (e) { toast(clanErr(e)); } }
+async function clanSetRole(u, r) {
+  const m = CL.mem[u]; if (!m || clanRole() < 2) return;
+  try {
+    if (r === 2) { await fbRef().update({[`clanMembers/${CL.cid}/${u}/r`]:2, [`clans/${CL.cid}/own`]:u}); await fbRef('clanMembers/' + CL.cid + '/' + FBX.uid).update({r:1}); clanSys(`${m.n} è il nuovo capo del clan`); }
+    else { await fbRef('clanMembers/' + CL.cid + '/' + u).update({r}); clanSys(r ? `${m.n} ora è vice` : `${m.n} non è più vice`); }
+  } catch (e) { toast(clanErr(e)); }
+}
+function clanInvite() {
+  const fl = Object.keys(FBX.friends || {}).filter(f => !CL.mem[f]);
+  if (!fl.length) return toast('Nessun amico da invitare: aggiungili in Amici');
+  fbPick('Invita un amico nel clan', fl.map(f => [f, (FBX.fdata[f] || {}).name || 'Amico']), async f => {
+    try { await fbRef('clanInv/' + CL.cid + '/' + f).set(true); await fbSend(f, {type:'clan', cid:CL.cid, cn:CL.info.n}); toast('Invito mandato!'); } catch (e) { toast(clanErr(e)); }
+  });
+}
+function clanClaim(i) {
+  const st = clanChestState(); if (i !== st.got || i >= st.reached || !st.mine) return;
+  const pr = CLAN_PRIZE[i];
+  save.clan.wk = st.wk; save.clan.got = i + 1;
+  showGift('Baule del clan', pr.gold || 0, [], pr.egg ? {eggs:{[pr.egg]:1}} : pr.ru ? {ru:pr.ru} : {});   // showGift aggiunge oro, rubini e uova e salva
+  clanPaint();
+}
+async function clanPrune() {                                                    // il capo, una volta al giorno, toglie i messaggi più vecchi di 14 giorni
+  if (clanRole() < 2 || Date.now() - CL.pruned < 864e5) return; CL.pruned = Date.now();
+  try { const s = await fbRef('clanChat/' + CL.cid).orderByChild('t').endAt(Date.now() - 14 * 864e5).limitToFirst(100).once('value'); const ops = []; s.forEach(c => { ops.push(c.ref ? c.ref.remove() : fbRef('clanChat/' + CL.cid + '/' + c.key).remove()); }); await Promise.allSettled(ops); } catch (e) {}
+}
+
+/* ---------- schermata ---------- */
+const clanAgo = t => { if (!t) return 'mai'; const d = Date.now() - t; return d < 5 * 60e3 ? 'adesso' : d < 3600e3 ? Math.floor(d / 60e3) + ' min fa' : d < 864e5 ? Math.floor(d / 3600e3) + ' ore fa' : d < 2 * 864e5 ? 'ieri' : Math.floor(d / 864e5) + ' giorni fa'; };
+const clanEsc = t => String(t == null ? '' : t).replace(/[&<>"]/g, c => ({'&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;'}[c]));
+function showClan() {
+  if (!clanOpen()) { UIS.err && UIS.err(); return toast('Il Clan si apre dopo il boss del mondo 1'); }
+  toScene(); $('clan').hidden = false; $('cnGold').textContent = save.gold.toLocaleString('it-IT');
+  if (!window.DW_FB) { $('cnBody').innerHTML = `<p class="note cnNote">Il Clan funziona nella versione online del gioco.</p>`; return; }
+  if (FBX.on && FBX.me && !FBX.me.name) fbAskName(true);
+  clanSync(); clanPaint(); if (CL.cid) clanPrune();
+}
+let clanPaintT = 0;
+function clanPaint(chat) {
+  clanDot();
+  if ($('clan').hidden) return;
+  clearTimeout(clanPaintT); clanPaintT = setTimeout(() => clanRender(chat), 40);
+}
+function clanRender(chatOnly) {
+  const box = $('cnBody'); $('cnGold').textContent = save.gold.toLocaleString('it-IT');
+  if (!FBX.on) { box.innerHTML = `<p class="note cnNote">${FBX.err || 'Mi collego…'}</p>`; return; }
+  if (!CL.cid) return clanRenderFind(box);
+  if (!CL.info || !CL.mem[FBX.uid]) { box.innerHTML = `<p class="note cnNote">Apro il clan…</p>`; return; }
+  if (chatOnly && CL.tab === 'chat' && box.querySelector('.cnChat')) { clanRenderChat(box.querySelector('.cnChat')); clanTabsBadge(); return; }
+  const keep = $('cnTxt') && CL.tab === 'chat' ? {v:$('cnTxt').value, f:document.activeElement === $('cnTxt'), sc:box.querySelector('.cnChat') && box.querySelector('.cnChat').scrollTop} : null;   // non perdere quello che stai scrivendo
+  const info = CL.info, lv = clanLvNow(), cap = clanCap(lv), x0 = CLAN_XP[lv - 1], x1 = CLAN_XP[lv] || CLAN_XP[lv - 1], pct = lv >= 10 ? 100 : Math.round(((info.xp || 0) - x0) / (x1 - x0) * 100);
+  box.innerHTML = `<button class="cnHead" id="cnHead">${clanEmblem(info.e || {f:0, c:0, s:0}, lv, 62)}<span class="tx"><b></b><small>«${clanEsc(CLAN_DESC[info.d || 0])}» · ${clanN()}/${cap} membri · ${CLAN_TYPE[info.t || 0]}</small><span class="cnLvRow"><span class="cnLv">Liv ${lv}</span><span class="cnBar"><i style="width:${pct}%"></i></span></span></span>${clanRole() >= 2 ? '<em class="cnEdit">✏️</em>' : ''}</button>
+    <div class="cnTabs" role="tablist">${[['chat', 'Chat'], ['membri', 'Membri'], ['baule', 'Baule'], ['classifica', 'Classifica']].map(([k, t]) => `<button role="tab" data-t="${k}" aria-selected="${CL.tab === k}">${t}<em hidden></em></button>`).join('')}</div>
+    <div class="cnPane" id="cnPane"></div>`;
+  box.querySelector('#cnHead b').textContent = info.n;
+  $('cnHead').onclick = () => { if (clanRole() >= 2) clanEditor(true); };
+  box.querySelectorAll('.cnTabs button').forEach(b => b.onclick = () => { CL.tab = b.dataset.t; UIS.tab(); clanRender(); });
+  const pane = $('cnPane');
+  if (CL.tab === 'chat') { pane.innerHTML = `<div class="cnChat"></div><div class="cnIn"><button class="upBtn alt" id="cnAsk" aria-label="Chiedi frammenti">🧩</button><input id="cnTxt" maxlength="200" placeholder="${CL.banned ? 'Chat bloccata' : 'Scrivi al clan…'}" autocomplete="off"><button class="upBtn" id="cnSend">Invia</button></div>`;
+    clanRenderChat(pane.querySelector('.cnChat'));
+    const send = () => { const v = $('cnTxt').value; if (!v.trim()) return; clanSend(v); $('cnTxt').value = ''; };
+    $('cnSend').onclick = send; $('cnTxt').onkeydown = e => { if (e.key === 'Enter') send(); };
+    $('cnTxt').onfocus = () => { if (!save.clan.ok) { $('cnTxt').blur(); clanRules(); } };
+    $('cnAsk').onclick = clanAskPick;
+    if (keep) { $('cnTxt').value = keep.v; if (keep.f) $('cnTxt').focus(); }
+  }
+  else if (CL.tab === 'membri') clanRenderMembers(pane);
+  else if (CL.tab === 'baule') clanRenderChest(pane);
+  else clanRenderBoard(pane);
+  clanTabsBadge();
+}
+function clanTabsBadge() {
+  const b = document.querySelector('#cnBody .cnTabs');
+  if (!b) return;
+  const set = (t, n) => { const e = b.querySelector(`[data-t="${t}"] em`); if (e) { e.hidden = !n; e.textContent = n > 9 ? '9+' : n; } };
+  if (CL.tab === 'chat' && CL.chat.length) { const last = CL.chat[CL.chat.length - 1].t || 0; if (last > (save.clan.seen || 0)) { save.clan.seen = last; persist(); } }
+  set('chat', CL.tab === 'chat' ? 0 : clanUnread()); set('baule', clanChestState().ready); set('membri', clanRole() >= 1 ? Object.keys(CL.reqs).length : 0);
+  clanDot();
+}
+function clanRenderChat(el) {
+  const atEnd = el.scrollHeight - el.scrollTop - el.clientHeight < 60;
+  el.innerHTML = '';
+  if (!CL.chat.length) el.innerHTML = `<p class="note cnNote">Ancora nessun messaggio. Saluta il clan!</p>`;
+  for (const m of CL.chat) {
+    if (save.blocked.includes(m.u) && m.u !== FBX.uid) continue;
+    const mine = m.u === FBX.uid, t = m.t ? new Date(m.t).toLocaleTimeString('it-IT', {hour:'2-digit', minute:'2-digit'}) : '', role = CL.info && m.u === CL.info.own ? 2 : (CL.mem[m.u] ? Math.min(1, CL.mem[m.u].r || 0) : 0);
+    const who = `<span class="who"><span class="nm"></span>${role ? `<span class="cnRole r${role}">${CLAN_ROLE[role]}</span>` : ''}</span>`;
+    const d = document.createElement('div');
+    if (m.k === 's') { d.className = 'cnSys'; d.textContent = m.x; el.appendChild(d); continue; }
+    const hid = m.h || Object.keys(m.rp || {}).length >= 3;
+    if (m.k === 'q' && m.q && !hid) {
+      const q = m.q, done = (q.got || 0) >= q.need, rn = ['Comune', 'Raro', 'Epico'][q.rar || 0];
+      d.className = 'cnMsg cnReq' + (mine ? ' me' : '');
+      d.innerHTML = `${mine ? '' : '<span class="frAva">🐉</span>'}<div class="cnBub"><canvas width="112" height="104"></canvas><div class="tx">${mine ? '<span class="who">Hai chiesto</span>' : who}<b class="kn"></b> <span class="cnRar r${q.rar || 0}">${rn}</span><span class="cnPbar"><i style="width:${Math.round((q.got || 0) / q.need * 100)}%"></i></span><small>${q.got || 0}/${q.need} frammenti${!mine && !done ? ` · ne regali 1, prendi ${(q.rar || 0) >= 2 ? 20 : 5} oro` : done ? ' · completata ✓' : ''}</small></div>${!mine && !done ? `<button class="upBtn" ${(save.shards[q.k] || 0) < 1 ? 'disabled' : ''}>Dona${(save.shards[q.k] || 0) ? '' : ' (0)'}</button>` : ''}</div>`;
+      if (!mine) d.querySelector('.who .nm').textContent = m.n || '?';
+      d.querySelector('.kn').textContent = SHORT[q.k] || q.k; drawIcon(d.querySelector('canvas'), q.k);
+      const b = d.querySelector('.upBtn'); if (b) b.onclick = e => { e.stopPropagation(); clanDonate(m); };
+    } else {
+      d.className = 'cnMsg' + (mine ? ' me' : '') + (hid ? ' hid' : '');
+      d.innerHTML = `${mine ? '' : '<span class="frAva">🐉</span>'}<div class="cnBub">${mine ? '' : who}<span class="x"></span><time>${t}</time></div>`;
+      if (!mine) d.querySelector('.who .nm').textContent = m.n || '?';
+      d.querySelector('.x').textContent = hid ? (m.h ? 'Messaggio rimosso dai moderatori' : 'Messaggio nascosto: segnalato da 3 giocatori') : m.x;
+    }
+    if (!mine) d.querySelector('.cnBub').onclick = ev => clanMenu(m, ev);
+    el.appendChild(d);
+  }
+  if (atEnd || !el.dataset.done) { el.scrollTop = el.scrollHeight; el.dataset.done = 1; }
+}
+function clanMenu(m, ev) {                                                     // tocco su un messaggio: segnala, blocca, silenzia, caccia
+  const pop = $('cnPop'), dim = $('cnDim'), my = clanRole(), tg = CL.mem[m.u], tr = CL.info && m.u === CL.info.own ? 2 : tg ? Math.min(1, tg.r || 0) : 0, bl = save.blocked.includes(m.u);
+  const it = [];
+  if (m.k === 'm') it.push(['🚩 Segnala messaggio', () => clanReport(m)]);
+  it.push([bl ? `🙂 Sblocca ${clanEsc(m.n)}` : `🙈 Blocca ${clanEsc(m.n)}`, () => clanBlock(m.u, m.n)]);
+  if (tg && my > tr) {
+    it.push((tg.mu || 0) > Date.now() ? ['🔊 Togli il silenzio', () => clanUnmute(m.u)] : ['🔇 Silenzia 24 ore', () => clanMute(m.u)]);
+    it.push(['🚪 Caccia dal clan', () => clanConfirm(`Cacciare ${m.n}?`, 'Caccia', () => clanKick(m.u)), 'red']);
+  }
+  pop.innerHTML = `<small>Messaggio di ${clanEsc(m.n)}</small>` + it.map((x, i) => `<button data-i="${i}" class="${x[2] || ''}">${x[0]}</button>`).join('');
+  pop.querySelectorAll('button').forEach(b => b.onclick = () => { clanPopClose(); it[+b.dataset.i][1](); });
+  pop.hidden = dim.hidden = false;
+  const r = ev.currentTarget.getBoundingClientRect(), app = $('app').getBoundingClientRect();
+  pop.style.left = Math.max(12, Math.min(app.width - pop.offsetWidth - 12, r.left - app.left)) + 'px';
+  pop.style.top = Math.max(12, Math.min(app.height - pop.offsetHeight - 12, r.bottom - app.top + 6)) + 'px';
+  dim.onclick = clanPopClose;
+}
+function clanPopClose() { $('cnPop').hidden = $('cnDim').hidden = true; }
+function clanConfirm(title, yes, fn) { clAsk(title, '<p class="note">Sei sicuro?</p>', yes, 'Annulla', fn); }
+function clanRules(after) {
+  $('ovClanRules').hidden = false;
+  $('cnRulesOk').onclick = () => { save.clan.ok = Date.now(); persist(); fbRef('users/' + FBX.uid + '/rules').set(fbNow()).catch(() => {}); $('ovClanRules').hidden = true; if (after) after(); else setTimeout(() => $('cnTxt') && $('cnTxt').focus(), 50); };
+  $('cnRulesNo').onclick = () => { $('ovClanRules').hidden = true; };
+}
+function clanAskPick() {
+  if (!clanCanAsk()) { const left = CLAN_REQ_CD - (Date.now() - (clanMe().rq || 0)); return toast(`Puoi chiedere di nuovo tra ${Math.floor(left / 3600e3)} ore e ${Math.ceil(left % 3600e3 / 60e3)} minuti`); }
+  const lv = clanLvNow(), ks = DW.ROSTER.filter(k => (RAR[k] || 0) <= 2 && !(UNLOCK[k] && (UNLOCK[k].noEgg || UNLOCK[k].pass || UNLOCK[k].secret || UNLOCK[k].cr)));
+  const box = $('cnPickBox');
+  box.innerHTML = `<h2>Chiedi frammenti</h2><p class="note">Comuni e rari: fino a ${clanAskMax(lv, 0)} · Epici: fino a ${clanAskMax(lv, 2)}. Una richiesta ogni 8 ore.</p><div class="fgGrid cnPickGrid"></div><button class="big alt" id="cnPickNo">Annulla</button>`;
+  const g = box.querySelector('.cnPickGrid');
+  for (const k of ks) { const c = document.createElement('button'); c.className = 'card2' + (isUnlocked(k) ? '' : ' lock'); c.dataset.r = RAR[k] || 0; c.innerHTML = `<canvas width="112" height="104"></canvas><span class="nm">${SHORT[k]}</span><span class="lv">${(save.shards[k] || 0)} fr · max ${clanAskMax(lv, RAR[k] || 0)}</span>`; drawCard(c.querySelector('canvas'), k); c.onclick = () => { $('ovClanPick').hidden = true; clanAsk(k); }; g.appendChild(c); }
+  $('cnPickNo').onclick = () => { $('ovClanPick').hidden = true; };
+  $('ovClanPick').hidden = false;
+}
+function clanRenderMembers(pane) {
+  const my = clanRole(), own = CL.info.own, list = Object.entries(CL.mem).sort((a, b) => ((b[0] === own) - (a[0] === own)) || (Math.min(1, b[1].r || 0) - Math.min(1, a[1].r || 0)) || ((b[1].wk === weekKey() ? b[1].w : 0) - (a[1].wk === weekKey() ? a[1].w : 0)) || (b[1].wt || 0) - (a[1].wt || 0));
+  pane.innerHTML = `<div class="cnList"></div>`; const L = pane.firstChild;
+  const reqs = Object.entries(CL.reqs);
+  if (my >= 1 && reqs.length) {
+    const h = document.createElement('div'); h.className = 'cnSec'; h.textContent = 'Richieste per entrare'; L.appendChild(h);
+    for (const [u, r] of reqs) { const row = document.createElement('div'); row.className = 'cnRow'; row.innerHTML = `<span class="frAva">🐉</span><div class="tx"><b></b><small>vuole entrare · ${clanAgo(r.t)}</small></div><button class="upBtn alt">No</button><button class="upBtn">Accetta</button>`; row.querySelector('b').textContent = r.n; const [no, yes] = row.querySelectorAll('.upBtn'); no.onclick = () => clanAccept(u, false); yes.onclick = () => clanAccept(u, true); L.appendChild(row); }
+    const h2 = document.createElement('div'); h2.className = 'cnSec'; h2.textContent = 'Membri'; L.appendChild(h2);
+  }
+  const wk = weekKey();
+  for (const [u, m] of list) {
+    const r = u === own ? 2 : Math.min(1, m.r || 0), me = u === FBX.uid, mu = (m.mu || 0) > Date.now();
+    const row = document.createElement('div'); row.className = 'cnRow' + (me ? ' me' : '');
+    row.innerHTML = `<span class="frAva">🐉<i class="frDot${Date.now() - (m.s || 0) < 10 * 60e3 ? ' on' : ''}"></i></span><div class="tx"><b><span class="nm"></span>${r ? ` <span class="cnRole r${r}">${CLAN_ROLE[r]}</span>` : ''}${mu ? ' 🔇' : ''}${save.blocked.includes(u) ? ' 🙈' : ''}</b><small>${me ? 'tu' : clanAgo(m.s)} · ${m.wk === wk ? m.w || 0 : 0} vittorie questa settimana · ${m.dn || 0} frammenti donati</small></div>${!me && (my > r || r < 2) ? '<button class="upBtn alt cnMore">⋯</button>' : ''}`;
+    row.querySelector('.nm').textContent = me ? (m.n || 'Tu') : m.n;
+    const more = row.querySelector('.cnMore');
+    if (more) more.onclick = ev => {
+      const it = [];
+      if (my >= 2 && r === 0) it.push(['⭐ Nomina vice', () => clanSetRole(u, 1)]);
+      if (my >= 2 && r === 1) it.push(['↩️ Togli da vice', () => clanSetRole(u, 0)]);
+      if (my >= 2) it.push(['👑 Rendi capo', () => clanConfirm(`Dare il clan a ${m.n}?`, 'Rendi capo', () => clanSetRole(u, 2))]);
+      if (my > r) it.push(mu ? ['🔊 Togli il silenzio', () => clanUnmute(u)] : ['🔇 Silenzia 24 ore', () => clanMute(u)]);
+      if (my > r) it.push(['🚪 Caccia dal clan', () => clanConfirm(`Cacciare ${m.n}?`, 'Caccia', () => clanKick(u)), 'red']);
+      it.push([save.blocked.includes(u) ? `🙂 Sblocca ${clanEsc(m.n)}` : `🙈 Blocca ${clanEsc(m.n)}`, () => clanBlock(u, m.n)]);
+      const pop = $('cnPop'), dim = $('cnDim');
+      pop.innerHTML = `<small>${clanEsc(m.n)}</small>` + it.map((x, i) => `<button data-i="${i}" class="${x[2] || ''}">${x[0]}</button>`).join('');
+      pop.querySelectorAll('button').forEach(b => b.onclick = () => { clanPopClose(); it[+b.dataset.i][1](); });
+      pop.hidden = dim.hidden = false; dim.onclick = clanPopClose;
+      const rr = ev.currentTarget.getBoundingClientRect(), app = $('app').getBoundingClientRect();
+      pop.style.left = Math.max(12, rr.right - app.left - pop.offsetWidth) + 'px'; pop.style.top = Math.max(12, Math.min(app.height - pop.offsetHeight - 12, rr.bottom - app.top + 6)) + 'px';
+    };
+    L.appendChild(row);
+  }
+  const act = document.createElement('div'); act.className = 'cnActs';
+  act.innerHTML = `${my >= 1 ? '<button class="big alt" id="cnInv">Invita amici</button>' : ''}<button class="big alt cnLeave" id="cnLeave">Esci dal clan</button>`;
+  L.appendChild(act);
+  if ($('cnInv')) $('cnInv').onclick = clanInvite;
+  $('cnLeave').onclick = () => clanConfirm(Object.keys(CL.mem).length <= 1 ? 'Sei l’ultimo: il clan verrà chiuso. Uscire?' : my >= 2 ? 'Uscire? Il clan passa al vice più vecchio.' : 'Uscire dal clan?', 'Esci', async () => { if (await clanLeave()) { toast('Sei uscito dal clan'); } });
+}
+function clanRenderChest(pane) {
+  const st = clanChestState(), info = CL.info, POS = [16, 40, 64, 90];          // tappe a distanza fissa, la barra si riempie a tratti
+  const fill = (() => { let prev = 0, x0 = 0; for (let i = 0; i < 4; i++) { const t = st.tiers[i]; if (st.p < t) return x0 + (POS[i] - x0) * (st.p - prev) / (t - prev); prev = t; x0 = POS[i]; } return 100; })();
+  const ico = i => CLAN_PRIZE[i].egg ? eggSvg('big', 26) : CLAN_PRIZE[i].ru ? '<span class="ruby" style="width:22px;height:22px"></span>' : '<span class="coin" style="width:22px;height:22px"></span>';
+  const lbl = i => CLAN_PRIZE[i].egg ? 'Uovo<br>Grande' : CLAN_PRIZE[i].ru ? CLAN_PRIZE[i].ru + '<br>rubini' : CLAN_PRIZE[i].gold + '<br>oro';
+  const days = 7 - ((new Date().getDay() + 6) % 7);
+  pane.innerHTML = `<div class="cnList"><div class="cnChest"><h3>Baule della settimana</h3><p class="note">Ogni vittoria di un membro vale 1 punto · si azzera lunedì</p>
+    <div class="cnChestImg">${clanChestSvg(info)}</div>
+    <div class="cnTrack"><i style="width:${fill}%"></i>${st.tiers.map((t, i) => `<div class="cnMs${st.p >= t ? ' done' : ''}" style="left:${POS[i]}%"><span class="lb">${t}</span><span class="pin">${i < st.got ? '✓' : st.p >= t ? '!' : ''}</span><span class="rw">${ico(i)}${lbl(i)}</span></div>`).join('')}</div>
+    <div class="cnMine"><div><b>${st.p}</b>vittorie del clan</div><div><b>${st.mine}</b>vittorie tue</div><div><b>${days}</b>${days === 1 ? 'giorno alla fine' : 'giorni alla fine'}</div></div>
+    ${st.ready ? `<button class="big" id="cnClaim">Riscuoti: ${lbl(st.got).replace('<br>', ' ')}</button>` : ''}
+    <p class="note">${st.mine ? '' : '<b>Vinci almeno 1 battaglia questa settimana per prendere i premi.</b> '}Le tappe si adattano al clan: con ${clanN()} ${clanN() === 1 ? 'membro' : 'membri'} servono ${st.tiers.join(' · ')} vittorie.</p></div></div>`;
+  if ($('cnClaim')) $('cnClaim').onclick = () => clanClaim(st.got);
+}
+const clanChestSvg = info => `<svg viewBox="0 0 120 92" width="140" height="107"><defs><linearGradient id="cnCh" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#a8612c"/><stop offset="1" stop-color="#6a3612"/></linearGradient></defs><ellipse cx="60" cy="86" rx="50" ry="6" fill="rgba(0,0,0,.25)"/><path d="M14 42 H106 V80 C106 84 104 86 100 86 H20 C16 86 14 84 14 80 Z" fill="url(#cnCh)" stroke="#1c1a24" stroke-width="4"/><path d="M14 42 C14 18 30 8 60 8 C90 8 106 18 106 42 Z" fill="#b8702e" stroke="#1c1a24" stroke-width="4"/><path d="M30 12 V86 M90 12 V86" stroke="#ffd35a" stroke-width="7"/><path d="M30 12 V86 M90 12 V86" stroke="#1c1a24" stroke-width="2" opacity=".5"/><g transform="translate(38 26) scale(.44)">${clanEmblem((info && info.e) || {f:0, c:0, s:0}, clanLv(info && info.xp), 100).replace(/^<svg[^>]*>/, '').replace(/<\/svg>$/, '')}</g></svg>`;
+async function clanRenderBoard(pane) {
+  pane.innerHTML = `<div class="cnList"><p class="note cnNote">Carico la classifica…</p></div>`;
+  if (!CL.board || Date.now() - CL.board.t > 60e3) {
+    try { const s = await fbRef('clans').orderByChild('xp').limitToLast(100).once('value'); const a = []; s.forEach(c => { a.push(Object.assign({id:c.key}, c.val())); }); CL.board = {t:Date.now(), a:a.sort((x, y) => (y.xp || 0) - (x.xp || 0))}; } catch (e) { CL.board = null; }
+  }
+  if (CL.tab !== 'classifica' || !pane.isConnected) return;
+  const L = pane.firstChild; L.innerHTML = '';
+  if (!CL.board) { L.innerHTML = `<p class="note cnNote">Non riesco a caricare la classifica.</p>`; return; }
+  CL.board.a.forEach((c, i) => { const lv = clanLv(c.xp), row = document.createElement('div'); row.className = 'cnRow' + (c.id === CL.cid ? ' me' : ''); row.innerHTML = `<span class="cnRank${i < 3 ? ' g' + (i + 1) : ''}">${i + 1}</span>${clanEmblem(c.e || {f:0, c:0, s:0}, lv, 44)}<div class="tx"><b></b><small>${c.cnt || 0}/${clanCap(lv)} membri · ${c.xp || 0} esperienza</small></div><span class="cnLv">Liv ${lv}</span>`; row.querySelector('b').textContent = c.n; L.appendChild(row); });
+}
+async function clanRenderFind(box) {
+  const pend = save.clan.pend;
+  box.innerHTML = `<div class="cnList">
+    <div class="cnRow cnIntro"><div class="tx"><b>Unisciti a un clan!</b><small>Chiedi frammenti agli altri, riempite insieme il baule della settimana e scalate la classifica dei clan.</small></div></div>
+    ${pend ? '<p class="note cnNote" id="cnPend">Hai chiesto di entrare in un clan: aspetta che il capo accetti. <button class="upBtn alt" id="cnPendNo">Annulla</button></p>' : ''}
+    <div class="onJoin frSearch"><input id="cnQ" maxlength="20" placeholder="Cerca un clan per nome" autocomplete="off"><button class="big alt" id="cnGo">Cerca</button></div>
+    <button class="big cnNew" id="cnNew">Crea il tuo clan · <span class="coin"></span> ${CLAN_COST}</button>
+    <div class="cnSec">${CL.q ? 'Risultati' : 'Clan consigliati'}</div><div id="cnRes"><p class="note cnNote">Carico…</p></div></div>`;
+  $('cnQ').value = CL.q;
+  $('cnGo').onclick = () => { CL.q = $('cnQ').value.trim().toLowerCase(); CL.list = null; clanRender(); };
+  $('cnQ').onkeydown = e => { if (e.key === 'Enter') $('cnGo').click(); };
+  $('cnNew').onclick = () => { if (!(FBX.me && FBX.me.name)) return fbAskName(true); clanEditor(false); };
+  if ($('cnPendNo')) $('cnPendNo').onclick = async () => { await fbRef('clanReq/' + pend + '/' + FBX.uid).remove().catch(() => {}); save.clan.pend = null; persist(); CL.pend = null; clanOff(); clanRender(); };
+  if (!CL.list || CL.list.q !== CL.q || Date.now() - CL.list.t > 60e3) {
+    try {
+      const q = CL.q ? fbRef('clans').orderByChild('nl').startAt(CL.q).endAt(CL.q + '').limitToFirst(25) : fbRef('clans').orderByChild('xp').limitToLast(60);
+      const s = await q.once('value'), a = []; s.forEach(c => { a.push(Object.assign({id:c.key}, c.val())); });
+      CL.list = {q:CL.q, t:Date.now(), a:CL.q ? a : a.filter(c => c.t !== 2 && (c.cnt || 0) < clanCap(clanLv(c.xp))).sort((x, y) => (y.xp || 0) - (x.xp || 0)).slice(0, 20)};
+    } catch (e) { CL.list = {q:CL.q, t:Date.now(), a:[], err:1}; }
+  }
+  const res = $('cnRes'); if (!res) return; res.innerHTML = '';
+  if (!CL.list.a.length) { res.innerHTML = `<p class="note cnNote">${CL.list.err ? 'Non riesco a caricare i clan.' : CL.q ? 'Nessun clan con questo nome.' : 'Ancora nessun clan: crea il primo!'}</p>`; return; }
+  for (const c of CL.list.a) {
+    const lv = clanLv(c.xp), full = (c.cnt || 0) >= clanCap(lv), row = document.createElement('div'); row.className = 'cnRow';
+    row.innerHTML = `${clanEmblem(c.e || {f:0, c:0, s:0}, lv, 50)}<div class="tx"><b></b><small>Liv ${lv} · ${c.cnt || 0}/${clanCap(lv)} membri · <span class="cnTipo t${c.t || 0}">${CLAN_TYPE[c.t || 0]}</span></small><small class="ds">«${clanEsc(CLAN_DESC[c.d || 0])}»</small></div>${full ? '<small>Pieno</small>' : c.t === 2 ? '<small>Su invito</small>' : `<button class="upBtn" ${pend ? 'disabled' : ''}>${c.t === 1 ? 'Chiedi' : 'Entra'}</button>`}`;
+    row.querySelector('b').textContent = c.n;
+    const b = row.querySelector('.upBtn'); if (b) b.onclick = async () => { b.disabled = true; await clanJoin(c.id); b.disabled = false; };
+    res.appendChild(row);
+  }
+}
+function clanEditor(edit) {                                                    // crea il clan, o il capo cambia stemma, descrizione e chi può entrare
+  const info = edit ? CL.info : null, d = CL.ed = edit ? {n:info.n, f:info.e.f, c:info.e.c, s:info.e.s, t:info.t || 0, d:info.d || 0} : (CL.ed && !CL.ed.edit ? CL.ed : {n:'', f:0, c:0, s:0, t:0, d:0});
+  d.edit = !!edit;
+  const box = $('cnEdBox'), lv = edit ? clanLvNow() : 1;
+  const draw = () => {
+    box.innerHTML = `<h2>${edit ? 'Il tuo clan' : 'Crea il clan'}</h2><div class="cnEmbBig">${clanEmblem(d, lv, 96)}</div>
+      ${edit ? `<div class="nameIn cnNameRo"></div>` : `<input class="nameIn" id="cnName" maxlength="20" placeholder="Nome del clan" autocomplete="off">`}
+      <div class="cnOpt"><span>Forma</span><div class="cnPick">${EMB_FORM.map((f, i) => `<button data-k="f" data-v="${i}" class="${d.f === i ? 'on' : ''}" aria-label="${f}">${clanEmblem({f:i, c:7, s:0}, 1, 34).replace('scale(.78)', 'scale(0)')}</button>`).join('')}</div></div>
+      <div class="cnOpt"><span>Colore</span><div class="cnPick">${EMB_COL.map((c, i) => `<button data-k="c" data-v="${i}" class="${d.c === i ? 'on' : ''}"><i class="sw" style="background:linear-gradient(${c[1]},${c[0]})"></i></button>`).join('')}</div></div>
+      <div class="cnOpt"><span>Simbolo</span><div class="cnPick">${EMB_SYM.map((s, i) => `<button data-k="s" data-v="${i}" class="${d.s === i ? 'on' : ''}" aria-label="${s}">${clanEmblem({f:1, c:d.c, s:i}, 1, 34)}</button>`).join('')}</div></div>
+      <div class="cnOpt"><span>Chi può entrare</span><div class="cnSeg">${CLAN_TYPE.map((t, i) => `<button data-k="t" data-v="${i}" class="${d.t === i ? 'on' : ''}">${t}</button>`).join('')}</div></div>
+      <div class="cnOpt"><span>Descrizione</span><select class="cnSel" id="cnDesc">${CLAN_DESC.map((t, i) => `<option value="${i}" ${d.d === i ? 'selected' : ''}>«${t}»</option>`).join('')}</select></div>
+      <p class="note" id="cnEdErr"></p>
+      <button class="big" id="cnEdOk">${edit ? 'Salva' : `Crea · <span class="coin"></span> ${CLAN_COST}`}</button><button class="big alt" id="cnEdNo">Annulla</button>`;
+    if (edit) box.querySelector('.cnNameRo').textContent = d.n; else { $('cnName').value = d.n; $('cnName').oninput = e => { d.n = e.target.value; }; }
+    box.querySelectorAll('[data-k]').forEach(b => b.onclick = () => { d[b.dataset.k] = +b.dataset.v; UIS.tab(); const y = box.scrollTop; draw(); box.scrollTop = y; });
+    $('cnDesc').onchange = e => { d.d = +e.target.value; };
+    $('cnEdNo').onclick = () => { $('ovClanEd').hidden = true; };
+    $('cnEdOk').onclick = async () => {
+      $('cnEdOk').disabled = true;
+      let err = null;
+      if (edit) { try { await fbRef('clans/' + CL.cid).update({e:{f:d.f, c:d.c, s:d.s}, t:d.t, d:d.d}); } catch (e) { err = clanErr(e); } }
+      else err = await clanCreate(d);
+      $('cnEdOk').disabled = false;
+      if (err) { $('cnEdErr').textContent = err; UIS.err && UIS.err(); return; }
+      $('ovClanEd').hidden = true; if (!edit) { CL.ed = null; toast('Clan creato!'); CL.tab = 'chat'; } else toast('Clan aggiornato');
+    };
+  };
+  draw(); $('ovClanEd').hidden = false;
 }
 
 /* ================= laboratorio personaggi ================= */

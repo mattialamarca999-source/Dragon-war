@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Dragon War · Moderazione</title>
+<link rel="icon" href="icon-192.png">
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+<script>window.DW_FB = {apiKey:"AIzaSyCHD7lbnLNOva0G70F5smdcV8h11kQY-PI", authDomain:"dragon-war-ff637.firebaseapp.com", databaseURL:"https://dragon-war-ff637-default-rtdb.europe-west1.firebasedatabase.app", projectId:"dragon-war-ff637", storageBucket:"dragon-war-ff637.firebasestorage.app", messagingSenderId:"90677831602", appId:"1:90677831602:web:1ecca1bd183989a063e6ab"};</script>
+<style>
+:root{--ink:#1c1a24;--parch:#f6e7c4;--gold:#f2b33d;--lava:#ff6a2a;--bg:#16121f}
+*{box-sizing:border-box}
+body{margin:0;background:radial-gradient(circle at 50% 0,#3a1e5a,var(--bg) 60%);color:var(--ink);font:15px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;padding:20px 14px 48px;min-height:100vh}
+main{max-width:760px;margin:0 auto;display:flex;flex-direction:column;gap:12px}
+.box{background:var(--parch);border:3px solid var(--ink);border-radius:16px;box-shadow:0 5px 0 #000;padding:14px 16px}
+h1{margin:0;font-size:24px;color:#fff;text-shadow:0 2px 0 #000}
+h2{margin:0 0 6px;font-size:17px}
+.btn{font:700 14px system-ui,sans-serif;border:2px solid var(--ink);border-radius:10px;background:var(--lava);color:var(--ink);padding:7px 11px;cursor:pointer;box-shadow:0 2px 0 #000;margin:3px 4px 3px 0}
+.btn.alt{background:#fff8e6}.btn.red{background:#e8453a;color:#fff}
+.btn:disabled{opacity:.5}
+.rep{display:flex;flex-direction:column;gap:4px}
+.x{background:#fff8e6;border:2px dashed rgba(28,26,36,.3);border-radius:10px;padding:8px 10px;font-weight:700;white-space:pre-wrap;overflow-wrap:anywhere}
+small{color:#6a5a48}
+code{background:#fff8e6;border-radius:6px;padding:1px 5px;font-size:13px;overflow-wrap:anywhere}
+.msg{font-weight:700;color:#fff}
+.tag{display:inline-block;font:800 11px system-ui;border-radius:6px;padding:0 6px;background:#ffc0c8;border:1.5px solid var(--ink)}
+</style>
+</head>
+<body>
+<main>
+  <h1>🐉 Moderazione della chat dei clan</h1>
+  <div class="box" id="login"><h2>Entra con Google</h2><p>Solo chi gestisce il gioco può vedere le segnalazioni.</p><button class="btn" id="go">Entra con Google</button></div>
+  <div class="box" id="noadm" hidden><h2>Non sei ancora moderatore</h2>
+    <p>Il tuo ID è <code id="myuid"></code>.</p>
+    <p>Per diventare moderatore (si fa una volta sola): Firebase → <b>Realtime Database</b> → <b>Dati</b> → aggiungi il nodo <code>admins</code>, dentro aggiungi la chiave <code id="myuid2"></code> con valore <code>true</code>. Poi ricarica questa pagina.</p></div>
+  <p class="msg" id="msg"></p>
+  <div id="list"></div>
+</main>
+<script>
+const $ = id => document.getElementById(id), say = t => $('msg').textContent = t;
+const esc = t => String(t == null ? '' : t).replace(/[&<>"]/g, c => ({'&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;'}[c]));
+// un'app Firebase separata ("mod"): l'accesso qui non cambia l'account del gioco aperto nello stesso browser
+const APP = window.firebase && window.DW_FB ? firebase.initializeApp(window.DW_FB, 'mod') : null;
+if (!APP) say('Firebase non raggiungibile.');
+const R = p => APP.database().ref(p);
+let bans = {};
+$('go').onclick = async () => { try { await APP.auth().signInWithPopup(new firebase.auth.GoogleAuthProvider()); } catch (e) { say('Accesso non riuscito.'); } };
+if (APP) APP.auth().onAuthStateChanged(async u => {
+  if (!u || u.isAnonymous) return;
+  $('login').hidden = true;
+  const adm = await R('admins/' + u.uid).once('value').then(s => s.val(), () => null);
+  if (!adm) { $('noadm').hidden = false; $('myuid').textContent = $('myuid2').textContent = u.uid; return; }
+  R('bans').on('value', s => { bans = s.val() || {}; });
+  R('reports').on('value', s => paint(s.val() || {}), () => say('Non riesco a leggere le segnalazioni: controlla le regole del database.'));
+});
+function paint(reps) {
+  const by = {};                                                               // le segnalazioni dello stesso messaggio stanno insieme
+  for (const [id, r] of Object.entries(reps)) { const k = r.cid + '/' + r.mid; (by[k] = by[k] || {r, ids:[], who:new Set()}).ids.push(id); by[k].who.add(r.by); }
+  const groups = Object.values(by).sort((a, b) => (b.r.t || 0) - (a.r.t || 0));
+  say(groups.length ? `${groups.length} messaggi segnalati` : 'Nessuna segnalazione da controllare. 👍');
+  $('list').innerHTML = '';
+  for (const g of groups) {
+    const r = g.r, d = document.createElement('div'); d.className = 'box rep';
+    d.innerHTML = `<small>Clan <b>${esc(r.cn)}</b> · ${new Date(r.t || 0).toLocaleString('it-IT')} · segnalato da ${g.who.size} ${g.who.size === 1 ? 'giocatore' : 'giocatori'} ${bans[r.a] ? '<span class="tag">già bannato</span>' : ''}</small>
+      <b>${esc(r.an)} ha scritto:</b><div class="x">${esc(r.x)}</div>
+      <div><button class="btn" data-a="hide">Nascondi il messaggio</button><button class="btn red" data-a="ban">${bans[r.a] ? 'Togli il ban' : 'Banna dalla chat'}</button><button class="btn alt" data-a="ok">Va bene così (archivia)</button></div>`;
+    const done = () => Promise.all(g.ids.map(id => R('reports/' + id).remove()));
+    d.querySelector('[data-a=hide]').onclick = async () => { try { await R(`clanChat/${r.cid}/${r.mid}/h`).set(true); await done(); } catch (e) { say('Non riuscito: ' + (e.code || e.message)); } };
+    d.querySelector('[data-a=ban]').onclick = async () => { try { if (bans[r.a]) await R('bans/' + r.a).remove(); else { if (!confirm(`Bannare ${r.an} dalla chat di tutti i clan?`)) return; await R('bans/' + r.a).set({t:firebase.database.ServerValue.TIMESTAMP, x:r.x || ''}); await R(`clanChat/${r.cid}/${r.mid}/h`).set(true).catch(() => {}); await done(); } } catch (e) { say('Non riuscito: ' + (e.code || e.message)); } };
+    d.querySelector('[data-a=ok]').onclick = () => done().catch(e => say('Non riuscito: ' + (e.code || e.message)));
+    $('list').appendChild(d);
+  }
+}
+</script>
+</body>
+</html>

@@ -36,8 +36,8 @@ a{color:#7b3fb3;font-weight:700}
   <header><img src="icon-192.png" alt=""><div><h1 data-l="it">Elimina il tuo account Dragon War</h1><h1 data-l="en" hidden>Delete your Dragon War account</h1></div></header>
   <div class="lang"><button id="bIt" aria-pressed="true">Italiano</button><button id="bEn" aria-pressed="false">English</button></div>
 
-  <p data-l="it">Quando elimini l’account cancelliamo per sempre: il nome da giocatore, il codice amico, gli amici, la posta (regali, inviti, messaggi), i punteggi in classifica e il salvataggio online dei progressi. Non si può tornare indietro.</p>
-  <p data-l="en" hidden>When you delete your account we permanently erase: your player name, friend code, friends, mail (gifts, invites, messages), leaderboard scores and your online game save. This cannot be undone.</p>
+  <p data-l="it">Quando elimini l’account cancelliamo per sempre: il nome da giocatore, il codice amico, gli amici, la posta (regali, inviti, messaggi), i punteggi in classifica, il salvataggio online dei progressi e il tuo posto nel clan (se eri il capo, il clan passa a un altro membro). Non si può tornare indietro.</p>
+  <p data-l="en" hidden>When you delete your account we permanently erase: your player name, friend code, friends, mail (gifts, invites, messages), leaderboard scores, your online game save and your place in your clan (if you led it, the clan passes to another member). This cannot be undone.</p>
 
   <h2 data-l="it">Modo 1 · Dal gioco (il più veloce)</h2><h2 data-l="en" hidden>Option 1 · From the game (fastest)</h2>
   <p data-l="it">Apri Dragon War → <b>Impostazioni (⚙️)</b> → <b>Salvataggio online</b> → <b>«Elimina il mio account e i miei dati»</b>.</p>
@@ -96,6 +96,14 @@ $('del').onclick = async () => {
   const uid = me.user.uid, u = me.u, ops = []; say(T[L].busy); $('del').disabled = true;
   try {
     const fr = (await R('friends/' + uid).once('value')).val() || {}, mail = (await R('mail/' + uid).once('value')).val() || {};
+    const cid = u.clan;                                                          // il clan: esco, e se ero il capo lo passo a un altro (o lo chiudo se ero l'ultimo)
+    if (cid) { try {
+      const mem = (await R('clanMembers/' + cid).once('value')).val() || {}, info = (await R('clans/' + cid).once('value')).val() || {}, others = Object.entries(mem).filter(([k]) => k !== uid);
+      if (!others.length) { for (const p of ['clanChat', 'clanReq', 'clanInv']) await R(p + '/' + cid).remove().catch(() => {}); await R('clans/' + cid).remove().catch(() => {}); if (info.nl) await R('clanNames/' + info.nl).remove().catch(() => {}); }
+      else if (info.own === uid) { const nx = others.sort((a, b) => (b[1].r || 0) - (a[1].r || 0) || (a[1].j || 0) - (b[1].j || 0))[0][0]; await R().update({[`clanMembers/${cid}/${nx}/r`]:2, [`clans/${cid}/own`]:nx}).catch(() => {}); }
+      await R('clanMembers/' + cid + '/' + uid).remove().catch(() => {});
+      if (others.length) await R('clans/' + cid + '/cnt').transaction(c => Math.max(0, (c || 1) - 1)).catch(() => {});
+    } catch (e) {} }
     for (const f of Object.keys(fr)) { ops.push(R(`friends/${f}/${uid}`).remove()); ops.push(R(`friends/${uid}/${f}`).remove()); }
     for (const m of Object.keys(mail)) ops.push(R(`mail/${uid}/${m}`).remove());
     if (u.name) ops.push(R('names/' + u.name.toLowerCase()).remove());
