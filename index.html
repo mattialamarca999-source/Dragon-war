@@ -1359,7 +1359,7 @@ const DW = (() => {
     const f = s.base.hp / s.base.max;
     return f >= .9 ? 3 : f >= .5 ? 2 : 1;
   }
-  const reward = s => s.inf ? 0 : (s.hard ? 2 : 1) * (s.over > 0 ? s.lv.gold + 50 * stars(s) + s.stats.stolen * 2 : 20 + Math.round((30 + 3 * (s.lv.g || 0)) * (1 - s.castle.hp / s.castle.max)));
+  const reward = s => s.inf ? 0 : Math.round(.5 * (s.hard ? 2 : 1) * (s.over > 0 ? s.lv.gold + 50 * stars(s) + s.stats.stolen * 2 : 20 + Math.round((30 + 3 * (s.lv.g || 0)) * (1 - s.castle.hp / s.castle.max))));
 
   // I Capricci del Drago: battaglie con una regola storta. Se ne apre uno per ogni mappa completata
   const BCOST = {soldatino:40, arciere:60, pollicino:55, hanselgretel:60, ranocchio:70, raperonzolo:80, peterpan:80, cacciatore:90, fata:100, pifferaio:100, nani:110, porcellino:120, carrozza:130, musicanti:140, principe:180, bimbi:70, wendy:90, giglio:70, cappellaio:100, brucaliffo:100, lepre:70, alibaba:90, sinbad:150, guardie:120, renna:130, fiammiferaia:100, soldatineve:110, cavcristallo:170, gemelli:120, pisello:120, cappuccetto:55, pinocchio:70, robinhood:90, gattostivali:90, alice:90, biancaneve:100, merlino:120};   // i buoni costano Bontà
@@ -4785,15 +4785,15 @@ function showGift(title, gold, items, extra = {}) {
 $('giftOk').onclick = () => { $('ovGift').hidden = true; if (!$('miss').hidden) renderMiss(); if (!$('shop').hidden) renderShop(); };
 $('oddsOk').onclick = () => { $('ovOdds').hidden = true; };
 const MISS = [
-  {id:'win3', txt:'Vinci 3 castelli', need:3, gold:150, add:b => b.win && !b.cap ? 1 : 0},
+  {id:'win3', txt:'Vinci 3 castelli', need:3, gold:75, add:b => b.win && !b.cap ? 1 : 0},
   {id:'star3', txt:'Fai 3 stelle in un castello', need:1, fr:4, add:b => b.win && b.st === 3 && !b.cap && !b.hard ? 1 : 0},
-  {id:'kill40', txt:'Batti 40 buoni', need:40, gold:120, add:b => b.kills},
-  {id:'fire5', txt:'Usa la fiammata 5 volte', need:5, gold:100, add:b => b.fires},
+  {id:'kill40', txt:'Batti 40 buoni', need:40, gold:60, add:b => b.kills},
+  {id:'fire5', txt:'Usa la fiammata 5 volte', need:5, gold:50, add:b => b.fires},
   {id:'topi', txt:'Vinci con i Topi nel mazzo', need:1, fr:3, k:'topi', add:b => b.win && b.deck.includes('topi') ? 1 : 0},
-  {id:'fast', txt:'Vinci un castello in meno di 2 minuti', need:1, gold:200, add:b => b.win && b.t < 120 ? 1 : 0},
+  {id:'fast', txt:'Vinci un castello in meno di 2 minuti', need:1, gold:100, add:b => b.win && b.t < 120 ? 1 : 0},
   {id:'boss', txt:'Batti un boss o un semiboss', need:1, fr:5, add:b => b.win && b.boss ? 1 : 0},
-  {id:'capr', txt:'Gioca un Capriccio', need:1, gold:150, add:b => b.cap ? 1 : 0, ok:() => capOpen(0)},
-  {id:'hero', txt:'Vinci in Eroica', need:1, gold:300, add:b => b.win && b.hard ? 1 : 0, ok:() => BETA || DW.WORLDS.some((_, w) => bossBeaten(w))}
+  {id:'capr', txt:'Gioca un Capriccio', need:1, gold:75, add:b => b.cap ? 1 : 0, ok:() => capOpen(0)},
+  {id:'hero', txt:'Vinci in Eroica', need:1, gold:150, add:b => b.win && b.hard ? 1 : 0, ok:() => BETA || DW.WORLDS.some((_, w) => bossBeaten(w))}
 ];
 function daily() {                                                           // 3 missioni nuove ogni giorno, sempre le stesse per tutto il giorno
   const d = today();
@@ -4820,7 +4820,7 @@ const ACH = [
   {id:'capr', name:'Capriccioso', what:'Capricci vinti', tiers:[3, 6, 10], val:() => Object.keys(save.capr).length},
   {id:'crowns', name:'Testa coronata', what:'corone', tiers:[15, 45, 120], val:() => totalCrowns()}
 ];
-const ACH_PRIZE = [{gold:300, fr:0, ru:5}, {gold:800, fr:8, ru:10}, {gold:2000, fr:20, ru:20}];
+const ACH_PRIZE = [{gold:150, fr:0, ru:5}, {gold:400, fr:8, ru:10}, {gold:1000, fr:20, ru:20}];
 const missReady = () => { const dd = daily(); return dd.ids.some(id => !dd.got.includes(id) && (dd.prog[id] || 0) >= MISS.find(m => m.id === id).need) || (dd.got.length === 3 && !dd.chest) || ACH.some(a => (save.ach[a.id] || 0) < 3 && a.val() >= a.tiers[save.ach[a.id] || 0]); };
 let missTab = 'day';
 /* ================= Calendario premi: 7 giorni di fila, se salti un giorno si riparte dal primo ================= */
@@ -4966,7 +4966,7 @@ function renderMiss() {
     }
     row(CHEST_ICO(), 'Baule del giorno', '<small>Finisci tutte e 3 le missioni: dentro c’è un Uovo di Drago</small>', dd.got.length / 3,
       `<button class="upBtn" ${dd.got.length === 3 && !dd.chest ? '' : 'disabled'}>${dd.chest ? 'Aperto' : 'Apri'}</button>`,
-      () => { dd.chest = true; persist(); showGift('Baule del giorno', 100, [], {ru:2, eggs:{base:1}}); }, dd.chest);
+      () => { dd.chest = true; persist(); showGift('Baule del giorno', 50, [], {ru:2, eggs:{base:1}}); }, dd.chest);
     const nt = document.createElement('p'); nt.className = 'note'; nt.style.textAlign = 'center'; nt.textContent = 'Domani arrivano 3 missioni nuove.'; list.appendChild(nt);
   } else {
     for (const a of ACH) {
@@ -5015,8 +5015,8 @@ const RAR = {pupazzo:1, zucca:3, gothel:1, marzapane:3, alberich:2, sirena:1, ba
 const RNAME = ['Comune', 'Raro', 'Epico', 'Mitico', 'Leggendario'];
 const RCOL = [['#b4f09a', '#2a7a1a'], ['#a8d8ff', '#1a5ab0'], ['#e0c4ff', '#5a2a9a'], ['#ffb0a0', '#a81a1a'], ['#fff0a0', '#c87a10']];
 const EGGS = {base:{name:'Uovo di Drago', min:0, odds:[55, 27, 13, 4, 1]}, big:{name:'Uovo Grande', min:1, odds:[0, 55, 30, 12, 3]}, leg:{name:'Uovo Leggendario', min:2, odds:[0, 0, 60, 30, 10]}};
-const EGGIN = [{gold:[80, 150], fr:3, parts:1, ru:0, ch:0, max:0}, {gold:[150, 300], fr:6, parts:2, ru:1, ch:0, max:0}, {gold:[300, 420], fr:10, parts:2, ru:3, ch:.15, max:2},
-  {gold:[500, 700], fr:14, parts:3, ru:5, ch:.35, max:3}, {gold:[1000, 1400], fr:21, parts:3, ru:10, ch:.6, max:4}];
+const EGGIN = [{gold:[40, 75], fr:3, parts:1, ru:0, ch:0, max:0}, {gold:[75, 150], fr:6, parts:2, ru:1, ch:0, max:0}, {gold:[150, 210], fr:10, parts:2, ru:3, ch:.15, max:2},
+  {gold:[250, 350], fr:14, parts:3, ru:5, ch:.35, max:3}, {gold:[500, 700], fr:21, parts:3, ru:10, ch:.6, max:4}];
 const eggSvg = (t, w = 44) => { const c = RCOL[t === 'leg' ? 4 : EGGS[t].min]; return `<svg class="eggI" viewBox="0 0 120 150" width="${w}"><path d="M60 5C28 5 8 58 8 92c0 32 24 53 52 53s52-21 52-53C112 58 92 5 60 5z" fill="${c[0]}" stroke="#1c1a24" stroke-width="6"/><path d="M60 5C28 5 8 58 8 92c0 32 24 53 52 53" fill="${c[1]}" opacity=".45"/><ellipse cx="40" cy="60" rx="10" ry="16" fill="#fff" opacity=".5"/></svg>`; };
 function eggChip(t, n) { const d = document.createElement('div'); d.className = 'nu'; d.innerHTML = `<small>${n > 1 ? n + ' uova' : 'Uovo'}</small>${eggSvg(t, 46)}<b>${EGGS[t].name}</b>`; return d; }
 const eggChars = max => DW.ROSTER.filter(k => !isUnlocked(k) && RAR[k] >= 1 && RAR[k] <= max && !(UNLOCK[k] && (UNLOCK[k].cr || UNLOCK[k].secret || UNLOCK[k].pass || UNLOCK[k].noEgg)));   // i segreti non escono dalle uova
@@ -5295,8 +5295,8 @@ function renderSquad() {
 /* ================= la Fucina del Drago ================= */
 const UNIT_MAX = 10, BASE_MAX = 5;
 const umax = kk => DW.LEG.has(kk) ? 12 : UNIT_MAX;                          // i leggendari arrivano al 12
-const unitCost = lv => Math.round(100 * Math.pow(1.5, lv - 1) / 10) * 10;      // 100, 150, 230, 340…
-const baseCost = n => Math.round(150 * Math.pow(1.6, n) / 10) * 10;            // 150, 240, 380, 610, 980
+const unitCost = lv => Math.round(150 * Math.pow(1.5, lv - 1) / 10) * 10;      // 150, 230, 340, 510… (+50%)
+const baseCost = n => Math.round(225 * Math.pow(1.6, n) / 10) * 10;            // 230, 360, 580, 920, 1470 (+50%)
 const ICO = {
   hp:'<svg viewBox="0 0 40 40"><path d="M20 34S5 25 5 14a8 8 0 0 1 15-4 8 8 0 0 1 15 4c0 11-15 20-15 20z" fill="#c42a3a" stroke="#1c1a24" stroke-width="2.5"/></svg>',
   cat:'<svg viewBox="0 0 40 40"><path d="M10 4c0 6 2 8 5 10M30 4c0 6-2 8-5 10" stroke="#7b3fb3" stroke-width="3.5" fill="none" stroke-linecap="round"/><path d="M20 10c6 6 9 11 9 15a9 9 0 0 1-18 0c0-4 3-9 9-15z" fill="#b07be0" stroke="#1c1a24" stroke-width="2.5"/></svg>',
@@ -5429,8 +5429,9 @@ function finish() {
   ended = true; $('againBtn').disabled = false;
   if (!BETA && s.over <= 0 && !battleCharged) { battleCharged = true; livesUse(); }   // persa: -1 vita
   const g2 = !BETA && s.over > 0 && save.boost.gold2 > 0; if (g2) save.boost.gold2--;   // oro doppio dal negozio
-  const win = s.over > 0, st = DW.stars(s), g = DW.reward(s) * (g2 ? 2 : 1), fresh = [], W = DW.WORLDS[curWorld], hard = !!curOpt.hard, ci = curOpt.cap;
+  const win = s.over > 0, st = DW.stars(s), fresh = [], W = DW.WORLDS[curWorld], hard = !!curOpt.hard, ci = curOpt.cap;
   const key = curWorld + ':' + curLevel, first = ci != null ? !save.capr[ci] : hard ? !crownsOf(curWorld, curLevel) : !starsOf(curWorld, curLevel);
+  const g = Math.round(DW.reward(s) * (win && !first ? .3 : 1) * (g2 ? 2 : 1));   // rigiocare un castello già vinto dà solo il 30% dell'oro
   const finale = win && ci == null && curWorld === DW.WORLDS.length - 1 && curLevel === W.n - 1;
   let got = 0, shardK = s.lv.shard, bonus = 0, ruGot = 0, eggGot = 0;
   save.gold += g;
