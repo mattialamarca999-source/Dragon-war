@@ -1,12 +1,13 @@
 {
   "rules": {
-    "users": { ".read": "auth != null", "$uid": { ".write": "auth != null && auth.uid === $uid" } },
-    "names": { ".read": "auth != null", "$n": { ".write": "auth != null && ((!data.exists() && newData.val() === auth.uid) || (data.val() === auth.uid && (!newData.exists() || newData.val() === auth.uid)))" } },
-    "codes": { ".read": "auth != null", "$c": { ".write": "auth != null && !data.exists() && newData.val() === auth.uid" } },
-    "friends": { "$uid": { ".read": "auth != null && auth.uid === $uid", "$f": { ".write": "auth != null && (auth.uid === $uid || auth.uid === $f)" } } },
-    "mail": { "$uid": { ".read": "auth != null && auth.uid === $uid", "$m": { ".write": "auth != null && (auth.uid === $uid || (!data.exists() && newData.child('from').val() === auth.uid))" } } },
-    "status": { ".read": "auth != null", "$uid": { ".write": "auth != null && auth.uid === $uid" } },
-    "board": { ".read": "auth != null", "$uid": { ".write": "auth != null && auth.uid === $uid" } },
-    "rooms": { "$room": { ".read": "auth != null", "peers": { "$p": { ".write": "auth != null && (!data.exists() || data.child('uid').val() === auth.uid) && (!newData.exists() || newData.child('uid').val() === auth.uid)" } } } }
+    "users": {".read": "auth != null", "$uid": {".write": "auth != null && auth.uid === $uid"}},
+    "names": {".read": "auth != null", "$n": {".write": "auth != null && ((!data.exists() && newData.val() === auth.uid) || (data.val() === auth.uid && (!newData.exists() || newData.val() === auth.uid)))"}},
+    "codes": {".read": "auth != null", "$c": {".write": "auth != null && ((!data.exists() && newData.val() === auth.uid) || (data.val() === auth.uid && !newData.exists()))"}},
+    "friends": {"$uid": {".read": "auth != null && auth.uid === $uid", "$f": {".write": "auth != null && (auth.uid === $uid || auth.uid === $f)"}}},
+    "mail": {"$uid": {".read": "auth != null && auth.uid === $uid", "$m": {".write": "auth != null && (auth.uid === $uid || (!data.exists() && newData.child('from').val() === auth.uid))"}}},
+    "status": {".read": "auth != null", "$uid": {".write": "auth != null && auth.uid === $uid"}},
+    "board": {".read": "auth != null", "$uid": {".write": "auth != null && auth.uid === $uid"}},
+    "saves": {"$uid": {".read": "auth != null && auth.uid === $uid", ".write": "auth != null && auth.uid === $uid"}},
+    "rooms": {"$room": {".read": "auth != null", "peers": {"$p": {".write": "auth != null && (!data.exists() || data.child('uid').val() === auth.uid) && (!newData.exists() || newData.child('uid').val() === auth.uid)"}}}}
   }
 }

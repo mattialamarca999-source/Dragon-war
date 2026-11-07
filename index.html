@@ -275,6 +275,13 @@ body.inMenu .top, body.inMenu .hud{display:none}
 .eggRow{flex-wrap:wrap}.eggRow .tx{min-width:0;flex:1}.eggBtns{display:grid;grid-template-columns:repeat(2,1fr);gap:6px;width:100%}.eggBtns .upBtn{justify-content:center}
 #giftItems{max-height:52vh;overflow-y:auto}.upBtn.sm{font-size:14px;padding:5px 7px;gap:4px;border-width:2px}.upBtn.sm i{font-style:normal;font:900 11px var(--body);background:#1c1a24;color:#ffd35a;border-radius:6px;padding:1px 4px}
 .eggSkip{font-size:17px;padding:8px 14px;margin-top:6px}
+.cloudBox{border-top:2px dashed rgba(28,26,36,.25);padding-top:10px;display:flex;flex-direction:column;gap:6px}.cloudBox h3{margin:0;font-family:var(--display);font-weight:400;font-size:19px}
+.cloudBtns{display:flex;flex-wrap:wrap;gap:6px}.cloudBtns .upBtn{font-size:14px;padding:6px 9px}.upBtn.alt{background:var(--parch2)}
+#clBtns:has(#clNo[hidden]) #clYes{grid-column:1/-1}
+.cloudDel{background:none;border:0;color:#a8283a;font:800 13px var(--body);text-decoration:underline;cursor:pointer;align-self:center;padding:4px}
+.clCode{font:400 22px var(--display);letter-spacing:1px;white-space:nowrap;text-align:center;background:#1c1a24;color:#ffd35a;border-radius:12px;padding:10px;user-select:all}
+.clCmp{display:grid;grid-template-columns:1fr 1fr;gap:8px}.clCmp div{border:2px solid var(--ink);border-radius:12px;padding:8px;background:#fff8e6;font-weight:800;font-size:13px;line-height:1.4}.clCmp b{display:block;font-family:var(--display);font-weight:400;font-size:16px}
+#clIn{font:400 22px var(--display);text-transform:uppercase;letter-spacing:2px;text-align:center;border:3px solid var(--ink);border-radius:12px;padding:8px;width:100%;box-sizing:border-box;background:#fff8e6;color:var(--ink)}
 .tag{font:900 11px var(--body);background:#e8453a;color:#fff;border:2px solid var(--ink);border-radius:8px;padding:1px 6px;margin-left:6px;vertical-align:2px}
 .oddsBtn{font:900 12px var(--body);background:none;border:0;color:#d8c4ff;text-decoration:underline;cursor:pointer;align-self:center}
 .card2.secret{background:linear-gradient(180deg,#140c20,#07050c)!important}
@@ -683,7 +690,25 @@ button:focus-visible{outline:3px solid #5aa0ff;outline-offset:2px}
         <label class="setRow"><span>💥 Effetti</span><input type="range" id="setSfx" min="0" max="100" step="5"></label>
         <label class="setRow"><span>👹 Versi</span><input type="range" id="setVox" min="0" max="100" step="5"></label>
         <div class="setRow"><span>📳 Vibrazione</span><button class="upBtn" id="setVib" aria-pressed="true">Sì</button></div>
+        <div class="cloudBox" id="cloudBox">
+          <h3>☁️ Salvataggio online</h3>
+          <p class="note" id="cloudSt">…</p>
+          <div class="cloudBtns">
+            <button class="upBtn" id="cloudGoogle">Accedi con Google</button>
+            <button class="upBtn" id="cloudCode">Codice di recupero</button>
+            <button class="upBtn alt" id="cloudRestore">Ho un codice: recupera</button>
+          </div>
+          <button class="cloudDel" id="cloudDel">Elimina il mio account e i miei dati</button>
+        </div>
         <button class="big" id="setOk">Fatto</button>
+      </div>
+    </div>
+
+    <div class="ov" id="ovCloud" hidden>
+      <div class="card">
+        <h2 id="clTitle">Salvataggio online</h2>
+        <div id="clBody"></div>
+        <div class="pair" id="clBtns"><button class="big alt" id="clNo">Annulla</button><button class="big" id="clYes">OK</button></div>
       </div>
     </div>
 
@@ -1466,7 +1491,8 @@ try {
   if (d) save = Object.assign(save, d);
   else { const o = JSON.parse(localStorage.getItem(BETA ? 'dragonwar_beta_v1' : 'dragonwar_v1') || 'null'); if (o) { save.seenStory = o.seenStory; save.tutorialDone = o.tutorialDone; } }
 } catch (e) {}
-const persist = () => { try { localStorage.setItem(SAVE_KEY, JSON.stringify(save)); } catch (e) {} };
+var CLOUD = null;                                                            // salvataggio online (solo nell'app con Firebase)
+const persist = () => { save.savedAt = Date.now(); try { localStorage.setItem(SAVE_KEY, JSON.stringify(save)); } catch (e) {} if (CLOUD) cloudQueue(); };
 
 const SHORT = {pupazzo:'Pupazzo a Molla', zucca:'Zucca Stregata', gothel:'Madre Gothel', marzapane:'Strega Marzapane', alberich:'Alberich', sirena:'Sirena', bandersnatch:'Bandersnatch', ladroni:'40 Ladroni', gigantegh:'Gigante di Ghiaccio', trollspecchio:'Troll dello Specchio', dragonero:'Drago Nero', krampus:'Krampus', jabberwocky:'Jabberwocky', kraken:'Kraken', idra:'Idra', mordred:'Mordred', lupomannaro:'Lupo Mannaro', frankenstein:'Frankenstein', hyde:'Mr. Hyde', trollponte:'Troll del Ponte', scheletri:'Scheletri', goblin:'Goblin', topi:'Topi', lupo:'Lupo', fionda:'Fionda', gattovolpe:'Gatto e Volpe', gnomo:'Gnomo', spaventapasseri:'Spaventapasseri', strega:'Strega', fantasma:'Fantasma', coccodrillo:'Coccodrillo', orco:'Orco', barbablu:'Barbablù', uncino:'Uncino', mangiafuoco:'Mangiafuoco', gigante:'Gigante', tremotino:'Tremotino', matrigna:'Matrigna', retopi:'Re dei Topi', omino:'Omino di Burro', babajaga:'Baba Jaga', stregamare:'Strega del Mare', reginacattiva:'Regina Cattiva', reginanevi:'Regina delle Nevi', morgana:'Fata Morgana', basilisco:'Basilisco', grifone:'Grifone', cavaliereverde:'Cavaliere Verde', spirito:'Spirito nella Bottiglia', bestia:'Bestia Latrante', pandizenzero:'Pan di Zenzero', ciclope:'Ciclope', senzatesta:'Senza Testa', dracula:'Conte Dracula', mummia:'Mummia', medusa:'Medusa', reginacuori:'Regina di Cuori', stregone:'Stregone', pescecane:'Pescecane', diavolo:'Diavolo'};
 const ROLE = {goblin:'Economico, picchia con la clava.', topi:'Cinque topolini in un colpo solo.', lupo:'Velocissimo, arriva per primo.', fionda:'Colpisce da lontano.', gattovolpe:'Ogni colpo ruba Cattiveria al castello.', gnomo:'Zucche esplosive su un gruppo di buoni.', spaventapasseri:'Quando cade libera tre corvi.', strega:'Magia su più nemici insieme.', fantasma:'Passa attraverso i buoni e punta dritto al castello.', coccodrillo:'Morso fortissimo. Tic-tac.', orco:'Con lo scudo regge tutto.', barbablu:'Fa scappare i buoni che ha vicino.', uncino:'Col gancio tira a sé un nemico.', mangiafuoco:'Evoca burattini di legno che combattono.', gigante:'Lento, ma sfonda le mura del castello.', tremotino:'Fila oro: ogni colpo dà Cattiveria. E ogni tanto si porta via un buono.',
@@ -5756,6 +5782,7 @@ setInterval(musicUpdate, 250); try { musicEl('menu'); musicEl('story'); } catch 
 function showSettings() {                                                  // impostazioni: volumi e vibrazione
   const S = SND.set; $('setMus').value = Math.round(S.mus * 100); $('setSfx').value = Math.round(S.sfx * 100); $('setVox').value = Math.round(S.vox * 100);
   $('setVib').textContent = S.vib ? 'Sì' : 'No'; $('setVib').setAttribute('aria-pressed', String(S.vib)); $('ovSet').hidden = false;
+  cloudPaint();
 }
 function sndApply() { const S = SND.set; if (SND.g) SND.g.gain.value = 1.6 * S.sfx; if (SND.vg) SND.vg.gain.value = 1.5 * S.vox; const el = SND.el[SND.track]; if (el && !el.paused) { clearInterval(el._fade); el.volume = Math.min(1, MUS_VOL[SND.track[0]] * S.mus); } musicUpdate(); sndSave(); }
 let testT = 0;
@@ -6042,6 +6069,106 @@ const FB_NAME = /^[A-Za-z0-9_]{3,14}$/, FB_ABC = 'ABCDEFGHJKMNPQRSTUVWXYZ2345678
 const fbRef = p => FBX.db.ref(p), fbNow = () => firebase.database.ServerValue.TIMESTAMP;
 const fbCode = c => c ? c.slice(0, 2) + '-' + c.slice(2) : '';
 save.gifts = save.gifts || {};
+/* ================= salvataggio online: i progressi su Firebase, recuperabili con Google o col codice ================= */
+const CL_ABC = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789';
+const clSum = sv => ({c:Object.values(sv.stars || {}).filter(v => v > 0).length, st:Object.values(sv.stars || {}).reduce((a, b) => a + b, 0), u:(sv.unlocked || []).length, g:sv.gold || 0});
+const clSumTxt = x => `<b>${x.c} castelli</b>★ ${x.st} stelle<br>${x.u} cattivi<br>${(x.g || 0).toLocaleString('it-IT')} oro`;
+const clMail = code => 'dw' + code.replace(/[^A-Z0-9]/gi, '').toLowerCase().slice(0, 6) + '@dragon-war-ff637.firebaseapp.com';
+const clPass = code => code.replace(/[^A-Z0-9]/gi, '').toUpperCase();
+const clFmt = raw => 'DW-' + raw.slice(0, 4) + '-' + raw.slice(4, 8) + '-' + raw.slice(8, 12);
+function cloudQueue() { if (!CLOUD || !CLOUD.ready) return; clearTimeout(CLOUD.timer); CLOUD.timer = setTimeout(cloudPush, 3000); }
+async function cloudPush() {
+  if (!CLOUD || !CLOUD.ready) return; clearTimeout(CLOUD.timer);
+  try { await fbRef('saves/' + CLOUD.uid).set({d:JSON.stringify(save), t:save.savedAt || Date.now(), s:clSum(save)}); CLOUD.last = Date.now(); CLOUD.err = null; } catch (e) { CLOUD.err = 'Non riesco a salvare online: riprovo più tardi.'; }
+  if (!$('ovSet').hidden) cloudPaint();
+}
+addEventListener('visibilitychange', () => { if (document.hidden && CLOUD && CLOUD.ready && CLOUD.timer) cloudPush(); });
+function cloudLoad(d) { try { localStorage.setItem(SAVE_KEY, typeof d === 'string' ? d : JSON.stringify(d)); } catch (e) {} location.reload(); }
+function clAsk(title, html, yes, no, onYes, onNo) {
+  $('clTitle').textContent = title; $('clBody').innerHTML = html; $('clYes').textContent = yes; $('clNo').textContent = no || 'Annulla'; $('clNo').hidden = !no;
+  $('clYes').onclick = () => { $('ovCloud').hidden = true; onYes && onYes(); }; $('clNo').onclick = () => { $('ovCloud').hidden = true; onNo && onNo(); };
+  $('ovCloud').hidden = false;
+}
+async function cloudStart(user) {                                            // all'avvio: c'è un salvataggio online più avanti di questo telefono?
+  CLOUD = {uid:user.uid, ready:false, timer:null, last:0, err:null};
+  let cl = null; try { cl = (await fbRef('saves/' + user.uid).once('value')).val(); } catch (e) {}
+  const loc = clSum(save), dom = (a, b) => a.c >= b.c && a.st >= b.st && a.u >= b.u;
+  if (cl && cl.d) {
+    const r = cl.s || clSum(JSON.parse(cl.d)), same = r.c === loc.c && r.u === loc.u && r.st === loc.st;
+    if (!same && dom(r, loc) && loc.c <= 1 && loc.u <= 6) return cloudLoad(cl.d);   // telefono nuovo: si carica e basta
+    if (!same && !dom(loc, r)) {                                                     // online c'è di più (o di diverso): scegli tu
+      clAsk('Quale partita tieni?', `<p class="note">Online c’è un salvataggio diverso da quello di questo telefono.</p><div class="clCmp"><div><small>Su questo telefono</small>${clSumTxt(loc)}</div><div><small>Online</small>${clSumTxt(r)}</div></div>`,
+        'Usa quella online', 'Tieni questa', () => cloudLoad(cl.d), () => { CLOUD.ready = true; cloudPush(); });
+      return;
+    }
+  }
+  CLOUD.ready = true; cloudPush();
+}
+function cloudPaint() {
+  const box = $('cloudBox'); if (!box) return;
+  if (!window.DW_FB) { box.hidden = true; return; }
+  box.hidden = false;
+  const u = window.firebase && firebase.auth && firebase.auth().currentUser, gm = u && (u.providerData || []).find(p => p.providerId === 'google.com');
+  const t = CLOUD && CLOUD.last ? new Date(CLOUD.last).toLocaleTimeString('it-IT', {hour:'2-digit', minute:'2-digit'}) : '';
+  $('cloudSt').innerHTML = !CLOUD ? (FBX.err || 'Mi collego…') : CLOUD.err ? CLOUD.err : `I progressi si salvano da soli online${t ? ` · ultimo salvataggio alle ${t}` : ''}.<br>${gm ? `Collegato a Google: <b>${gm.email || 'account Google'}</b>.` : save.recovery ? 'Hai un codice di recupero: tienilo da parte.' : 'Collega Google o crea un codice per non perderli se cambi telefono.'}`;
+  $('cloudGoogle').textContent = gm ? 'Google collegato ✓' : 'Accedi con Google'; $('cloudGoogle').disabled = !CLOUD || !!gm;
+  $('cloudCode').textContent = save.recovery ? 'Mostra il codice' : 'Crea codice di recupero'; $('cloudCode').disabled = !CLOUD;
+  $('cloudRestore').disabled = !CLOUD;
+}
+$('cloudCode').onclick = async () => {                                       // il codice diventa una chiave per rientrare nello stesso account da un altro telefono
+  if (save.recovery) return clAsk('Il tuo codice', `<p class="note">Scrivilo da qualche parte (o fai uno screenshot). Sul telefono nuovo: Impostazioni → «Ho un codice: recupera».</p><div class="clCode">${save.recovery}</div>`, 'Fatto');
+  const u = firebase.auth().currentUser; if (!u) return;
+  let raw = ''; const a = new Uint32Array(12); crypto.getRandomValues(a); for (const x of a) raw += CL_ABC[x % CL_ABC.length];
+  const code = clFmt(raw);
+  try {
+    await u.linkWithCredential(firebase.auth.EmailAuthProvider.credential(clMail(code), clPass(code)));
+    save.recovery = code; persist(); cloudPush(); cloudPaint();
+    clAsk('Il tuo codice di recupero', `<p class="note">Scrivilo da qualche parte (o fai uno screenshot): con questo codice ritrovi tutti i progressi, il nome e gli amici su un altro telefono.</p><div class="clCode">${code}</div>`, 'L’ho salvato');
+  } catch (e) { clAsk('Non ci sono riuscito', `<p class="note">${e && e.code === 'auth/operation-not-allowed' ? 'Il codice di recupero non è ancora attivo sul server del gioco.' : 'Controlla la connessione e riprova.'}</p>`, 'OK'); }
+};
+$('cloudRestore').onclick = () => {
+  clAsk('Recupera i progressi', `<p class="note">Scrivi il codice di recupero. I progressi di questo telefono verranno sostituiti da quelli del codice.</p><input id="clIn" placeholder="DW-XXXX-XXXX-XXXX" autocomplete="off" spellcheck="false">`, 'Recupera', 'Annulla', async () => {
+    const code = ($('clIn').value || '').trim(); if (clPass(code).length < 14) return clAsk('Codice incompleto', '<p class="note">Il codice è fatto così: DW-XXXX-XXXX-XXXX.</p>', 'OK');
+    const raw = clPass(code).replace(/^DW/, ''), norm = clFmt(raw);
+    try { const r = await firebase.auth().signInWithEmailAndPassword(clMail(norm), clPass(norm)); const cl = (await fbRef('saves/' + r.user.uid).once('value')).val();
+      if (cl && cl.d) { const d = JSON.parse(cl.d); d.recovery = norm; cloudLoad(d); } else clAsk('Fatto', '<p class="note">Sei rientrato nel tuo account, ma online non c’erano ancora progressi salvati.</p>', 'OK', undefined, () => location.reload());
+    } catch (e) { clAsk('Codice non valido', '<p class="note">Questo codice non corrisponde a nessun salvataggio. Controlla le lettere e riprova.</p>', 'OK'); }
+  });
+};
+$('cloudGoogle').onclick = async () => {                                     // collega Google; se quell'account ha già un salvataggio, si può caricare
+  const u = firebase.auth().currentUser; if (!u) return;
+  const prov = new firebase.auth.GoogleAuthProvider();
+  try { await u.linkWithPopup(prov); cloudPush(); cloudPaint(); toast('Google collegato: i progressi sono al sicuro'); }
+  catch (e) {
+    if (e && (e.code === 'auth/credential-already-in-use' || e.code === 'auth/email-already-in-use') && e.credential) {
+      clAsk('Questo Google ha già una partita', '<p class="note">Vuoi caricare la partita salvata con questo account Google? I progressi di questo telefono verranno sostituiti.</p>', 'Carica quella', 'Annulla', async () => {
+        try { const r = await firebase.auth().signInWithCredential(e.credential); const cl = (await fbRef('saves/' + r.user.uid).once('value')).val(); if (cl && cl.d) cloudLoad(cl.d); else location.reload(); } catch (e2) { clAsk('Non ci sono riuscito', '<p class="note">Riprova tra poco.</p>', 'OK'); }
+      });
+    } else if (!(e && (e.code === 'auth/popup-closed-by-user' || e.code === 'auth/cancelled-popup-request'))) clAsk('Non ci sono riuscito', `<p class="note">${e && e.code === 'auth/operation-not-allowed' ? 'L’accesso con Google non è ancora attivo sul server del gioco.' : e && e.code === 'auth/unauthorized-domain' ? 'Questo indirizzo non è ancora autorizzato per l’accesso con Google.' : 'Controlla la connessione e riprova.'}</p>`, 'OK');
+  }
+};
+async function deleteAccount() {                                             // cancella account, nome, codice, amici, posta, classifica e salvataggio online
+  const u = firebase.auth().currentUser; if (!u) return false;
+  const uid = u.uid, me = FBX.me || {}, ops = [];
+  CLOUD = null; FBX.deleting = true;
+  for (const p of ['users/' + uid, 'friends/' + uid, 'mail/' + uid, 'status/' + uid]) fbRef(p).off();   // niente più ascolti: non deve ricrearsi nulla                                                              // niente più salvataggi online
+  for (const f of Object.keys(FBX.friends || {})) { ops.push(fbRef(`friends/${f}/${uid}`).remove()); ops.push(fbRef(`friends/${uid}/${f}`).remove()); }
+  for (const m of Object.keys(FBX.mail || {})) ops.push(fbRef(`mail/${uid}/${m}`).remove());
+  if (me.name) ops.push(fbRef('names/' + me.name.toLowerCase()).remove());
+  if (me.code) ops.push(fbRef('codes/' + me.code).remove());
+  for (const p of ['status', 'board', 'saves']) ops.push(fbRef(p + '/' + uid).remove());
+  await Promise.allSettled(ops);
+  await fbRef('users/' + uid).remove().catch(() => {});
+  try { await u.delete(); } catch (e) { try { await firebase.auth().signOut(); } catch (e2) {} }
+  try { localStorage.removeItem(SAVE_KEY); } catch (e) {}
+  return true;
+}
+$('cloudDel').onclick = () => clAsk('Eliminare l’account?', `<p class="note">Verranno cancellati per sempre: il tuo nome, il codice amico, gli amici, la posta, la classifica e il salvataggio online, e anche i progressi su questo telefono. Non si può tornare indietro.</p><p class="note">Per confermare scrivi <b>ELIMINA</b>:</p><input id="clIn" placeholder="ELIMINA" autocomplete="off" spellcheck="false">`,
+  'Elimina tutto', 'Annulla', async () => {
+    if (($('clIn').value || '').trim().toUpperCase() !== 'ELIMINA') return clAsk('Non eliminato', '<p class="note">Non hai scritto ELIMINA: il tuo account è al sicuro.</p>', 'OK');
+    const ok = await deleteAccount();
+    clAsk(ok ? 'Account eliminato' : 'Non ci sono riuscito', `<p class="note">${ok ? 'Tutti i tuoi dati sono stati cancellati. Il gioco ripartirà da zero.' : 'Controlla la connessione e riprova.'}</p>`, 'OK', undefined, () => { if (ok) location.reload(); });
+  });
 async function fbInit() {
   if (!window.firebase) { FBX.err = 'Online non raggiungibile: controlla la connessione e riapri il gioco.'; return; }
   try {
@@ -6049,7 +6176,7 @@ async function fbInit() {
     const auth = firebase.auth(); FBX.db = firebase.database();
     const user = await new Promise(res => { let tried = false; const un = auth.onAuthStateChanged(u => { if (u) { un(); res(u); } else if (!tried) { tried = true; auth.signInAnonymously().catch(() => res(null)); } }); });
     if (!user) { FBX.err = 'Non riesco a collegarmi. Riprova più tardi.'; return; }
-    FBX.uid = NET.myId = user.uid; FBX.on = true;
+    FBX.uid = NET.myId = user.uid; FBX.on = true; cloudStart(user);
     NET.user = {id:async () => FBX.uid, profiles:async ids => { const out = {}; await Promise.all(ids.map(async id => { const n = (FBX.fdata[id] || {}).name || (id === FBX.uid && FBX.me ? FBX.me.name : null) || (await fbRef('users/' + id + '/name').once('value')).val(); if (n) out[id] = {name:n}; })); return out; }};
     NET.db = {collection:p => ({onSnapshot:(cb, err) => fbRef(p).on('value', snap => { const docs = []; snap.forEach(c => { docs.push({id:c.key, data:() => c.val()}); }); cb({docs}); }, err)}), doc:p => ({set:v => fbRef(p).set(v)})};
     NET.room = {join:async name => fbRoom(name), presence:async () => {}, onPeers:() => () => {}};
@@ -6073,7 +6200,7 @@ function fbRoom(name) {                                                    // un
   };
 }
 async function fbClaimCode() {                                             // il codice amico: unico, si sceglie una volta sola
-  if (FBX.claiming) return; FBX.claiming = true;
+  if (FBX.claiming || FBX.deleting) return; FBX.claiming = true;
   for (let i = 0; i < 6; i++) {
     const c = 'DW' + Array.from({length:5}, () => FB_ABC[Math.floor(Math.random() * FB_ABC.length)]).join('');
     try { const r = await fbRef('codes/' + c).transaction(cur => cur === null ? FBX.uid : undefined); if (r.committed) { await fbRef('users/' + FBX.uid).update({code:c}); break; } } catch (e) {}

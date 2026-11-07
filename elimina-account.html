@@ -1,0 +1,111 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Dragon War · Elimina account</title>
+<link rel="icon" href="icon-192.png">
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+<script>window.DW_FB = {apiKey:"AIzaSyCHD7lbnLNOva0G70F5smdcV8h11kQY-PI", authDomain:"dragon-war-ff637.firebaseapp.com", databaseURL:"https://dragon-war-ff637-default-rtdb.europe-west1.firebasedatabase.app", projectId:"dragon-war-ff637", storageBucket:"dragon-war-ff637.firebasestorage.app", messagingSenderId:"90677831602", appId:"1:90677831602:web:1ecca1bd183989a063e6ab"};</script>
+<style>
+:root{--ink:#1c1a24;--parch:#f6e7c4;--gold:#f2b33d;--lava:#ff6a2a;--bg:#16121f}
+*{box-sizing:border-box}
+body{margin:0;background:radial-gradient(circle at 50% 0,#3a1e5a,var(--bg) 60%);color:var(--ink);font:16px/1.55 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;padding:24px 16px 48px}
+main{max-width:640px;margin:0 auto;background:var(--parch);border:3px solid var(--ink);border-radius:18px;box-shadow:0 6px 0 #000;padding:22px}
+header{display:flex;align-items:center;gap:14px}
+header img{width:56px;height:56px;border-radius:14px;border:2px solid var(--ink)}
+h1{margin:0;font-size:25px;line-height:1.15}h2{font-size:18px;margin:20px 0 6px}
+.lang{display:flex;gap:8px;margin:14px 0 4px}
+.lang button{font:700 14px system-ui,sans-serif;border:2px solid var(--ink);border-radius:10px;background:#fff8e6;padding:6px 12px;cursor:pointer}
+.lang button[aria-pressed="true"]{background:var(--gold)}
+.btn{font:700 16px system-ui,sans-serif;border:3px solid var(--ink);border-radius:12px;background:var(--lava);color:var(--ink);padding:10px 14px;cursor:pointer;box-shadow:0 3px 0 #000;margin:4px 6px 4px 0}
+.btn.alt{background:#fff8e6}.btn.red{background:#e8453a;color:#fff}
+.btn:disabled{opacity:.5;cursor:default}
+input{font:700 20px ui-monospace,monospace;letter-spacing:1px;text-transform:uppercase;border:3px solid var(--ink);border-radius:12px;padding:8px 10px;width:100%;max-width:340px}
+.box{background:#fff8e6;border:2px dashed rgba(28,26,36,.3);border-radius:12px;padding:10px 14px;margin-top:8px}
+.msg{font-weight:700;margin-top:10px}
+ul{padding-left:20px;margin:6px 0}
+a{color:#7b3fb3;font-weight:700}
+[hidden]{display:none!important}
+</style>
+</head>
+<body>
+<main>
+  <header><img src="icon-192.png" alt=""><div><h1 data-l="it">Elimina il tuo account Dragon War</h1><h1 data-l="en" hidden>Delete your Dragon War account</h1></div></header>
+  <div class="lang"><button id="bIt" aria-pressed="true">Italiano</button><button id="bEn" aria-pressed="false">English</button></div>
+
+  <p data-l="it">Quando elimini l’account cancelliamo per sempre: il nome da giocatore, il codice amico, gli amici, la posta (regali, inviti, messaggi), i punteggi in classifica e il salvataggio online dei progressi. Non si può tornare indietro.</p>
+  <p data-l="en" hidden>When you delete your account we permanently erase: your player name, friend code, friends, mail (gifts, invites, messages), leaderboard scores and your online game save. This cannot be undone.</p>
+
+  <h2 data-l="it">Modo 1 · Dal gioco (il più veloce)</h2><h2 data-l="en" hidden>Option 1 · From the game (fastest)</h2>
+  <p data-l="it">Apri Dragon War → <b>Impostazioni (⚙️)</b> → <b>Salvataggio online</b> → <b>«Elimina il mio account e i miei dati»</b>.</p>
+  <p data-l="en" hidden>Open Dragon War → <b>Settings (⚙️)</b> → <b>Online save</b> → <b>“Delete my account and my data”</b>.</p>
+
+  <h2 data-l="it">Modo 2 · Da questa pagina</h2><h2 data-l="en" hidden>Option 2 · From this page</h2>
+  <div id="step1">
+    <p data-l="it">Entra nel tuo account con il <b>codice di recupero</b> oppure con <b>Google</b> (se l’avevi collegato nel gioco).</p>
+    <p data-l="en" hidden>Sign in to your account with your <b>recovery code</b> or with <b>Google</b> (if you linked it in the game).</p>
+    <input id="code" placeholder="DW-XXXX-XXXX-XXXX" autocomplete="off" spellcheck="false">
+    <div><button class="btn" id="goCode"><span data-l="it">Entra col codice</span><span data-l="en" hidden>Sign in with code</span></button><button class="btn alt" id="goGoogle"><span data-l="it">Entra con Google</span><span data-l="en" hidden>Sign in with Google</span></button></div>
+  </div>
+  <div id="step2" hidden>
+    <div class="box" id="who"></div>
+    <button class="btn red" id="del"><span data-l="it">Elimina per sempre il mio account</span><span data-l="en" hidden>Permanently delete my account</span></button>
+  </div>
+  <p class="msg" id="msg"></p>
+
+  <h2 data-l="it">Modo 3 · Per email</h2><h2 data-l="en" hidden>Option 3 · By email</h2>
+  <p data-l="it">Se non hai un codice di recupero né Google collegato, scrivi a <b>[email in arrivo · coming soon]</b> indicando il tuo <b>nome da giocatore</b> e il <b>codice amico</b> (li trovi nella schermata Amici). Cancelliamo tutto entro 30 giorni e ti rispondiamo quando è fatto.</p>
+  <p data-l="en" hidden>If you have neither a recovery code nor Google linked, write to <b>[email in arrivo · coming soon]</b> with your <b>player name</b> and <b>friend code</b> (you can find them in the Friends screen). We delete everything within 30 days and reply when it is done.</p>
+  <p><a href="privacy.html" data-l="it">Informativa sulla privacy</a><a href="privacy.html#en" data-l="en" hidden>Privacy Policy</a></p>
+</main>
+<script>
+let L = 'it';
+const T = {it:{busy:'Un attimo…', bad:'Questo codice non corrisponde a nessun account. Controlla le lettere.', short:'Il codice è fatto così: DW-XXXX-XXXX-XXXX.', gfail:'Accesso con Google non riuscito.', nog:'Questo account Google non è collegato a nessuna partita.', who:(n, c) => `Account trovato: <b>${n || 'senza nome'}</b>${c ? ` · codice amico <b>${c}</b>` : ''}`, sure:'Sei sicuro? Verrà cancellato tutto e non si può tornare indietro.', done:'Fatto: il tuo account e i tuoi dati sono stati eliminati.', fail:'Qualcosa è andato storto: riprova o scrivici per email.', off:'Il servizio non è raggiungibile: controlla la connessione.'},
+           en:{busy:'One moment…', bad:'This code does not match any account. Check the letters.', short:'The code looks like this: DW-XXXX-XXXX-XXXX.', gfail:'Google sign-in failed.', nog:'This Google account is not linked to any game.', who:(n, c) => `Account found: <b>${n || 'no name'}</b>${c ? ` · friend code <b>${c}</b>` : ''}`, sure:'Are you sure? Everything will be erased and this cannot be undone.', done:'Done: your account and your data have been deleted.', fail:'Something went wrong: try again or email us.', off:'The service cannot be reached: check your connection.'}};
+const $ = id => document.getElementById(id), say = t => $('msg').innerHTML = t;
+const setL = l => { L = l; document.documentElement.lang = l; document.querySelectorAll('[data-l]').forEach(e => e.hidden = e.dataset.l !== l); bIt.setAttribute('aria-pressed', l === 'it'); bEn.setAttribute('aria-pressed', l === 'en'); };
+bIt.onclick = () => setL('it'); bEn.onclick = () => setL('en');
+if (location.hash === '#en' || (!navigator.language.startsWith('it') && location.hash !== '#it')) setL('en');
+// stesso codice del gioco: il codice di recupero è la chiave di un account email/password tecnico
+const clMail = code => 'dw' + code.replace(/[^A-Z0-9]/gi, '').toLowerCase().slice(0, 6) + '@dragon-war-ff637.firebaseapp.com';
+const clPass = code => code.replace(/[^A-Z0-9]/gi, '').toUpperCase();
+const clFmt = raw => 'DW-' + raw.slice(0, 4) + '-' + raw.slice(4, 8) + '-' + raw.slice(8, 12);
+let me = null;
+const ok = !!(window.firebase && window.DW_FB);
+if (ok) firebase.initializeApp(window.DW_FB); else { say(T[L].off); $('goCode').disabled = $('goGoogle').disabled = true; }
+const db = () => firebase.database(), R = p => db().ref(p);
+async function found(user) {
+  const u = (await R('users/' + user.uid).once('value')).val();
+  if (!u) { await firebase.auth().signOut(); return say(T[L].nog); }
+  me = {user, u}; $('who').innerHTML = T[L].who(u.name, u.code); $('step1').hidden = true; $('step2').hidden = false; say('');
+}
+$('goCode').onclick = async () => {
+  const v = clPass($('code').value || '').replace(/^DW/, ''); if (v.length < 12) return say(T[L].short);
+  const c = clFmt(v); say(T[L].busy);
+  try { const r = await firebase.auth().signInWithEmailAndPassword(clMail(c), clPass(c)); await found(r.user); } catch (e) { say(T[L].bad); }
+};
+$('goGoogle').onclick = async () => {
+  say(T[L].busy);
+  try { const r = await firebase.auth().signInWithPopup(new firebase.auth.GoogleAuthProvider()); await found(r.user); } catch (e) { say(T[L].gfail); }
+};
+$('del').onclick = async () => {
+  if (!me || !confirm(T[L].sure)) return;
+  const uid = me.user.uid, u = me.u, ops = []; say(T[L].busy); $('del').disabled = true;
+  try {
+    const fr = (await R('friends/' + uid).once('value')).val() || {}, mail = (await R('mail/' + uid).once('value')).val() || {};
+    for (const f of Object.keys(fr)) { ops.push(R(`friends/${f}/${uid}`).remove()); ops.push(R(`friends/${uid}/${f}`).remove()); }
+    for (const m of Object.keys(mail)) ops.push(R(`mail/${uid}/${m}`).remove());
+    if (u.name) ops.push(R('names/' + u.name.toLowerCase()).remove());
+    if (u.code) ops.push(R('codes/' + u.code).remove());
+    for (const p of ['status', 'board', 'saves']) ops.push(R(p + '/' + uid).remove());
+    await Promise.allSettled(ops); await R('users/' + uid).remove();
+    try { await me.user.delete(); } catch (e) { await firebase.auth().signOut(); }
+    say(T[L].done); $('step2').hidden = true;
+  } catch (e) { say(T[L].fail); $('del').disabled = false; }
+};
+</script>
+</body>
+</html>
