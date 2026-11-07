@@ -608,8 +608,6 @@ button:focus-visible{outline:3px solid #5aa0ff;outline-offset:2px}
               <radialGradient id="egRim" cx="80%" cy="70%" r="45%"><stop offset=".7" stop-color="#fff" stop-opacity="0"/><stop offset="1" stop-color="#fff" stop-opacity=".35"/></radialGradient>
               <filter id="egBlur"><feGaussianBlur stdDeviation="2.4"/></filter><filter id="egBlur2"><feGaussianBlur stdDeviation="4"/></filter>
               <clipPath id="egClip"><path d="M60 5C28 5 8 58 8 92c0 32 24 53 52 53s52-21 52-53C112 58 92 5 60 5z"/></clipPath>
-              <clipPath id="egTop"><path d="M0 0H120V86L108 78L96 92L84 80L72 94L60 82L48 96L36 82L24 94L12 80L0 90Z"/></clipPath>
-              <clipPath id="egBot"><path d="M0 162H120V86L108 78L96 92L84 80L72 94L60 82L48 96L36 82L24 94L12 80L0 90Z"/></clipPath>
             </defs>
             <ellipse cx="60" cy="152" rx="40" ry="7" fill="rgba(0,0,0,.45)" filter="url(#egBlur2)"/>
             <path d="M60 5C28 5 8 58 8 92c0 32 24 53 52 53s52-21 52-53C112 58 92 5 60 5z" fill="url(#egG)"/>
@@ -623,8 +621,8 @@ button:focus-visible{outline:3px solid #5aa0ff;outline-offset:2px}
             <path d="M40 46 l10 6 l-4 10" stroke="#1c1a24" stroke-width="3.5" fill="none" stroke-linejoin="round" class="ck" opacity="0"/>
           </svg></button>
           <div class="eggHalves" id="eggHalves" hidden>
-            <svg class="hTop" viewBox="0 0 120 162"><g clip-path="url(#egTop)"><path d="M60 5C28 5 8 58 8 92c0 32 24 53 52 53s52-21 52-53C112 58 92 5 60 5z" fill="url(#egG)"/><path d="M60 5C28 5 8 58 8 92c0 32 24 53 52 53s52-21 52-53C112 58 92 5 60 5z" fill="url(#egShade)"/><path d="M60 5C28 5 8 58 8 92c0 32 24 53 52 53s52-21 52-53C112 58 92 5 60 5z" fill="none" stroke="#1c1a24" stroke-width="3.5"/></g></svg>
-            <svg class="hBot" viewBox="0 0 120 162"><g clip-path="url(#egBot)"><path d="M60 5C28 5 8 58 8 92c0 32 24 53 52 53s52-21 52-53C112 58 92 5 60 5z" fill="url(#egG)"/><path d="M60 5C28 5 8 58 8 92c0 32 24 53 52 53s52-21 52-53C112 58 92 5 60 5z" fill="url(#egShade)"/><path d="M60 5C28 5 8 58 8 92c0 32 24 53 52 53s52-21 52-53C112 58 92 5 60 5z" fill="none" stroke="#1c1a24" stroke-width="3.5"/></g></svg>
+            <svg class="hTop" viewBox="0 0 120 162"><defs><radialGradient id="egGh1" cx="36%" cy="28%" r="80%"><stop offset="0" stop-color="#ffffff"/><stop offset=".2" class="egHA" stop-color="#b4f09a"/><stop offset="1" class="egHB" stop-color="#2a6a1a"/></radialGradient><clipPath id="egTop"><path d="M0 0H120V86L108 78L96 92L84 80L72 94L60 82L48 96L36 82L24 94L12 80L0 90Z"/></clipPath></defs><g clip-path="url(#egTop)"><path d="M60 5C28 5 8 58 8 92c0 32 24 53 52 53s52-21 52-53C112 58 92 5 60 5z" fill="url(#egGh1)"/><path d="M60 5C28 5 8 58 8 92c0 32 24 53 52 53s52-21 52-53C112 58 92 5 60 5z" fill="none" stroke="#1c1a24" stroke-width="3.5"/></g></svg>
+            <svg class="hBot" viewBox="0 0 120 162"><defs><radialGradient id="egGh2" cx="36%" cy="28%" r="80%"><stop offset="0" stop-color="#ffffff"/><stop offset=".2" class="egHA" stop-color="#b4f09a"/><stop offset="1" class="egHB" stop-color="#2a6a1a"/></radialGradient><clipPath id="egBot"><path d="M0 162H120V86L108 78L96 92L84 80L72 94L60 82L48 96L36 82L24 94L12 80L0 90Z"/></clipPath></defs><g clip-path="url(#egBot)"><path d="M60 5C28 5 8 58 8 92c0 32 24 53 52 53s52-21 52-53C112 58 92 5 60 5z" fill="url(#egGh2)"/><path d="M60 5C28 5 8 58 8 92c0 32 24 53 52 53s52-21 52-53C112 58 92 5 60 5z" fill="none" stroke="#1c1a24" stroke-width="3.5"/></g></svg>
           </div>
           <div class="eggParts" id="eggParts"></div>
           <div class="egg10" id="egg10" hidden></div>
@@ -5110,7 +5108,8 @@ const RCOL = [['#b4f09a', '#2a7a1a'], ['#a8d8ff', '#1a5ab0'], ['#e0c4ff', '#5a2a
 const EGGS = {base:{name:'Uovo di Drago', min:0, odds:[55, 27, 13, 4, 1]}, big:{name:'Uovo Grande', min:1, odds:[0, 55, 30, 12, 3]}, leg:{name:'Uovo Leggendario', min:2, odds:[0, 0, 60, 30, 10]}};
 const EGGIN = [{gold:[40, 75], fr:3, parts:1, ru:0, ch:0, max:0}, {gold:[75, 150], fr:6, parts:2, ru:1, ch:0, max:0}, {gold:[150, 210], fr:10, parts:2, ru:3, ch:.15, max:2},
   {gold:[250, 350], fr:14, parts:3, ru:5, ch:.35, max:3}, {gold:[500, 700], fr:21, parts:3, ru:10, ch:.6, max:4}];
-const eggSvg = (t, w = 44) => { const c = RCOL[t === 'leg' ? 4 : EGGS[t].min], id = 'egI' + t; return `<svg class="eggI" viewBox="0 0 120 150" width="${w}"><defs><radialGradient id="${id}" cx="36%" cy="28%" r="80%"><stop offset="0" stop-color="#fff"/><stop offset=".22" stop-color="${c[0]}"/><stop offset="1" stop-color="${c[1]}"/></radialGradient></defs><path d="M60 5C28 5 8 58 8 92c0 32 24 53 52 53s52-21 52-53C112 58 92 5 60 5z" fill="url(#${id})" stroke="#1c1a24" stroke-width="6"/><g fill="rgba(60,30,10,.16)"><ellipse cx="36" cy="74" rx="4" ry="3"/><ellipse cx="80" cy="56" rx="3" ry="2.4"/><ellipse cx="72" cy="108" rx="4.4" ry="3.4"/></g><ellipse cx="40" cy="46" rx="9" ry="16" transform="rotate(-24 40 46)" fill="#fff" opacity=".6"/><ellipse cx="36" cy="40" rx="3" ry="5" transform="rotate(-24 36 40)" fill="#fff"/></svg>`; };   // icona dell'uovo, lucida come quella grande
+let eggSvgN = 0;
+const eggSvg = (t, w = 44) => { const c = RCOL[t === 'leg' ? 4 : EGGS[t].min], id = 'egI' + t + (++eggSvgN); return `<svg class="eggI" viewBox="0 0 120 150" width="${w}"><defs><radialGradient id="${id}" cx="36%" cy="28%" r="80%"><stop offset="0" stop-color="#fff"/><stop offset=".22" stop-color="${c[0]}"/><stop offset="1" stop-color="${c[1]}"/></radialGradient></defs><path d="M60 5C28 5 8 58 8 92c0 32 24 53 52 53s52-21 52-53C112 58 92 5 60 5z" fill="url(#${id})" stroke="#1c1a24" stroke-width="6"/><g fill="rgba(60,30,10,.16)"><ellipse cx="36" cy="74" rx="4" ry="3"/><ellipse cx="80" cy="56" rx="3" ry="2.4"/><ellipse cx="72" cy="108" rx="4.4" ry="3.4"/></g><ellipse cx="40" cy="46" rx="9" ry="16" transform="rotate(-24 40 46)" fill="#fff" opacity=".6"/><ellipse cx="36" cy="40" rx="3" ry="5" transform="rotate(-24 36 40)" fill="#fff"/></svg>`; };   // icona dell'uovo, lucida come quella grande
 function eggChip(t, n) { const d = document.createElement('div'); d.className = 'nu'; d.innerHTML = `<small>${n > 1 ? n + ' uova' : 'Uovo'}</small>${eggSvg(t, 46)}<b>${EGGS[t].name}</b>`; return d; }
 const eggChars = max => DW.ROSTER.filter(k => !isUnlocked(k) && RAR[k] >= 1 && RAR[k] <= max && !(UNLOCK[k] && (UNLOCK[k].cr || UNLOCK[k].secret || UNLOCK[k].pass || UNLOCK[k].noEgg)));   // i segreti non escono dalle uova
 const rint = (a, b) => a + Math.floor(Math.random() * (b - a + 1));
@@ -5170,6 +5169,7 @@ function egg10Summary() {                                                    // 
 let egg = null;
 function setEggLook(r, pop) {
   const c = RCOL[r]; $('egA').setAttribute('stop-color', c[0]); $('egB').setAttribute('stop-color', c[1]);
+  document.querySelectorAll('.egHA').forEach(x => x.setAttribute('stop-color', c[0])); document.querySelectorAll('.egHB').forEach(x => x.setAttribute('stop-color', c[1]));   // anche i due gusci
   const lbl = $('eggLbl'); lbl.textContent = RNAME[r]; lbl.style.setProperty('--rc', c[0]); $('eggBtn').style.setProperty('--rc', c[0]); $('eggStage').style.setProperty('--rc', c[0]); $('eggStage').className = 'eggStage r' + r + (egg && egg.done ? ' open' : '');
   if (pop) { lbl.classList.remove('pop'); void lbl.offsetWidth; lbl.classList.add('pop'); }
   $('eggBtn').classList.toggle('leg', r === 4);
