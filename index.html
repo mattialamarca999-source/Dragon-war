@@ -271,6 +271,7 @@ body.inMenu .top, body.inMenu .hud{display:none}
 .passRow.open .passCell:not(:disabled){box-shadow:0 0 0 3px #4caf50;animation:pulse 1.2s infinite}.passCell.got{opacity:.6}.passCell:disabled{cursor:default}
 .passRow.last .passCell.prem{background:linear-gradient(135deg,#e0c4ff,#7b3fb3);color:#fff}
 .passLock{position:absolute;top:-6px;right:-4px;font-style:normal;font-size:13px}
+.mIco{width:48px;height:auto;flex:none}
 .tag{font:900 11px var(--body);background:#e8453a;color:#fff;border:2px solid var(--ink);border-radius:8px;padding:1px 6px;margin-left:6px;vertical-align:2px}
 .oddsBtn{font:900 12px var(--body);background:none;border:0;color:#d8c4ff;text-decoration:underline;cursor:pointer;align-self:center}
 .card2.secret{background:linear-gradient(180deg,#140c20,#07050c)!important}
@@ -1155,7 +1156,7 @@ const DW = (() => {
     const within = r => foes.filter(e => Math.abs(e.x - u.x) <= r);
     if (d.hook) {                                                  // Uncino: col gancio tira a sé un nemico
       const e = foes.filter(e => !U[e.k].boss && !U[e.k].ghost).map(e => [e, (e.x - u.x) * dir]).filter(([, dd]) => dd > d.range + 10 && dd <= d.hook.r).sort((a, b) => a[1] - b[1])[0];
-      if (e) { const ox = e[0].x; e[0].x = u.x + dir * 26; e[0].stun = .6; s.ev.push({type:'hook', from:u.id, x1:u.x, x2:ox, y:e[0].y}); u.abT = d.hook.every; }
+      if (e) { const ox = e[0].x; e[0].x = u.x + dir * 26; e[0].stun = .6; s.ev.push({type:'hook', k:u.k, from:u.id, x1:u.x, x2:ox, y:e[0].y}); u.abT = d.hook.every; }
     } else if (d.fear) {                                           // Barbablù: i buoni vicini scappano
       const es = within(d.fear.r).filter(e => !U[e.k].boss);
       if (es.length) { for (const e of es) e.fear = d.fear.t; s.ev.push({type:'fear', x:u.x, y:u.y}); u.abT = d.fear.every; }
@@ -4507,9 +4508,10 @@ const dep = (x, y) => P34 ? PATH(x) * .78 + (y || 0) * .22 : (y || 0);   // in 3
 const dyAt = (x, y) => dep(x, y) * DY;
 const pz = (x, y) => P34 ? .5 + .75 * dep(x, y) : 1;                         // chi è vicino si vede più grande
 
+let abCnt = {};                                                             // quante volte i poteri sono scattati in questa battaglia (per le missioni)
 function handleEvents() {
   for (const e of s.ev) {
-    sndEvent(e);
+    sndEvent(e); abCnt[e.type] = (abCnt[e.type] || 0) + 1; if (e.k) abCnt[e.type + ':' + e.k] = (abCnt[e.type + ':' + e.k] || 0) + 1;
     if (e.type === 'hit') {
       const y = dyAt(e.x, e.y) - 54 * CS;
       if (e.src === 'fire') { if (Math.random() < .7) nums.push({x:e.x, y:y - 20, t:0, txt:'-' + e.dmg, big:1}); }
@@ -4793,17 +4795,47 @@ const MISS = [
   {id:'fast', txt:'Vinci un castello in meno di 2 minuti', need:1, gold:100, add:b => b.win && b.t < 120 ? 1 : 0},
   {id:'boss', txt:'Batti un boss o un semiboss', need:1, fr:5, add:b => b.win && b.boss ? 1 : 0},
   {id:'capr', txt:'Gioca un Capriccio', need:1, gold:75, add:b => b.cap ? 1 : 0, ok:() => capOpen(0)},
-  {id:'hero', txt:'Vinci in Eroica', need:1, gold:150, add:b => b.win && b.hard ? 1 : 0, ok:() => BETA || DW.WORLDS.some((_, w) => bossBeaten(w))}
+  {id:'hero', txt:'Vinci in Eroica', need:1, gold:150, add:b => b.win && b.hard ? 1 : 0, ok:() => BETA || DW.WORLDS.some((_, w) => bossBeaten(w))},
+  // ---- tipi nuovi ----
+  {id:'kill100', txt:'Batti 100 buoni', need:100, ru:2, add:b => b.kills},
+  {id:'spawn30', txt:'Evoca 30 cattivi', need:30, gold:50, add:b => b.spawns || 0},
+  {id:'steal15', txt:'Ruba Cattiveria ai buoni 15 volte', need:15, gold:60, add:b => b.stolen || 0},
+  {id:'nolose', txt:'Vinci un castello perdendo al massimo 3 cattivi', need:1, ru:2, add:b => b.win && !b.cap && (b.lost ?? 99) <= 3 ? 1 : 0},
+  {id:'fastdeck', txt:'Vinci con un mazzo Veloce (costo medio fino a 110)', need:1, gold:60, add:b => b.win && b.avg <= 110 ? 1 : 0},
+  {id:'slowdeck', txt:'Vinci con un mazzo Lento (costo medio sopra 180)', need:1, ru:2, add:b => b.win && b.avg > 180 ? 1 : 0},
+  {id:'inf5', txt:'Arriva all’ondata 5 nella Modalità Infinita', need:1, ru:3, add:b => (b.infWave || 0) >= 5 ? 1 : 0, ok:() => BETA || bossBeaten(0)},
+  {id:'star3x2', txt:'Fai 3 stelle in 2 castelli', need:2, gold:70, add:b => b.win && b.st === 3 && !b.cap && !b.hard ? 1 : 0},
+  // ---- missioni dei cattivi: escono solo se il cattivo è sbloccato ----
+  {id:'c_tremotino', txt:'Rapisci 2 buoni con Tremotino', need:2, ru:2, k2:'tremotino', add:b => b.ab.kidnap || 0},
+  {id:'c_krampus', txt:'Incatena 3 buoni col Krampus', need:3, ru:2, k2:'krampus', add:b => b.ab.chain || 0},
+  {id:'c_kraken', txt:'Usa i tentacoli del Kraken 3 volte', need:3, ru:2, k2:'kraken', add:b => b.ab.tentacle || 0},
+  {id:'c_mordred', txt:'Fai tradire 2 buoni con Mordred', need:2, ru:2, k2:'mordred', add:b => b.ab.betray || 0},
+  {id:'c_hyde', txt:'Fai diventare Hyde il Dottor Jekyll 3 volte', need:3, gold:60, k2:'hyde', add:b => b.ab.hyde || 0},
+  {id:'c_frank', txt:'Fai rinascere Frankenstein col fulmine 2 volte', need:2, gold:60, k2:'frankenstein', add:b => b.ab['revive:frankenstein'] || 0},
+  {id:'c_pupazzo', txt:'Spaventa i buoni col Pupazzo a Molla 3 volte', need:3, gold:50, k2:'pupazzo', add:b => b.ab.spring || 0},
+  {id:'c_zucca', txt:'Fai rotolare la Zucca Stregata 3 volte', need:3, ru:2, k2:'zucca', add:b => b.ab.roll || 0},
+  {id:'c_marz', txt:'Trasforma 3 buoni in biscotti con la Strega del Marzapane', need:3, ru:2, k2:'marzapane', add:b => b.ab.cookie || 0},
+  {id:'c_sirena', txt:'Fai cantare la Sirena 3 volte', need:3, gold:60, k2:'sirena', add:b => b.ab.song || 0},
+  {id:'c_gigante', txt:'Congela i buoni col Gigante di Ghiaccio 3 volte', need:3, ru:2, k2:'gigantegh', add:b => b.ab.stomp || 0},
+  {id:'c_troll', txt:'Fai rimbalzare 6 schegge del Troll dello Specchio', need:6, gold:60, k2:'trollspecchio', add:b => b.ab.bounce || 0},
+  {id:'c_bander', txt:'Fai scattare il Bandersnatch 5 volte', need:5, gold:60, k2:'bandersnatch', add:b => b.ab.dash || 0},
+  {id:'c_gothel', txt:'Tira a te 3 buoni con la treccia di Madre Gothel', need:3, gold:60, k2:'gothel', add:b => b.ab['hook:gothel'] || 0}
 ];
-function daily() {                                                           // 3 missioni nuove ogni giorno, sempre le stesse per tutto il giorno
+const MISS_N = 5;                                                           // missioni del giorno
+function daily() {                                                           // 5 missioni nuove ogni giorno, sempre le stesse per tutto il giorno
   const d = today();
   if (save.daily.day !== d) {
-    const h = hashStr(d), pool = MISS.filter(m => !m.ok || m.ok()).map((m, i) => [m.id, (h * (i + 3)) % 997]).sort((a, b) => a[1] - b[1]).slice(0, 3).map(x => x[0]);
+    const h = hashStr(d), pool = MISS.filter(m => (!m.ok || m.ok()) && (!m.k2 || isUnlocked(m.k2))).map((m, i) => [m.id, (h * (i + 3)) % 997]).sort((a, b) => a[1] - b[1]).slice(0, MISS_N).map(x => x[0]);
     save.daily = {day:d, ids:pool, prog:{}, got:[], chest:false}; persist();
+  } else if (save.daily.ids.length < MISS_N) {                               // oggi ne avevi 3: aggiungo le altre
+    const h = hashStr(d + 'x'), more = MISS.filter(m => (!m.ok || m.ok()) && (!m.k2 || isUnlocked(m.k2)) && !save.daily.ids.includes(m.id)).map((m, i) => [m.id, (h * (i + 3)) % 997]).sort((a, b) => a[1] - b[1]).slice(0, MISS_N - save.daily.ids.length).map(x => x[0]);
+    save.daily.ids.push(...more); persist();
   }
   return save.daily;
 }
-function trackBattle(b) {                                                    // a fine partita: missioni, contatori, Lista nera
+const deckAvg = d => d.length ? d.reduce((a, k) => a + DW.U[k].cost, 0) / d.length : 0;
+function trackBattle(b) {
+  b.ab = b.ab || {};                                                    // a fine partita: missioni, contatori, Lista nera
   if (!BETA) passTrack(b);
   const dd = daily();
   for (const id of dd.ids) { const m = MISS.find(x => x.id === id); if (m) dd.prog[id] = Math.min(m.need, (dd.prog[id] || 0) + m.add(b)); }
@@ -4821,7 +4853,7 @@ const ACH = [
   {id:'crowns', name:'Testa coronata', what:'corone', tiers:[15, 45, 120], val:() => totalCrowns()}
 ];
 const ACH_PRIZE = [{gold:150, fr:0, ru:5}, {gold:400, fr:8, ru:10}, {gold:1000, fr:20, ru:20}];
-const missReady = () => { const dd = daily(); return dd.ids.some(id => !dd.got.includes(id) && (dd.prog[id] || 0) >= MISS.find(m => m.id === id).need) || (dd.got.length === 3 && !dd.chest) || ACH.some(a => (save.ach[a.id] || 0) < 3 && a.val() >= a.tiers[save.ach[a.id] || 0]); };
+const missReady = () => { const dd = daily(); return dd.ids.some(id => !dd.got.includes(id) && (dd.prog[id] || 0) >= MISS.find(m => m.id === id).need) || (dd.got.length >= dd.ids.length && !dd.chest) || ACH.some(a => (save.ach[a.id] || 0) < 3 && a.val() >= a.tiers[save.ach[a.id] || 0]); };
 let missTab = 'day';
 /* ================= Calendario premi: 7 giorni di fila, se salti un giorno si riparte dal primo ================= */
 const CAL = [{gold:150}, {frR:6}, {lives:1}, {gold:300}, {ru:5}, {frR:10}, {eggs:{big:1}}];
@@ -4958,15 +4990,16 @@ function renderMiss() {
     const dd = daily();
     for (const id of dd.ids) {
       const m = MISS.find(x => x.id === id), p = dd.prog[id] || 0, done = p >= m.need, got = dd.got.includes(id);
-      const rw = m.gold ? `<span class="rwd"><span class="coin"></span>${m.gold} oro</span>` : `<span class="rwd">${m.k ? `<canvas width="56" height="52"></canvas>` : ''}${m.fr} frammenti${m.k ? ' ' + SHORT[m.k] : ' a caso'}</span>`;
-      const r = row(m.gold ? COIN_ICO.replace('<svg', '<svg width="40" height="40"') : CHEST_ICO('#7b3fb3'), m.txt, `<small>${Math.min(p, m.need)}/${m.need}</small>${rw}`, p / m.need,
+      const rw = m.ru ? `<span class="rwd"><span class="ruby"></span> ${m.ru} Rubini</span>` : m.gold ? `<span class="rwd"><span class="coin"></span>${m.gold} oro</span>` : `<span class="rwd">${m.k ? `<canvas width="56" height="52"></canvas>` : ''}${m.fr} frammenti${m.k ? ' ' + SHORT[m.k] : ' a caso'}</span>`;
+      const r = row(m.k2 ? '<canvas class="mIco" width="112" height="104"></canvas>' : m.ru ? '<span class="ruby rubyL" style="width:34px;height:34px"></span>' : m.gold ? COIN_ICO.replace('<svg', '<svg width="40" height="40"') : CHEST_ICO('#7b3fb3'), m.txt, `<small>${Math.min(p, m.need)}/${m.need}</small>${rw}`, p / m.need,
         `<button class="upBtn" ${done && !got ? '' : 'disabled'}>${got ? 'Fatto' : 'Ritira'}</button>`,
-        () => { dd.got.push(id); if (!BETA) livesAdd(1); persist(); if (m.gold) showGift('Missione compiuta!', m.gold, []); else if (m.k) { save.shards[m.k] = (save.shards[m.k] || 0) + m.fr; showGift('Missione compiuta!', 0, [{k:m.k, n:m.fr}]); } else showGift('Missione compiuta!', 0, giveShards(m.fr, 2)); }, got);
+        () => { dd.got.push(id); persist(); if (m.ru) showGift('Missione compiuta!', 0, [], {ru:m.ru}); else if (m.gold) showGift('Missione compiuta!', m.gold, []); else if (m.k) { save.shards[m.k] = (save.shards[m.k] || 0) + m.fr; showGift('Missione compiuta!', 0, [{k:m.k, n:m.fr}]); } else showGift('Missione compiuta!', 0, giveShards(m.fr, 2)); }, got);
       if (m.k) { const c = r.querySelector('.rwd canvas'); if (c) drawIcon(c, m.k); }
+      if (m.k2) drawIcon(r.querySelector('.mIco'), m.k2);
     }
-    row(CHEST_ICO(), 'Baule del giorno', '<small>Finisci tutte e 3 le missioni: dentro c’è un Uovo di Drago</small>', dd.got.length / 3,
-      `<button class="upBtn" ${dd.got.length === 3 && !dd.chest ? '' : 'disabled'}>${dd.chest ? 'Aperto' : 'Apri'}</button>`,
-      () => { dd.chest = true; persist(); showGift('Baule del giorno', 50, [], {ru:2, eggs:{base:1}}); }, dd.chest);
+    row(CHEST_ICO(), 'Baule del giorno', `<small>Finisci tutte e ${dd.ids.length} le missioni: dentro c’è un Uovo di Drago e 2 vite</small>`, dd.got.length / dd.ids.length,
+      `<button class="upBtn" ${dd.got.length >= dd.ids.length && !dd.chest ? '' : 'disabled'}>${dd.chest ? 'Aperto' : 'Apri'}</button>`,
+      () => { dd.chest = true; if (!BETA) livesAdd(2); persist(); showGift('Baule del giorno', 50, [], {ru:2, eggs:{base:1}, chips:[{small:'Vite', ico:'❤️', big:'+2'}]}); }, dd.chest);
     const nt = document.createElement('p'); nt.className = 'note'; nt.style.textAlign = 'center'; nt.textContent = 'Domani arrivano 3 missioni nuove.'; list.appendChild(nt);
   } else {
     for (const a of ACH) {
@@ -5398,6 +5431,7 @@ function newBattle(world = curWorld, level = curLevel, opt = curOpt) {
   const squad = cp && cp.squad ? cp.squad.slice() : (sqSel.length ? sqSel : save.squad).filter(isUnlocked).slice(0, cp && cp.pick || DW.DECK);
   tutHide(); tut = !save.tutorialDone && world === 0 && level === 0 && !cp && !opt.hard ? {i:0, shown:false, t:0} : null; resize();
   const secret = !cp && opt.hard && world === DW.WORLDS.length - 1 && level === W0.n - 1 && draculaReady(squad);   // la notte giusta, al Trono del Drago, arriva il Conte
+  abCnt = {};
   s = DW.create(Object.assign({world, level, squad, up:save.up, hard:!!opt.hard, inf:!!opt.inf, rule:cp ? cp.rule : secret ? {extra:[['dracula_boss', 35]]} : null}, BETA ? {beta:true, walletLv:DW.WALLET_MAX_LV, startCat:DW.walletMax(DW.WALLET_MAX_LV)} : {}));
   if (!BETA && save.boost.fire > 0) { s.fire.v = 1; save.boost.fire--; persist(); setTimeout(() => toast(`Fiammata pronta! (ne restano ${save.boost.fire})`), 400); }   // potenziamento del negozio
   buildButtons();
@@ -5413,7 +5447,7 @@ function finishInf() {                                                      // M
   const n = s.inf.wave, done = Math.max(0, n - 1), I = save.inf = save.inf || {best:0, bestT:0}, rec = n > I.best || (n === I.best && s.t > I.bestT);
   if (rec) { I.best = n; I.bestT = s.t; }
   const pts = 10 * Math.floor(done / 5); if (pts) passXp(pts);
-  trackBattle({win:false, st:0, kills:s.stats.kills, fires:s.stats.fires, kidnaps:s.stats.kidnaps, beaten:s.stats.beaten, deck:s.squad, t:s.t, boss:false, cap:false, hard:false});
+  trackBattle({win:false, st:0, kills:s.stats.kills, fires:s.stats.fires, kidnaps:s.stats.kidnaps, beaten:s.stats.beaten, deck:s.squad, t:s.t, boss:false, cap:false, hard:false, lost:s.stats.lost, spawns:s.stats.spawns, stolen:s.stats.stolen, ab:abCnt, avg:deckAvg(s.squad), infWave:s.inf.wave});
   persist(); UIS.lose();
   $('endTitle').textContent = rec ? `Nuovo record: ondata ${n}!` : `Sei arrivato all’ondata ${n}`;
   $('endStars').hidden = true; $('endCoin').hidden = true; $('endGold').innerHTML = pts ? `<span class="passMini">★</span> +${pts} punti del Pass` : 'Arriva all’ondata 6 per i punti del Pass';
@@ -5461,7 +5495,7 @@ function finish() {
   }
   if (hard) save.streak = win && s.base.hp >= s.base.max ? save.streak + 1 : 0;   // la serie si rompe se la tana prende anche un graffio
   if (win && s.stats.beaten.dracula_boss && !save.unlocked.includes('dracula')) { save.unlocked.push('dracula'); save.shards.dracula = 0; fresh.push('dracula'); if (save.squad.length < DW.DECK) save.squad.push('dracula'); }
-  trackBattle({win, st, kills:s.stats.kills, fires:s.stats.fires, kidnaps:s.stats.kidnaps, beaten:s.stats.beaten, deck:s.squad, t:s.t, boss:!!s.boss, cap:ci != null, hard});
+  trackBattle({win, st, kills:s.stats.kills, fires:s.stats.fires, kidnaps:s.stats.kidnaps, beaten:s.stats.beaten, deck:s.squad, t:s.t, boss:!!s.boss, cap:ci != null, hard, lost:s.stats.lost, spawns:s.stats.spawns, stolen:s.stats.stolen, ab:abCnt, avg:deckAvg(s.squad)});
   persist(); syncBoard();
   const timeout = !win && s.rule.timeLimit && s.t >= s.rule.timeLimit;
   (win ? UIS.win : UIS.lose)();
