@@ -33,42 +33,44 @@ a{color:#7b3fb3;font-weight:700}
 </head>
 <body>
 <main>
-  <header><img src="icon-192.png" alt=""><div><h1 data-l="it">Elimina il tuo account Dragon War</h1><h1 data-l="en" hidden>Delete your Dragon War account</h1></div></header>
-  <div class="lang"><button id="bIt" aria-pressed="true">Italiano</button><button id="bEn" aria-pressed="false">English</button></div>
+  <header><img src="icon-192.png" alt=""><div><h1 data-l="it">Elimina il tuo account Dragon War</h1><h1 data-l="en" hidden>Delete your Dragon War account</h1><h1 data-l="es" hidden>Elimina tu cuenta de Dragon War</h1></div></header>
+  <div class="lang"><button id="bIt" aria-pressed="true">Italiano</button><button id="bEn" aria-pressed="false">English</button><button id="bEs" aria-pressed="false">Español</button></div>
 
   <p data-l="it">Quando elimini l’account cancelliamo per sempre: il nome da giocatore, il codice amico, gli amici, la posta (regali, inviti, messaggi), i punteggi in classifica, il salvataggio online dei progressi e il tuo posto nel clan (se eri il capo, il clan passa a un altro membro). Non si può tornare indietro.</p>
   <p data-l="en" hidden>When you delete your account we permanently erase: your player name, friend code, friends, mail (gifts, invites, messages), leaderboard scores, your online game save and your place in your clan (if you led it, the clan passes to another member). This cannot be undone.</p>
-
-  <h2 data-l="it">Modo 1 · Dal gioco (il più veloce)</h2><h2 data-l="en" hidden>Option 1 · From the game (fastest)</h2>
+<p data-l="es" hidden>Cuando eliminas la cuenta borramos para siempre: el nombre de jugador, el código de amigo, los amigos, el correo (regalos, invitaciones, mensajes), las puntuaciones de la clasificación, el guardado online del progreso y tu puesto en el clan (si eras el líder, el clan pasa a otro miembro). No se puede deshacer.</p>
+  <h2 data-l="it">Modo 1 · Dal gioco (il più veloce)</h2><h2 data-l="en" hidden>Option 1 · From the game (fastest)</h2><h2 data-l="es" hidden>Opción 1 · Desde el juego (la más rápida)</h2>
   <p data-l="it">Apri Dragon War → <b>Impostazioni (⚙️)</b> → <b>Salvataggio online</b> → <b>«Elimina il mio account e i miei dati»</b>.</p>
   <p data-l="en" hidden>Open Dragon War → <b>Settings (⚙️)</b> → <b>Online save</b> → <b>“Delete my account and my data”</b>.</p>
-
-  <h2 data-l="it">Modo 2 · Da questa pagina</h2><h2 data-l="en" hidden>Option 2 · From this page</h2>
+<p data-l="es" hidden>Abre Dragon War → <b>Ajustes (⚙️)</b> → <b>Guardado online</b> → <b>«Eliminar mi cuenta y mis datos»</b>.</p>
+  <h2 data-l="it">Modo 2 · Da questa pagina</h2><h2 data-l="en" hidden>Option 2 · From this page</h2><h2 data-l="es" hidden>Opción 2 · Desde esta página</h2>
   <div id="step1">
     <p data-l="it">Entra nel tuo account con il <b>codice di recupero</b> oppure con <b>Google</b> (se l’avevi collegato nel gioco).</p>
     <p data-l="en" hidden>Sign in to your account with your <b>recovery code</b> or with <b>Google</b> (if you linked it in the game).</p>
-    <input id="code" placeholder="DW-XXXX-XXXX-XXXX" autocomplete="off" spellcheck="false">
-    <div><button class="btn" id="goCode"><span data-l="it">Entra col codice</span><span data-l="en" hidden>Sign in with code</span></button><button class="btn alt" id="goGoogle"><span data-l="it">Entra con Google</span><span data-l="en" hidden>Sign in with Google</span></button></div>
+<p data-l="es" hidden>Entra en tu cuenta con el <b>código de recuperación</b> o con <b>Google</b> (si lo vinculaste en el juego).</p>    <input id="code" placeholder="DW-XXXX-XXXX-XXXX" autocomplete="off" spellcheck="false">
+    <div><button class="btn" id="goCode"><span data-l="it">Entra col codice</span><span data-l="en" hidden>Sign in with code</span><span data-l="es" hidden>Entrar con el código</span></button><button class="btn alt" id="goGoogle"><span data-l="it">Entra con Google</span><span data-l="en" hidden>Sign in with Google</span><span data-l="es" hidden>Entrar con Google</span></button></div>
   </div>
   <div id="step2" hidden>
     <div class="box" id="who"></div>
-    <button class="btn red" id="del"><span data-l="it">Elimina per sempre il mio account</span><span data-l="en" hidden>Permanently delete my account</span></button>
+    <button class="btn red" id="del"><span data-l="it">Elimina per sempre il mio account</span><span data-l="en" hidden>Permanently delete my account</span><span data-l="es" hidden>Eliminar mi cuenta para siempre</span></button>
   </div>
   <p class="msg" id="msg"></p>
 
-  <h2 data-l="it">Modo 3 · Per email</h2><h2 data-l="en" hidden>Option 3 · By email</h2>
+  <h2 data-l="it">Modo 3 · Per email</h2><h2 data-l="en" hidden>Option 3 · By email</h2><h2 data-l="es" hidden>Opción 3 · Por correo</h2>
   <p data-l="it">Se non hai un codice di recupero né Google collegato, scrivi a <b>[email in arrivo · coming soon]</b> indicando il tuo <b>nome da giocatore</b> e il <b>codice amico</b> (li trovi nella schermata Amici). Cancelliamo tutto entro 30 giorni e ti rispondiamo quando è fatto.</p>
   <p data-l="en" hidden>If you have neither a recovery code nor Google linked, write to <b>[email in arrivo · coming soon]</b> with your <b>player name</b> and <b>friend code</b> (you can find them in the Friends screen). We delete everything within 30 days and reply when it is done.</p>
-  <p><a href="privacy.html" data-l="it">Informativa sulla privacy</a><a href="privacy.html#en" data-l="en" hidden>Privacy Policy</a></p>
+<p data-l="es" hidden>Si no tienes código de recuperación ni Google vinculado, escribe a <b>[email in arrivo · coming soon]</b> indicando tu <b>nombre de jugador</b> y tu <b>código de amigo</b> (los encuentras en la pantalla Amigos). Lo borramos todo en un plazo de 30 días y te respondemos cuando esté hecho.</p>  <p><a href="privacy.html" data-l="it">Informativa sulla privacy</a><a href="privacy.html#en" data-l="en" hidden>Privacy Policy</a><a href="privacy.html#es" data-l="es" hidden>Política de privacidad</a></p>
 </main>
 <script>
 let L = 'it';
 const T = {it:{busy:'Un attimo…', bad:'Questo codice non corrisponde a nessun account. Controlla le lettere.', short:'Il codice è fatto così: DW-XXXX-XXXX-XXXX.', gfail:'Accesso con Google non riuscito.', nog:'Questo account Google non è collegato a nessuna partita.', who:(n, c) => `Account trovato: <b>${n || 'senza nome'}</b>${c ? ` · codice amico <b>${c}</b>` : ''}`, sure:'Sei sicuro? Verrà cancellato tutto e non si può tornare indietro.', done:'Fatto: il tuo account e i tuoi dati sono stati eliminati.', fail:'Qualcosa è andato storto: riprova o scrivici per email.', off:'Il servizio non è raggiungibile: controlla la connessione.'},
-           en:{busy:'One moment…', bad:'This code does not match any account. Check the letters.', short:'The code looks like this: DW-XXXX-XXXX-XXXX.', gfail:'Google sign-in failed.', nog:'This Google account is not linked to any game.', who:(n, c) => `Account found: <b>${n || 'no name'}</b>${c ? ` · friend code <b>${c}</b>` : ''}`, sure:'Are you sure? Everything will be erased and this cannot be undone.', done:'Done: your account and your data have been deleted.', fail:'Something went wrong: try again or email us.', off:'The service cannot be reached: check your connection.'}};
+           en:{busy:'One moment…', bad:'This code does not match any account. Check the letters.', short:'The code looks like this: DW-XXXX-XXXX-XXXX.', gfail:'Google sign-in failed.', nog:'This Google account is not linked to any game.', who:(n, c) => `Account found: <b>${n || 'no name'}</b>${c ? ` · friend code <b>${c}</b>` : ''}`, sure:'Are you sure? Everything will be erased and this cannot be undone.', done:'Done: your account and your data have been deleted.', fail:'Something went wrong: try again or email us.', off:'The service cannot be reached: check your connection.'},
+           es:{busy:'Un momento…', bad:'Este código no corresponde a ninguna cuenta. Comprueba las letras.', short:'El código es así: DW-XXXX-XXXX-XXXX.', gfail:'No se pudo iniciar sesión con Google.', nog:'Esta cuenta de Google no está vinculada a ninguna partida.', who:(n, c) => `Cuenta encontrada: <b>${n || 'sin nombre'}</b>${c ? ` · código de amigo <b>${c}</b>` : ''}`, sure:'¿Seguro? Se borrará todo y no se puede deshacer.', done:'Hecho: tu cuenta y tus datos se han eliminado.', fail:'Algo ha ido mal: inténtalo de nuevo o escríbenos por correo.', off:'No se puede conectar con el servicio: comprueba la conexión.'}};
 const $ = id => document.getElementById(id), say = t => $('msg').innerHTML = t;
-const setL = l => { L = l; document.documentElement.lang = l; document.querySelectorAll('[data-l]').forEach(e => e.hidden = e.dataset.l !== l); bIt.setAttribute('aria-pressed', l === 'it'); bEn.setAttribute('aria-pressed', l === 'en'); };
-bIt.onclick = () => setL('it'); bEn.onclick = () => setL('en');
-if (location.hash === '#en' || (!navigator.language.startsWith('it') && location.hash !== '#it')) setL('en');
+const setL = l => { L = l; document.documentElement.lang = l; document.querySelectorAll('[data-l]').forEach(e => e.hidden = e.dataset.l !== l); bIt.setAttribute('aria-pressed', l === 'it'); bEn.setAttribute('aria-pressed', l === 'en'); bEs.setAttribute('aria-pressed', l === 'es'); };
+bIt.onclick = () => setL('it'); bEn.onclick = () => setL('en'); bEs.onclick = () => setL('es');
+const h = location.hash.slice(1), nl = (navigator.language || '').slice(0, 2);
+setL(['it', 'en', 'es'].includes(h) ? h : ['it', 'es'].includes(nl) ? nl : 'en');
 // stesso codice del gioco: il codice di recupero è la chiave di un account email/password tecnico
 const clMail = code => 'dw' + code.replace(/[^A-Z0-9]/gi, '').toLowerCase().slice(0, 6) + '@dragon-war-ff637.firebaseapp.com';
 const clPass = code => code.replace(/[^A-Z0-9]/gi, '').toUpperCase();
