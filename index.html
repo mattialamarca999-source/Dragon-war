@@ -982,10 +982,11 @@ const DW = (() => {
     return s;
   }
 
+  const UP_K = .056;                                            // ogni livello della Fucina: +5,6% di vita e danno (era +8%)
   function addUnit(s, k, x, y, opt) {
     const d = U[k], side = opt && opt.side != null ? opt.side : d.side, lvMap = (opt && opt.uLv) || s.uLv;
     const ab = ABIL.find(a => d[a]);
-    const m = (d.side === 0 ? 1 + .08 * ((lvMap[PARENT[k] || k] || 1) - 1) : s.eMul) * (d.side === 0 && LEG.has(k) ? LEG_MUL : 1);   // +8% per livello ai cattivi; i buoni crescono coi castelli
+    const m = (d.side === 0 ? 1 + UP_K * ((lvMap[PARENT[k] || k] || 1) - 1) : s.eMul) * (d.side === 0 && LEG.has(k) ? LEG_MUL : 1);   // +5,6% per livello ai cattivi; i buoni crescono coi castelli
     const u = {id:++s.id, k, side, x:x ?? (side ? s.castle.x - 30 : s.base.x + 30), y:y ?? Math.random(), dm:m,
       hp:Math.round(d.hp * m * (side === 1 && d.side === 1 ? (s.lv.hpMul || 1) * (s.mp || (s.lv.world || 0) < NIGHT.from ? 1 : 1 + NIGHT.hp * nightP(s.t)) : 1)), max:Math.round(d.hp * m * (side === 1 && d.side === 1 ? (s.lv.hpMul || 1) * (s.mp || (s.lv.world || 0) < NIGHT.from ? 1 : 1 + NIGHT.hp * nightP(s.t)) : 1)), disg:d.disguise ? 1 : 0, atkT:.2, kb:0, st:'walk', swing:0, born:s.t, abT:ab ? d[ab].every * .5 : 0, fear:0, stun:0, spdMul:1, charged:false};
     s.units.push(u);
@@ -1190,6 +1191,9 @@ const DW = (() => {
     } else if (d.betray) {                                         // Mordred: un buono tradisce e da ora combatte per noi
       const e = within(d.betray.r).filter(e => !U[e.k].boss && !U[e.k].elite && !U[e.k].sub && U[e.k].hp <= d.betray.maxHp).sort((a, b) => Math.abs(a.x - u.x) - Math.abs(b.x - u.x))[0];
       if (e) { e.side = u.side; e.kid = 1; e.fear = 0; e.stun = .5; e.st = 'walk'; s.ev.push({type:'betray', x:e.x, y:e.y}); u.abT = d.betray.every; } else u.abT = 1;
+    } else if (d.leap && d.elite) {                                // Re Ranocchio: salta corto, atterra davanti al nemico e combatte
+      const e = foes.filter(e => (e.x - u.x) * dir > d.range + 20 && (e.x - u.x) * dir <= 140).sort((a, b) => (a.x - b.x) * dir)[0];
+      if (e) { const ox = u.x; u.x = e.x - dir * (d.range + 4); s.ev.push({type:'leap', x1:ox, x2:u.x, y:u.y}); u.abT = 15; } else u.abT = 1;
     } else if (d.leap) {                                           // Ranocchio: salta oltre il primo nemico
       const e = foes.find(e => (e.x - u.x) * dir > 0 && (e.x - u.x) * dir <= d.range + 6);
       if (e) { const ox = u.x; u.x += dir * d.leap.d; s.ev.push({type:'leap', x1:ox, x2:u.x, y:u.y}); u.abT = d.leap.every; }
