@@ -272,6 +272,9 @@ body.inMenu .top, body.inMenu .hud{display:none}
 .passRow.last .passCell.prem{background:linear-gradient(135deg,#e0c4ff,#7b3fb3);color:#fff}
 .passLock{position:absolute;top:-6px;right:-4px;font-style:normal;font-size:13px}
 .mIco{width:48px;height:auto;flex:none}
+.eggRow{flex-wrap:wrap}.eggRow .tx{min-width:0;flex:1}.eggBtns{display:grid;grid-template-columns:repeat(2,1fr);gap:6px;width:100%}.eggBtns .upBtn{justify-content:center}
+#giftItems{max-height:52vh;overflow-y:auto}.upBtn.sm{font-size:14px;padding:5px 7px;gap:4px;border-width:2px}.upBtn.sm i{font-style:normal;font:900 11px var(--body);background:#1c1a24;color:#ffd35a;border-radius:6px;padding:1px 4px}
+.eggSkip{font-size:17px;padding:8px 14px;margin-top:6px}
 .tag{font:900 11px var(--body);background:#e8453a;color:#fff;border:2px solid var(--ink);border-radius:8px;padding:1px 6px;margin-left:6px;vertical-align:2px}
 .oddsBtn{font:900 12px var(--body);background:none;border:0;color:#d8c4ff;text-decoration:underline;cursor:pointer;align-self:center}
 .card2.secret{background:linear-gradient(180deg,#140c20,#07050c)!important}
@@ -281,13 +284,46 @@ body.inMenu .top, body.inMenu .hud{display:none}
 .eggLbl{font-family:var(--display);font-size:36px;line-height:1;color:var(--rc,#7ad85a);-webkit-text-stroke:5px var(--ink);paint-order:stroke fill}
 .eggLbl.pop{animation:lblPop .5s ease-out}
 @keyframes lblPop{0%{transform:scale(.3)}60%{transform:scale(1.3)}}
-.eggBtn{background:none;border:0;padding:0;cursor:pointer;width:190px;filter:drop-shadow(0 0 26px var(--rc,#7ad85a))}
+.eggStage{position:relative;width:250px;height:250px;display:grid;place-items:center;flex:none;--rc:#7ad85a}
+.eggStage>*{grid-area:1/1}
+.eggStage.open{height:120px;transition:height .35s ease}
+.eggStage.open .eggRays{width:230px;height:230px;left:calc(50% - 115px);top:calc(50% - 115px)}.eggStage.open .eggGlow{width:150px;height:150px}
+.eggRays{position:absolute;width:390px;height:390px;left:calc(50% - 195px);top:calc(50% - 195px);border-radius:50%;background:repeating-conic-gradient(from 0deg,color-mix(in srgb,var(--rc) 60%,transparent) 0deg 7deg,transparent 7deg 20deg);-webkit-mask:radial-gradient(circle,#000 18%,transparent 66%);mask:radial-gradient(circle,#000 18%,transparent 66%);animation:raySpin 10s linear infinite;opacity:.75;pointer-events:none}
+.eggStage.r4 .eggRays{animation-duration:4s;opacity:1}.eggStage.r3 .eggRays{animation-duration:6s}
+@keyframes raySpin{to{transform:rotate(360deg)}}
+.eggGlow{width:230px;height:230px;border-radius:50%;background:radial-gradient(circle,var(--rc) 0,color-mix(in srgb,var(--rc) 40%,transparent) 35%,transparent 68%);opacity:.6;animation:glowP 1.6s ease-in-out infinite;pointer-events:none}
+@keyframes glowP{50%{transform:scale(1.12);opacity:.85}}
+.eggSpark{position:absolute;inset:0;pointer-events:none}
+.eggSpark i{position:absolute;width:12px;height:12px;background:#fff;clip-path:polygon(50% 0,60% 40%,100% 50%,60% 60%,50% 100%,40% 60%,0 50%,40% 40%);animation:twinkle 1.8s ease-in-out infinite;filter:drop-shadow(0 0 4px var(--rc))}
+.eggSpark i:nth-child(1){left:12%;top:20%}.eggSpark i:nth-child(2){left:82%;top:16%;animation-delay:.3s}.eggSpark i:nth-child(3){left:88%;top:62%;animation-delay:.7s}.eggSpark i:nth-child(4){left:6%;top:66%;animation-delay:1s}
+.eggSpark i:nth-child(5){left:50%;top:4%;animation-delay:1.3s;width:9px;height:9px}.eggSpark i:nth-child(6){left:24%;top:88%;animation-delay:.5s;width:8px;height:8px}.eggSpark i:nth-child(7){left:72%;top:86%;animation-delay:1.5s;width:9px;height:9px}
+@keyframes twinkle{0%,100%{transform:scale(0) rotate(0);opacity:0}50%{transform:scale(1) rotate(90deg);opacity:1}}
+.eggBtn{position:relative;background:none;border:0;padding:0;cursor:pointer;width:170px;filter:drop-shadow(0 0 22px var(--rc,#7ad85a));animation:eggIdle 2.4s ease-in-out infinite}
+@keyframes eggIdle{50%{transform:translateY(-6px) rotate(2deg)}}
+.eggBtn.crack{animation:eggCrack .36s linear forwards}
+@keyframes eggCrack{0%{transform:translate(0,0)}10%{transform:translate(-6px,2px) rotate(-6deg)}20%{transform:translate(6px,-2px) rotate(6deg)}30%{transform:translate(-8px,0) rotate(-8deg)}40%{transform:translate(8px,2px) rotate(8deg)}60%{transform:translate(-5px,-2px) rotate(-4deg) scale(1.08);filter:brightness(1.6) drop-shadow(0 0 40px #fff)}100%{transform:scale(1.15);filter:brightness(2.4) drop-shadow(0 0 60px #fff)}}
+.eggHalves{position:relative;width:170px;height:230px;pointer-events:none}.eggHalves svg{position:absolute;inset:0;width:170px;height:auto}
+.eggHalves .hTop{animation:hTop .7s cubic-bezier(.2,.7,.3,1) forwards}.eggHalves .hBot{animation:hBot .7s cubic-bezier(.2,.7,.3,1) forwards}
+@keyframes hTop{to{transform:translate(-50px,-150px) rotate(-55deg);opacity:0}}@keyframes hBot{to{transform:translate(40px,90px) rotate(30deg);opacity:0}}
+.eggParts{position:relative;width:0;height:0;pointer-events:none}
+.eggParts span{position:absolute;left:0;top:0;width:var(--s,10px);height:var(--s,10px);background:var(--c);border-radius:3px;animation:part .9s cubic-bezier(.15,.7,.3,1) forwards;box-shadow:0 0 8px var(--c)}
+.eggParts span.st{clip-path:polygon(50% 0,60% 40%,100% 50%,60% 60%,50% 100%,40% 60%,0 50%,40% 40%);border-radius:0}
+@keyframes part{to{transform:translate(var(--dx),var(--dy)) rotate(var(--r)) scale(.3);opacity:0}}
+.eggFlash{position:absolute;inset:0;background:radial-gradient(circle at 50% 42%,#fff,var(--fc,#fff) 40%,transparent 80%);opacity:0;pointer-events:none;z-index:2}
+.eggFlash.go{animation:eflash .7s ease-out}@keyframes eflash{0%{opacity:0}12%{opacity:1}100%{opacity:0}}
+.ov.egg.quake{animation:quake .12s linear infinite}@keyframes quake{25%{transform:translate(-5px,3px)}50%{transform:translate(4px,-4px)}75%{transform:translate(-3px,-2px)}}
+.ov.egg.quake2{animation:quake .08s linear infinite}
+.egg10{position:relative;width:300px;display:grid;grid-template-columns:repeat(5,1fr);gap:6px;place-items:center}
+.egg10 .e10{width:52px;animation:wob .26s ease-in-out infinite;filter:drop-shadow(0 0 12px var(--rc))}.egg10 .e10:nth-child(even){animation-direction:reverse;animation-duration:.22s}
+@keyframes wob{25%{transform:rotate(-12deg) translateY(-3px)}75%{transform:rotate(12deg) translateY(2px)}}
+.egg10.gather .e10{animation:gather .45s ease-in forwards}@keyframes gather{to{transform:scale(1.8);opacity:0;filter:brightness(3) drop-shadow(0 0 30px #fff)}}
 .eggBtn svg{width:100%;height:auto;display:block}
 .eggBtn.shake{animation:eggShake .38s}
 @keyframes eggShake{20%{transform:rotate(-10deg) scale(1.05)}40%{transform:rotate(9deg)}60%{transform:rotate(-6deg)}80%{transform:rotate(4deg)}}
 .eggBtn.leg{animation:legGlow 1s ease-in-out infinite}
 @keyframes legGlow{50%{filter:drop-shadow(0 0 46px #ffc030) brightness(1.15)}}
 .eggBtn.boom{animation:eggBoom .45s forwards}
+.eggBtn.crack.boom{animation:eggCrack .36s linear forwards}
 @keyframes eggBoom{to{transform:scale(1.6);opacity:0}}
 .eggHint{color:#fff;font-weight:900;margin:0;text-shadow:0 2px 0 #000}
 .eggItems .nu{animation:deal .35s ease-out backwards}
@@ -559,19 +595,43 @@ button:focus-visible{outline:3px solid #5aa0ff;outline-offset:2px}
     </div>
 
     <div class="ov egg" id="ovEgg" hidden>
+      <div class="eggFlash" id="eggFlash"></div>
       <div class="eggBox">
         <div class="eggLbl" id="eggLbl">Comune</div>
-        <button class="eggBtn" id="eggBtn" aria-label="Tocca l'uovo"><svg viewBox="0 0 120 150" aria-hidden="true">
-          <defs><radialGradient id="egG" cx="36%" cy="28%" r="80%"><stop offset="0" stop-color="#ffffff"/><stop offset=".22" id="egA" stop-color="#b4f09a"/><stop offset="1" id="egB" stop-color="#2a6a1a"/></radialGradient></defs>
-          <path d="M60 5C28 5 8 58 8 92c0 32 24 53 52 53s52-21 52-53C112 58 92 5 60 5z" fill="url(#egG)" stroke="#1c1a24" stroke-width="4"/>
-          <g fill="rgba(255,255,255,.28)"><ellipse cx="38" cy="74" rx="9" ry="7"/><ellipse cx="78" cy="56" rx="6" ry="5"/><ellipse cx="74" cy="104" rx="11" ry="8"/><ellipse cx="40" cy="116" rx="6" ry="5"/></g>
-          <path d="M30 98 l10 -9 l9 9 l10 -12 l9 10" stroke="#1c1a24" stroke-width="3.5" fill="none" stroke-linejoin="round" class="ck" opacity="0"/>
-          <path d="M60 30 l-6 14 l9 6 l-7 14" stroke="#1c1a24" stroke-width="3.5" fill="none" stroke-linejoin="round" class="ck" opacity="0"/>
-          <path d="M84 74 l-10 8 l6 10 l-12 6" stroke="#1c1a24" stroke-width="3.5" fill="none" stroke-linejoin="round" class="ck" opacity="0"/>
-          <path d="M40 46 l10 6 l-4 10" stroke="#1c1a24" stroke-width="3.5" fill="none" stroke-linejoin="round" class="ck" opacity="0"/>
-        </svg></button>
+        <div class="eggStage" id="eggStage">
+          <div class="eggRays"></div><div class="eggGlow"></div>
+          <div class="eggSpark"><i></i><i></i><i></i><i></i><i></i><i></i><i></i></div>
+          <button class="eggBtn" id="eggBtn" aria-label="Tocca l'uovo"><svg viewBox="0 0 120 162" aria-hidden="true">
+            <defs>
+              <radialGradient id="egG" cx="36%" cy="28%" r="80%"><stop offset="0" stop-color="#ffffff"/><stop offset=".2" id="egA" stop-color="#b4f09a"/><stop offset="1" id="egB" stop-color="#2a6a1a"/></radialGradient>
+              <linearGradient id="egShade" x1="0" y1="0" x2=".7" y2="1"><stop offset=".45" stop-color="#000" stop-opacity="0"/><stop offset="1" stop-color="#000" stop-opacity=".42"/></linearGradient>
+              <radialGradient id="egRim" cx="80%" cy="70%" r="45%"><stop offset=".7" stop-color="#fff" stop-opacity="0"/><stop offset="1" stop-color="#fff" stop-opacity=".35"/></radialGradient>
+              <filter id="egBlur"><feGaussianBlur stdDeviation="2.4"/></filter><filter id="egBlur2"><feGaussianBlur stdDeviation="4"/></filter>
+              <clipPath id="egClip"><path d="M60 5C28 5 8 58 8 92c0 32 24 53 52 53s52-21 52-53C112 58 92 5 60 5z"/></clipPath>
+              <clipPath id="egTop"><path d="M0 0H120V86L108 78L96 92L84 80L72 94L60 82L48 96L36 82L24 94L12 80L0 90Z"/></clipPath>
+              <clipPath id="egBot"><path d="M0 162H120V86L108 78L96 92L84 80L72 94L60 82L48 96L36 82L24 94L12 80L0 90Z"/></clipPath>
+            </defs>
+            <ellipse cx="60" cy="152" rx="40" ry="7" fill="rgba(0,0,0,.45)" filter="url(#egBlur2)"/>
+            <path d="M60 5C28 5 8 58 8 92c0 32 24 53 52 53s52-21 52-53C112 58 92 5 60 5z" fill="url(#egG)"/>
+            <g clip-path="url(#egClip)" fill="rgba(60,30,10,.16)"><ellipse cx="34" cy="70" rx="3" ry="2.4"/><ellipse cx="80" cy="50" rx="2.4" ry="2"/><ellipse cx="72" cy="108" rx="3.6" ry="2.8"/><ellipse cx="44" cy="120" rx="2.2" ry="1.8"/><ellipse cx="88" cy="86" rx="2.6" ry="2"/><ellipse cx="56" cy="40" rx="1.8" ry="1.5"/><ellipse cx="26" cy="100" rx="2" ry="1.6"/><ellipse cx="62" cy="132" rx="2.4" ry="1.8"/></g>
+            <path d="M60 5C28 5 8 58 8 92c0 32 24 53 52 53s52-21 52-53C112 58 92 5 60 5z" fill="url(#egShade)"/><path d="M60 5C28 5 8 58 8 92c0 32 24 53 52 53s52-21 52-53C112 58 92 5 60 5z" fill="url(#egRim)"/>
+            <ellipse cx="40" cy="44" rx="9" ry="17" transform="rotate(-24 40 44)" fill="#fff" opacity=".75" filter="url(#egBlur)"/><ellipse cx="36" cy="38" rx="3" ry="5" transform="rotate(-24 36 38)" fill="#fff"/>
+            <path d="M60 5C28 5 8 58 8 92c0 32 24 53 52 53s52-21 52-53C112 58 92 5 60 5z" fill="none" stroke="#1c1a24" stroke-width="3.5"/>
+            <path d="M30 98 l10 -9 l9 9 l10 -12 l9 10" stroke="#1c1a24" stroke-width="3.5" fill="none" stroke-linejoin="round" class="ck" opacity="0"/>
+            <path d="M60 30 l-6 14 l9 6 l-7 14" stroke="#1c1a24" stroke-width="3.5" fill="none" stroke-linejoin="round" class="ck" opacity="0"/>
+            <path d="M84 74 l-10 8 l6 10 l-12 6" stroke="#1c1a24" stroke-width="3.5" fill="none" stroke-linejoin="round" class="ck" opacity="0"/>
+            <path d="M40 46 l10 6 l-4 10" stroke="#1c1a24" stroke-width="3.5" fill="none" stroke-linejoin="round" class="ck" opacity="0"/>
+          </svg></button>
+          <div class="eggHalves" id="eggHalves" hidden>
+            <svg class="hTop" viewBox="0 0 120 162"><g clip-path="url(#egTop)"><path d="M60 5C28 5 8 58 8 92c0 32 24 53 52 53s52-21 52-53C112 58 92 5 60 5z" fill="url(#egG)"/><path d="M60 5C28 5 8 58 8 92c0 32 24 53 52 53s52-21 52-53C112 58 92 5 60 5z" fill="url(#egShade)"/><path d="M60 5C28 5 8 58 8 92c0 32 24 53 52 53s52-21 52-53C112 58 92 5 60 5z" fill="none" stroke="#1c1a24" stroke-width="3.5"/></g></svg>
+            <svg class="hBot" viewBox="0 0 120 162"><g clip-path="url(#egBot)"><path d="M60 5C28 5 8 58 8 92c0 32 24 53 52 53s52-21 52-53C112 58 92 5 60 5z" fill="url(#egG)"/><path d="M60 5C28 5 8 58 8 92c0 32 24 53 52 53s52-21 52-53C112 58 92 5 60 5z" fill="url(#egShade)"/><path d="M60 5C28 5 8 58 8 92c0 32 24 53 52 53s52-21 52-53C112 58 92 5 60 5z" fill="none" stroke="#1c1a24" stroke-width="3.5"/></g></svg>
+          </div>
+          <div class="eggParts" id="eggParts"></div>
+          <div class="egg10" id="egg10" hidden></div>
+        </div>
         <p class="eggHint" id="eggHint">Tocca l'uovo!</p>
         <div class="unlock eggItems" id="eggItems" hidden></div>
+        <button class="big alt eggSkip" id="eggSkip" hidden>Salta ⏭ vedi cosa hai trovato</button>
         <div class="pair" id="eggBtns" hidden><button class="big alt" id="eggMore">Apri un altro</button><button class="big" id="eggOk">Bene!</button></div>
       </div>
     </div>
@@ -4778,9 +4838,9 @@ function showGift(title, gold, items, extra = {}) {
   $('giftTitle').textContent = title; $('giftGold').hidden = !gold && !extra.ru; $('giftGoldTxt').innerHTML = [gold ? `+${gold} oro` : '', extra.ru ? `<span class="ruby"></span> +${extra.ru} Rubini` : ''].filter(Boolean).join(' · ');
   if (!gold) $('giftGold').querySelector('.coin').style.display = 'none'; else $('giftGold').querySelector('.coin').style.display = '';
   const box = $('giftItems'); box.innerHTML = '';
+  for (const c of extra.chips || []) { const d = document.createElement('div'); d.className = 'nu' + (c.k ? ' big' : ''); d.innerHTML = `<small>${c.small}</small>${c.k ? '<canvas width="112" height="104"></canvas>' : `<span class="chipIco">${c.ico}</span>`}<b>${c.big}</b>`; if (c.k) drawIcon(d.querySelector('canvas'), c.k); box.appendChild(d); }
   for (const it of items) { const d = document.createElement('div'); d.className = 'nu'; d.innerHTML = `<small>Frammenti</small><canvas width="112" height="104"></canvas><b>+${it.n} ${SHORT[it.k]}</b>`; drawIcon(d.querySelector('canvas'), it.k); box.appendChild(d); }
   for (const [t, n] of Object.entries(extra.eggs || {})) if (n) box.appendChild(eggChip(t, n));
-  for (const c of extra.chips || []) { const d = document.createElement('div'); d.className = 'nu' + (c.k ? ' big' : ''); d.innerHTML = `<small>${c.small}</small>${c.k ? '<canvas width="112" height="104"></canvas>' : `<span class="chipIco">${c.ico}</span>`}<b>${c.big}</b>`; if (c.k) drawIcon(d.querySelector('canvas'), c.k); box.appendChild(d); }
   for (const kk of fresh) { const d = document.createElement('div'); d.className = 'nu'; d.innerHTML = `<small>Nuovo cattivo</small><canvas width="112" height="104"></canvas><b>${SHORT[kk]}</b>`; drawIcon(d.querySelector('canvas'), kk); box.appendChild(d); }
   $('ovGift').hidden = false; vibrate(30);
 }
@@ -5050,7 +5110,7 @@ const RCOL = [['#b4f09a', '#2a7a1a'], ['#a8d8ff', '#1a5ab0'], ['#e0c4ff', '#5a2a
 const EGGS = {base:{name:'Uovo di Drago', min:0, odds:[55, 27, 13, 4, 1]}, big:{name:'Uovo Grande', min:1, odds:[0, 55, 30, 12, 3]}, leg:{name:'Uovo Leggendario', min:2, odds:[0, 0, 60, 30, 10]}};
 const EGGIN = [{gold:[40, 75], fr:3, parts:1, ru:0, ch:0, max:0}, {gold:[75, 150], fr:6, parts:2, ru:1, ch:0, max:0}, {gold:[150, 210], fr:10, parts:2, ru:3, ch:.15, max:2},
   {gold:[250, 350], fr:14, parts:3, ru:5, ch:.35, max:3}, {gold:[500, 700], fr:21, parts:3, ru:10, ch:.6, max:4}];
-const eggSvg = (t, w = 44) => { const c = RCOL[t === 'leg' ? 4 : EGGS[t].min]; return `<svg class="eggI" viewBox="0 0 120 150" width="${w}"><path d="M60 5C28 5 8 58 8 92c0 32 24 53 52 53s52-21 52-53C112 58 92 5 60 5z" fill="${c[0]}" stroke="#1c1a24" stroke-width="6"/><path d="M60 5C28 5 8 58 8 92c0 32 24 53 52 53" fill="${c[1]}" opacity=".45"/><ellipse cx="40" cy="60" rx="10" ry="16" fill="#fff" opacity=".5"/></svg>`; };
+const eggSvg = (t, w = 44) => { const c = RCOL[t === 'leg' ? 4 : EGGS[t].min], id = 'egI' + t; return `<svg class="eggI" viewBox="0 0 120 150" width="${w}"><defs><radialGradient id="${id}" cx="36%" cy="28%" r="80%"><stop offset="0" stop-color="#fff"/><stop offset=".22" stop-color="${c[0]}"/><stop offset="1" stop-color="${c[1]}"/></radialGradient></defs><path d="M60 5C28 5 8 58 8 92c0 32 24 53 52 53s52-21 52-53C112 58 92 5 60 5z" fill="url(#${id})" stroke="#1c1a24" stroke-width="6"/><g fill="rgba(60,30,10,.16)"><ellipse cx="36" cy="74" rx="4" ry="3"/><ellipse cx="80" cy="56" rx="3" ry="2.4"/><ellipse cx="72" cy="108" rx="4.4" ry="3.4"/></g><ellipse cx="40" cy="46" rx="9" ry="16" transform="rotate(-24 40 46)" fill="#fff" opacity=".6"/><ellipse cx="36" cy="40" rx="3" ry="5" transform="rotate(-24 36 40)" fill="#fff"/></svg>`; };   // icona dell'uovo, lucida come quella grande
 function eggChip(t, n) { const d = document.createElement('div'); d.className = 'nu'; d.innerHTML = `<small>${n > 1 ? n + ' uova' : 'Uovo'}</small>${eggSvg(t, 46)}<b>${EGGS[t].name}</b>`; return d; }
 const eggChars = max => DW.ROSTER.filter(k => !isUnlocked(k) && RAR[k] >= 1 && RAR[k] <= max && !(UNLOCK[k] && (UNLOCK[k].cr || UNLOCK[k].secret || UNLOCK[k].pass || UNLOCK[k].noEgg)));   // i segreti non escono dalle uova
 const rint = (a, b) => a + Math.floor(Math.random() * (b - a + 1));
@@ -5070,18 +5130,56 @@ function rollEgg(t) {                                                        // 
   persist();
   return out;
 }
+const EGG10 = {base:[[0, 1]], big:[[0, 1, 2]], leg:[[3], [4]]};               // pacco da 10: un cattivo nuovo sicuro di queste rarità (Leggendarie: un mitico e un leggendario)
+const eggSure = rs => DW.ROSTER.filter(k => !isUnlocked(k) && rs.includes(RAR[k] || 0) && UNLOCK[k] && UNLOCK[k].fr && !UNLOCK[k].cr && !UNLOCK[k].secret && !UNLOCK[k].pass && !UNLOCK[k].noEgg);
+let egg10 = null;                                                            // il pacco da 10 in corso: si aprono una per una, o si salta al riepilogo
+function openEgg10(t) {
+  livesTick(); const g0 = save.gold, r0 = save.ru, l0 = save.lives.n, list = [];
+  for (let i = 0; i < 10; i++) list.push(rollEgg(t));
+  for (const rs of EGG10[t]) if (!list.some(o => [o.char, ...(o.fresh || [])].some(k => k && rs.includes(RAR[k] || 0)))) {   // la garanzia
+    const pool = eggSure(rs), slot = list.filter(o => !o.char), o = slot.length ? slot[Math.floor(Math.random() * slot.length)] : list[9];
+    if (pool.length) { const k = pool[Math.floor(Math.random() * pool.length)]; save.unlocked.push(k); save.shards[k] = 0; if (save.squad.length < DW.DECK) save.squad.push(k); if (o.char) o.fresh.push(k); else o.char = k; o.r = Math.max(o.r, Math.min(4, Math.max(o.start, RAR[k] || 0))); }
+    else { const have = DW.ROSTER.filter(k => isUnlocked(k) && rs.includes(RAR[k] || 0)), k = have[Math.floor(Math.random() * have.length)]; if (k) { save.shards[k] = (save.shards[k] || 0) + 30; o.shards.push({k, n:30}); } }
+  }
+  persist();
+  egg10 = {t, list, i:0, g0, r0, l0};
+  egg10Intro(t);
+}
+function egg10Intro(t) {                                                      // 10 uova che tremano tutte insieme, lo schermo vibra, poi un lampo
+  const ov = $('ovEgg'), g = $('egg10'), c = RCOL[EGGS[t].min];
+  ov.hidden = false; $('eggItems').hidden = true; $('eggBtns').hidden = true; $('eggBtn').hidden = true; $('eggHalves').hidden = true; $('eggParts').innerHTML = '';
+  $('eggStage').style.setProperty('--rc', c[0]); $('eggStage').className = 'eggStage r' + EGGS[t].min;
+  const lbl = $('eggLbl'); lbl.textContent = '10 uova!'; lbl.style.setProperty('--rc', c[0]); lbl.classList.remove('pop'); void lbl.offsetWidth; lbl.classList.add('pop');
+  $('eggHint').textContent = 'Si stanno per aprire…'; $('eggSkip').hidden = false;
+  g.innerHTML = Array.from({length:10}, () => `<span class="e10">${eggSvg(t, 52)}</span>`).join(''); g.classList.remove('gather'); g.hidden = false;
+  ov.classList.add('quake'); vibrate([60, 40, 60, 40, 80, 40, 100, 40, 140]); UIS.tap();
+  setTimeout(() => { if (!egg10) return; ov.classList.remove('quake'); ov.classList.add('quake2'); }, 900);
+  setTimeout(() => { if (!egg10) return; g.classList.add('gather'); eggFlash(c[0]); eggParts(40, [c[0], '#ffffff', c[1], '#fff3a0'], true); vibrate(200); UIS.open(); }, 1500);
+  setTimeout(() => { ov.classList.remove('quake', 'quake2'); if (!egg10) return; g.hidden = true; openEgg(t, false, egg10.list[0]); }, 2000);
+}
+function egg10Summary() {                                                    // il riepilogo di tutto il pacco
+  const E = egg10; if (!E) return; egg10 = null; egg = null; $('ovEgg').hidden = true; $('ovEgg').classList.remove('quake', 'quake2'); $('egg10').hidden = true;
+  const sh = {}, chars = [], chips = [];
+  for (const o of E.list) { if (o.char) chars.push(o.char); chars.push(...(o.fresh || [])); for (const x of o.shards) sh[x.k] = (sh[x.k] || 0) + x.n; }
+  const gold = save.gold - E.g0, ru = save.ru - E.r0; save.gold = E.g0; save.ru = E.r0;   // showGift li riaggiunge e li mostra
+  for (const k of [...new Set(chars)]) chips.push({small:'Cattivo nuovo!', ico:'', big:SHORT[k], k});
+  const lives = save.lives.n - E.l0; if (lives > 0) chips.push({small:'Vite', ico:'❤️', big:`+${lives}`});   // le vite si fermano a 10
+  persist(); UIS.open();
+  showGift({base:'10 Uova di Drago', big:'10 Uova Grandi', leg:'10 Uova Leggendarie'}[E.t], gold, Object.entries(sh).map(([k, n]) => ({k, n})), {ru, chips});
+}
 let egg = null;
 function setEggLook(r, pop) {
   const c = RCOL[r]; $('egA').setAttribute('stop-color', c[0]); $('egB').setAttribute('stop-color', c[1]);
-  const lbl = $('eggLbl'); lbl.textContent = RNAME[r]; lbl.style.setProperty('--rc', c[0]); $('eggBtn').style.setProperty('--rc', c[0]);
+  const lbl = $('eggLbl'); lbl.textContent = RNAME[r]; lbl.style.setProperty('--rc', c[0]); $('eggBtn').style.setProperty('--rc', c[0]); $('eggStage').style.setProperty('--rc', c[0]); $('eggStage').className = 'eggStage r' + r + (egg && egg.done ? ' open' : '');
   if (pop) { lbl.classList.remove('pop'); void lbl.offsetWidth; lbl.classList.add('pop'); }
   $('eggBtn').classList.toggle('leg', r === 4);
 }
-function openEgg(t, fromInv) {
+function openEgg(t, fromInv, pre) {
   if (fromInv) { if (save.eggInv[t] <= 0) return; save.eggInv[t]--; }
-  egg = rollEgg(t); egg.cur = egg.start; egg.cracks = 0; egg.from = fromInv;
+  egg = pre || rollEgg(t); egg.cur = egg.start; egg.cracks = 0; egg.from = fromInv;
+  $('eggBtn').classList.remove('crack', 'boom'); $('eggHalves').hidden = true; $('eggParts').innerHTML = ''; $('egg10').hidden = true;
   $('ovEgg').hidden = false; $('eggItems').hidden = true; $('eggBtns').hidden = true; $('eggBtn').hidden = false; $('eggBtn').classList.remove('boom');
-  $('eggHint').textContent = 'Tocca l’uovo!';
+  $('eggHint').textContent = egg10 ? `Uovo ${egg10.i + 1} di 10 · tocca l’uovo!` : 'Tocca l’uovo!'; $('eggSkip').hidden = !egg10;
   document.querySelectorAll('#eggBtn .ck').forEach(c => c.setAttribute('opacity', 0));
   setEggLook(egg.cur, true);
 }
@@ -5091,13 +5189,28 @@ $('eggBtn').onclick = () => {
   const cks = document.querySelectorAll('#eggBtn .ck');
   if (egg.cur < egg.r) { egg.cur++; setEggLook(egg.cur, true); vibrate(40); }                 // sale di rarità
   else if (egg.cracks < 1) { egg.cracks++; }                                                 // un tocco in più per creare l'attesa
-  else { egg.done = true; b.classList.add('boom'); setTimeout(showEggPrize, 420); return; }
+  else { egg.done = true; eggBurst(b); return; }
   for (let i = 0; i < Math.min(cks.length, egg.cur - egg.start + egg.cracks + 1); i++) cks[i].setAttribute('opacity', 1);
   $('eggHint').textContent = egg.cur < egg.r || egg.cracks < 1 ? 'Ancora!' : 'Si apre…';
 };
+function eggParts(n, cols, big) {                                           // schegge di guscio e stelline che volano via
+  const box = $('eggParts'); box.innerHTML = '';
+  for (let i = 0; i < n; i++) { const p = document.createElement('span'), a = Math.random() * Math.PI * 2, d = (big ? 150 : 90) + Math.random() * (big ? 170 : 110); p.className = i % 3 ? '' : 'st';
+    p.style.cssText = `--dx:${Math.cos(a) * d}px;--dy:${Math.sin(a) * d - 30}px;--r:${Math.random() * 720 - 360}deg;--c:${cols[i % cols.length]};--s:${6 + Math.random() * 10}px;animation-delay:${Math.random() * .08}s`; box.appendChild(p); }
+}
+function eggFlash(col) { const f = $('eggFlash'); f.style.setProperty('--fc', col); f.classList.remove('go'); void f.offsetWidth; f.classList.add('go'); }
+function eggBurst(b) {                                                       // l'uovo trema, si illumina e si spacca in due
+  b.classList.remove('shake'); b.classList.add('crack'); vibrate([30, 30, 60]);
+  setTimeout(() => {
+    const c = RCOL[egg.r]; b.hidden = true; const h = $('eggHalves'); h.hidden = true; void h.offsetWidth; h.hidden = false;
+    eggFlash(c[0]); eggParts(egg.r >= 3 ? 34 : 22, [c[0], '#ffffff', c[1], '#fff3a0'], egg.r >= 3); vibrate(egg.r >= 3 ? [80, 40, 120] : 50);
+    if (egg.r >= 3) { $('ovEgg').classList.add('quake'); setTimeout(() => $('ovEgg').classList.remove('quake'), 450); }
+    setTimeout(showEggPrize, 330);
+  }, 360);
+}
 function showEggPrize() {
   UIS.open();
-  $('eggBtn').hidden = true; $('eggHint').textContent = `${EGGS[egg.t].name} · ${RNAME[egg.r]}`;
+  $('eggBtn').hidden = true; $('eggStage').classList.add('open'); $('eggHint').textContent = `${EGGS[egg.t].name} · ${RNAME[egg.r]}`;
   const box = $('eggItems'); box.innerHTML = ''; box.hidden = false; let d = 0;
   const add = el => { el.style.animationDelay = (d++ * .18) + 's'; box.appendChild(el); };
   if (egg.char) { const c = document.createElement('div'); c.className = 'nu big'; c.innerHTML = `<small>Cattivo nuovo!</small><canvas width="112" height="104"></canvas><b>${SHORT[egg.char]}</b>`; drawIcon(c.querySelector('canvas'), egg.char); add(c); }
@@ -5106,11 +5219,13 @@ function showEggPrize() {
   if (egg.ru) { const r = document.createElement('div'); r.className = 'nu'; r.innerHTML = `<small>Rubini</small><span class="ruby" style="width:32px;height:32px;margin:9px"></span><b>+${egg.ru}</b>`; add(r); }
   for (const it of egg.shards) { const c = document.createElement('div'); c.className = 'nu'; c.innerHTML = `<small>Frammenti</small><canvas width="112" height="104"></canvas><b>+${it.n} ${SHORT[it.k]}</b>`; drawIcon(c.querySelector('canvas'), it.k); add(c); }
   for (const kk of egg.fresh) { const c = document.createElement('div'); c.className = 'nu big'; c.innerHTML = `<small>Sbloccato!</small><canvas width="112" height="104"></canvas><b>${SHORT[kk]}</b>`; drawIcon(c.querySelector('canvas'), kk); add(c); }
-  $('eggBtns').hidden = false; $('eggMore').hidden = !(egg.from && save.eggInv[egg.t] > 0);
+  $('eggBtns').hidden = false; $('eggMore').hidden = !(egg.from && save.eggInv[egg.t] > 0); $('eggMore').textContent = 'Apri un altro'; $('eggOk').textContent = 'Bene!';
+  if (egg10) { const last = egg10.i >= 9; $('eggMore').hidden = last; $('eggMore').textContent = `Prossimo (${egg10.i + 2}/10)`; $('eggOk').textContent = last ? 'Vedi tutto' : 'Salta'; $('eggSkip').hidden = true; }
   vibrate(egg.r >= 3 ? 120 : 40);
 }
-$('eggOk').onclick = () => { $('ovEgg').hidden = true; egg = null; if (!$('shop').hidden) renderShop(); };
-$('eggMore').onclick = () => { const t = egg.t; openEgg(t, true); };
+$('eggOk').onclick = () => { if (egg10) return egg10Summary(); $('ovEgg').hidden = true; egg = null; if (!$('shop').hidden) renderShop(); };
+$('eggMore').onclick = () => { if (egg10) { egg10.i++; return openEgg(egg10.t, false, egg10.list[egg10.i]); } const t = egg.t; openEgg(t, true); };
+$('eggSkip').onclick = () => egg10Summary();
 const untilMidnight = () => { const n = new Date(), m = new Date(n); m.setHours(24, 0, 0, 0); const t = Math.max(0, Math.floor((m - n) / 1000)); return `${Math.floor(t / 3600)}h ${String(Math.floor(t / 60) % 60).padStart(2, '0')}m ${String(t % 60).padStart(2, '0')}s`; };
 setInterval(() => { const el = $('offerT'); if (el && !$('shop').hidden) el.textContent = 'Scade tra ' + untilMidnight(); }, 1000);
 const KITS = [
@@ -5183,9 +5298,15 @@ function renderShop() {
   const ob = document.createElement('button'); ob.className = 'oddsBtn'; ob.textContent = 'Probabilità delle uova'; ob.onclick = showOdds;
   head('Uova di Drago'); list.appendChild(ob);
   item(eggSvg('base'), 'Uovo del giorno', save.shop.free === d ? 'Già preso. Torna domani!' : 'Gratis, una volta al giorno.', save.shop.free === d ? 'Preso' : 'Gratis', save.shop.free !== d, () => { save.shop.free = d; persist(); openEgg('base'); });
-  item(eggSvg('base'), 'Uovo di Drago', 'Da Comune a Leggendario.', price(250), save.gold >= 250, () => { if (pay(250)) openEgg('base'); });
-  item(eggSvg('big'), 'Uovo Grande', 'Almeno Raro. Più spesso Epico.', price(0, 30), save.ru >= 30, () => { if (pay(0, 30)) openEgg('big'); });
-  item(eggSvg('leg'), 'Uovo Leggendario', 'Almeno Epico. Alta probabilità di un cattivo nuovo.', price(0, 100), save.ru >= 100, () => { if (pay(0, 100)) openEgg('leg'); });
+  const eggRow = (t, title, sub, opts) => {                                // uovo singolo o pacco da 10 (che costa come 9)
+    const r = document.createElement('div'); r.className = 'fgRow eggRow';
+    r.innerHTML = `${eggSvg(t)}<div class="tx"><b>${title}</b><small>${sub}</small></div><div class="eggBtns"></div>`;
+    for (const [lbl, gold, ru, n] of opts) { const b = document.createElement('button'), ok = ru ? save.ru >= ru : save.gold >= gold; b.className = 'upBtn sm'; b.disabled = !ok; b.innerHTML = `<i>${lbl}</i>${price(gold, ru)}`; b.onclick = () => { if (pay(gold, ru)) n === 10 ? openEgg10(t) : openEgg(t); }; r.querySelector('.eggBtns').appendChild(b); }
+    list.appendChild(r);
+  };
+  eggRow('base', 'Uovo di Drago', 'Da Comune a Leggendario. Pacco da 10: un cattivo nuovo Comune o Raro sicuro.', [['×1', 250, 0, 1], ['×10', 2250, 0, 10]]);
+  eggRow('big', 'Uovo Grande', 'Almeno Raro. Pacco da 10: un cattivo nuovo fino a Epico sicuro.', [['×1', 0, 30, 1], ['×1', 1000, 0, 1], ['×10', 0, 270, 10], ['×10', 9000, 0, 10]]);
+  eggRow('leg', 'Uovo Leggendario', 'Almeno Epico. Pacco da 10: un Mitico e un Leggendario nuovi sicuri.', [['×1', 0, 100, 1], ['×10', 0, 900, 10]]);
   const o = offerOfDay(), oDone = save.shop.offer === d;
   head('Offerta <span class="tag">-40%</span>', '<small id="offerT">Scade tra ' + untilMidnight() + '</small>');
   const orow = item(o.ico, o.name, oDone ? 'Presa! Domani un’altra.' : o.txt, oDone ? 'Presa' : price(o.gold, o.ru, o.was), !oDone && (o.ru ? save.ru >= o.ru : save.gold >= o.gold), () => { if (pay(o.gold, o.ru)) { save.shop.offer = d; persist(); grant(o.give, o.name); } });
@@ -5210,7 +5331,7 @@ function showOdds() {
   const pct = v => v ? v + '%' : '–';
   $('oddsBody').innerHTML = `<table class="oddsT"><tr><th></th>${['Com.', 'Raro', 'Epico', 'Mitico', 'Legg.'].map((n, i) => `<th style="color:${RCOL[i][1]}">${n}</th>`).join('')}</tr>
     ${Object.values(EGGS).map(E => `<tr><td style="text-align:left">${E.name}</td>${E.odds.map(pct).join('</td><td>').replace(/^/, '<td>')}</td></tr>`).join('')}</table>
-    <p class="note">Comune: oro e 3 frammenti · Raro: 6 frammenti e Rubini · Epico: 10 frammenti, 15% cattivo nuovo · Mitico: 14 frammenti, 35% cattivo nuovo · Leggendario: 21 frammenti, 60% cattivo nuovo.</p>`;
+    <p class="note">Comune: oro e 3 frammenti · Raro: 6 frammenti e Rubini · Epico: 10 frammenti, 15% cattivo nuovo · Mitico: 14 frammenti, 35% cattivo nuovo · Leggendario: 21 frammenti, 60% cattivo nuovo.<br>Pacchi da 10 (costano come 9): Uova di Drago, un cattivo nuovo Comune o Raro sicuro · Uova Grandi, fino a Epico · Uova Leggendarie, un Mitico e un Leggendario. Se li hai già tutti, 30 frammenti.</p>`;
   $('ovOdds').hidden = false;
 }
 $('menuMiss').onclick = showMiss; $('menuWanted').onclick = showWanted; $('menuShop').onclick = showShop;
