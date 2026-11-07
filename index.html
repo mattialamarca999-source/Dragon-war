@@ -889,8 +889,8 @@ const DW = (() => {
     guardia:    {side:1, sub:1, hp:110, dmg:12, rate:1.2, range:24, spd:42, bounty:15},
     renna:      {side:1, hp:200, dmg:16, rate:1.2, range:24,  spd:90, bounty:55, beast:1, charge:{dmg:35, r:50, kb:60}},
     fiammiferaia:{side:1, hp:70, dmg:0,  rate:2.4, range:110, spd:40, bounty:50, heal:30},
-    soldatineve:{side:1, group:{k:'pupazzo', n:3}},
-    pupazzo:    {side:1, sub:1, hp:90, dmg:9, rate:1, range:20, spd:32, bounty:12, armorRanged:.7},
+    soldatineve:{side:1, group:{k:'pupazzoneve', n:3}},
+    pupazzoneve:{side:1, sub:1, hp:90, dmg:9, rate:1, range:20, spd:32, bounty:12, armorRanged:.7},
     cavcristallo:{side:1, hp:320, dmg:18, rate:1.4, range:26, spd:34, bounty:70, armorRanged:.4},
     gemelli:    {side:1, group:{k:'gemello', n:2}},
     gemello:    {side:1, sub:1, hp:120, dmg:12, rate:1.1, range:22, spd:50, bounty:20, split:.6},
@@ -3670,13 +3670,13 @@ function kidBody(o, shirt, pants, skin, hair, extra) {                     // co
   if (extra && extra.arm) { ctx.save(); ctx.translate(6, -46); ctx.rotate(-.5 + o.arm * .9); extra.arm(); ctx.restore(); }
   ctx.restore();
 }
-function bimbo(o, v) {                                                     // i Bimbi Sperduti: pellicce da animale, fionda o bastone
+function bimboSp(o, v) {                                                     // i Bimbi Sperduti: pellicce da animale, fionda o bastone
   const furs = ['#8a6a4a', '#c8a070', '#6a5a4a', '#d8c8a8'], hairs = ['#c8702a', '#4a3020', '#e8c060', '#2a2020'], vv = (o.id || v || 0) % 4;
   kidBody(o, furs[vv], '#5a4a3a', '#f4cca8', hairs[vv], {
     head:() => { P(PL([-9, -6, -6, -16, -2, -8]), furs[vv], -5, -10, 5); P(PL([3, -9, 8, -17, 9, -6]), furs[vv], 6, -11, 5); },
     arm:() => { P(cap(0, 0, 11, 0, 4.5), '#f4cca8', 5, 0, 4); P(cap(10, 4, 26, -10, 3), '#7a5530', 18, -3, 3); }});
 }
-function bimbi(o) { for (const [ox, sc, v] of [[-26, .8, 1], [26, .8, 2], [-9, .9, 3], [10, 1, 0]]) { ctx.save(); ctx.translate(ox, 0); ctx.scale(sc, sc); bimbo(Object.assign({}, o, {id:v}), v); ctx.restore(); } }
+function bimbi(o) { for (const [ox, sc, v] of [[-26, .8, 1], [26, .8, 2], [-9, .9, 3], [10, 1, 0]]) { ctx.save(); ctx.translate(ox, 0); ctx.scale(sc, sc); bimboSp(Object.assign({}, o, {id:v}), v); ctx.restore(); } }
 function wendy(o) {                                                        // Wendy: camicia da notte azzurra, fiocco, un libro di storie
   const dress = '#9ac8f0', skin = '#f6dcc8', sway = o.walking ? Math.sin(o.ph) * 2.5 : Math.sin(o.t * 2) * 1.2;
   const bob = o.walking ? -Math.abs(Math.cos(o.ph)) * 3 : Math.sin(o.t * 2.4) * 1;
@@ -3815,7 +3815,7 @@ function fiammiferaia(o) {                                                 // la
   ctx.restore();
   ctx.restore();
 }
-function pupazzo(o) {                                                      // soldati di neve: pupazzi con l'elmo a secchio e la scopa
+function pupazzoneve(o) {                                                      // soldati di neve: pupazzi con l'elmo a secchio e la scopa
   const sn = '#f4f8ff', bob = o.walking ? -Math.abs(Math.sin(o.ph)) * 5 : 0;
   ctx.save(); ctx.translate(0, bob); ctx.rotate(o.lean * .5 + (o.walking ? Math.sin(o.ph) * .06 : 0));
   P(E(0, -14, 15, 14), sn, 0, -14, 14); P(E(0, -38, 11, 11), sn, 0, -38, 11); for (const y of [-20, -10]) D(E(2, y, 1.8, 1.8), '#2a2a3a');
@@ -3827,7 +3827,7 @@ function pupazzo(o) {                                                      // so
   D(cap(-6, -30, 8, -30, 3.5), '#c8302a');
   ctx.restore();
 }
-function soldatineve(o) { for (const [ox, sc] of [[-22, .82], [22, .82], [0, 1]]) { ctx.save(); ctx.translate(ox, 0); ctx.scale(sc, sc); pupazzo(o); ctx.restore(); } }
+function soldatineve(o) { for (const [ox, sc] of [[-22, .82], [22, .82], [0, 1]]) { ctx.save(); ctx.translate(ox, 0); ctx.scale(sc, sc); pupazzoneve(o); ctx.restore(); } }
 function cavcristallo(o) {                                                 // il Cavaliere di Cristallo: armatura di vetro azzurra che luccica
   const gl = '#a8dcf4', dk = '#6aa8d8', bob = o.walking ? -Math.abs(Math.cos(o.ph)) * 3 : Math.sin(o.t * 2.2) * 1;
   ctx.save(); ctx.translate(0, bob); ctx.rotate(o.lean * .5);
@@ -3935,9 +3935,9 @@ function spiritista(o) {                                                   // il
   ctx.restore();
   ctx.restore(); ctx.restore();
 }
-Object.assign(DRAW, {spiritista, bimbi, bimbo:o => bimbo(o, (o.id || 0) % 4), wendy, giglio, cappellaio, brucaliffo, lepre, alibaba, sinbad, guardie, guardia, renna, fiammiferaia, soldatineve, pupazzo, cavcristallo, gemelli, gemello:o => gemello(o, (o.id || 0) % 2), pisello, tappeto, aladino, kai, gerda});
-Object.assign(HEIGHT, {spiritista:112, bimbi:76, bimbo:76, wendy:88, giglio:96, cappellaio:110, brucaliffo:76, lepre:96, alibaba:84, sinbad:100, guardie:88, guardia:88, renna:84, fiammiferaia:80, soldatineve:84, pupazzo:84, cavcristallo:104, gemelli:84, gemello:84, pisello:92, tappeto:76, aladino:86, kai:84, gerda:88});
-Object.assign(SC, {spiritista:.84, bimbi:.84, bimbo:.84, wendy:.84, giglio:.84, cappellaio:.84, brucaliffo:.88, lepre:.84, alibaba:.84, sinbad:.86, guardie:.84, guardia:.84, renna:.88, fiammiferaia:.84, soldatineve:.84, pupazzo:.84, cavcristallo:.86, gemelli:.84, gemello:.84, pisello:.84, tappeto:.9, aladino:.84, kai:.84, gerda:.84});
+Object.assign(DRAW, {spiritista, bimbi, bimbo:o => bimboSp(o, (o.id || 0) % 4), wendy, giglio, cappellaio, brucaliffo, lepre, alibaba, sinbad, guardie, guardia, renna, fiammiferaia, soldatineve, pupazzoneve, cavcristallo, gemelli, gemello:o => gemello(o, (o.id || 0) % 2), pisello, tappeto, aladino, kai, gerda});
+Object.assign(HEIGHT, {spiritista:112, bimbi:76, bimbo:76, wendy:88, giglio:96, cappellaio:110, brucaliffo:76, lepre:96, alibaba:84, sinbad:100, guardie:88, guardia:88, renna:84, fiammiferaia:80, soldatineve:84, pupazzoneve:84, cavcristallo:104, gemelli:84, gemello:84, pisello:92, tappeto:76, aladino:86, kai:84, gerda:88});
+Object.assign(SC, {spiritista:.84, bimbi:.84, bimbo:.84, wendy:.84, giglio:.84, cappellaio:.84, brucaliffo:.88, lepre:.84, alibaba:.84, sinbad:.86, guardie:.84, guardia:.84, renna:.88, fiammiferaia:.84, soldatineve:.84, pupazzoneve:.84, cavcristallo:.86, gemelli:.84, gemello:.84, pisello:.84, tappeto:.9, aladino:.84, kai:.84, gerda:.84});
 // ---- i mostri delle leggende: Krampus, Jabberwocky, Kraken, Idra, Mordred, Lupo Mannaro, Frankenstein, Mr. Hyde, Troll del Ponte, Scheletri ----
 function strokeP(path, col, w) { ctx.save(); ctx.lineWidth = w; ctx.lineCap = 'round'; ctx.lineJoin = 'round'; ctx.strokeStyle = MODE === 'normal' ? col : '#000'; ctx.stroke(path); ctx.restore(); }
 function hoofLeg(x, y, ph, walking, fur, hoof, back) {                     // zampa da capra: coscia, stinco all'indietro, zoccolo
@@ -5671,10 +5671,10 @@ const SND = {ctx:null, g:null, vg:null, buf:{}, vbuf:{}, last:{}, track:null, el
 try { const o = JSON.parse(localStorage.getItem('dw_audio') || 'null'); if (o) Object.assign(SND.set, o); } catch (e) {}
 const sndSave = () => { try { localStorage.setItem('dw_audio', JSON.stringify(SND.set)); } catch (e) {} };
 const SFX_FILES = ['hit1', 'hit2', 'hit3', 'hitbig', 'wall1', 'wall2', 'fall', 'die', 'magic1', 'magic2', 'fire', 'coins1', 'coins2', 'gem', 'vroar2', 'vroar4', 'vbeast2'];
-const VOICE = {pupazzo:1.3, zucca:.8, gothel:.95, marzapane:1.1, alberich:1.15, sirena:1.15, bandersnatch:.9, ladroni:1.05, gigantegh:.7, trollspecchio:1.3, dragonero:.75, krampus:.8, jabberwocky:1.2, kraken:.7, idra:.85, mordred:.9, lupomannaro:.85, frankenstein:.75, hyde:1.1, trollponte:.85, scheletri:1.3, spiritista:.95, goblin:1.5, pandizenzero:1.4, topi:1.7, lupo:1.1, gattovolpe:1.0, spaventapasseri:1.0, mummia:0.8, fionda:1.4, gnomo:1.5, matrigna:1.0, fantasma:0.8, strega:1.25, barbablu:1.0, bestia:1.0, uncino:0.9, tremotino:1.35, omino:1.1, stregamare:0.9, grifone:1.3, senzatesta:0.7, coccodrillo:0.7, retopi:1.2, orco:0.9, spirito:0.8, mangiafuoco:0.85, morgana:1.2, ciclope:0.75, medusa:1.2, babajaga:1.0, dracula:0.8, reginacattiva:1.0, reginanevi:1.0, basilisco:0.7, cavaliereverde:0.8, gigante:0.6, reginacuori:1.15, stregone:1.0, pescecane:0.6, diavolo:0.75, soldatino:1.2, arciere:1.1, principe:1.0, cacciatore:1.0, porcellino:1.7, fata:1.6, re:1.0, hanselgretel:1.2, nani:1.0, raperonzolo:1.0, pifferaio:1.0, musicanti:1.3, carrozza:0.9, ranocchio:0.6, peterpan:1.3, pollicino:1.1, cappuccetto:1.2, robinhood:1.0, gattostivali:1.0, biancaneve:1.0, pinocchio:1.0, merlino:0.8, alice:1.3, bimbi:1.5, bimbo:1.6, wendy:.8, giglio:1.3, cappellaio:.7, brucaliffo:.8, lepre:1.6, alibaba:1.3, sinbad:1.3, guardie:.8, guardia:.85, renna:1.2, fiammiferaia:1.2, soldatineve:1.3, pupazzo:1.35,
+const VOICE = {pupazzo:1.3, zucca:.8, gothel:.95, marzapane:1.1, alberich:1.15, sirena:1.15, bandersnatch:.9, ladroni:1.05, gigantegh:.7, trollspecchio:1.3, dragonero:.75, krampus:.8, jabberwocky:1.2, kraken:.7, idra:.85, mordred:.9, lupomannaro:.85, frankenstein:.75, hyde:1.1, trollponte:.85, scheletri:1.3, spiritista:.95, goblin:1.5, pandizenzero:1.4, topi:1.7, lupo:1.1, gattovolpe:1.0, spaventapasseri:1.0, mummia:0.8, fionda:1.4, gnomo:1.5, matrigna:1.0, fantasma:0.8, strega:1.25, barbablu:1.0, bestia:1.0, uncino:0.9, tremotino:1.35, omino:1.1, stregamare:0.9, grifone:1.3, senzatesta:0.7, coccodrillo:0.7, retopi:1.2, orco:0.9, spirito:0.8, mangiafuoco:0.85, morgana:1.2, ciclope:0.75, medusa:1.2, babajaga:1.0, dracula:0.8, reginacattiva:1.0, reginanevi:1.0, basilisco:0.7, cavaliereverde:0.8, gigante:0.6, reginacuori:1.15, stregone:1.0, pescecane:0.6, diavolo:0.75, soldatino:1.2, arciere:1.1, principe:1.0, cacciatore:1.0, porcellino:1.7, fata:1.6, re:1.0, hanselgretel:1.2, nani:1.0, raperonzolo:1.0, pifferaio:1.0, musicanti:1.3, carrozza:0.9, ranocchio:0.6, peterpan:1.3, pollicino:1.1, cappuccetto:1.2, robinhood:1.0, gattostivali:1.0, biancaneve:1.0, pinocchio:1.0, merlino:0.8, alice:1.3, bimbi:1.5, bimbo:1.6, wendy:.8, giglio:1.3, cappellaio:.7, brucaliffo:.8, lepre:1.6, alibaba:1.3, sinbad:1.3, guardie:.8, guardia:.85, renna:1.2, fiammiferaia:1.2, soldatineve:1.3, pupazzoneve:1.35,
   cavcristallo:1.4, gemelli:1.4, gemello:1.45, pisello:.8, tappeto:.8, aladino:1.2, kai:.9, gerda:1.1, alice:1.3};   // ogni cattivo e ogni buono ha il suo verso (audio/v_nome.mp3) e la sua velocità
 const VALIAS = {bimbi:'pollicino', bimbo:'pollicino', wendy:'biancaneve', giglio:'arciere', cappellaio:'hanselgretel', brucaliffo:'ranocchio', lepre:'peterpan', alibaba:'principe', sinbad:'re', guardie:'soldatino', guardia:'soldatino',
-  renna:'carrozza', fiammiferaia:'fata', spiritista:'cacciatore', pupazzo:'pinocchio', zucca:'carrozza', gothel:'strega', marzapane:'babajaga', alberich:'nani', sirena:'stregamare', bandersnatch:'bestia', ladroni:'gattovolpe', gigantegh:'gigante', trollspecchio:'tremotino', dragonero:'grifone', krampus:'bestia', jabberwocky:'grifone', kraken:'pescecane', idra:'basilisco', mordred:'cavaliereverde', lupomannaro:'lupo', frankenstein:'gigante', hyde:'tremotino', trollponte:'orco', scheletri:'mummia', soldatineve:'nani', pupazzo:'nani', cavcristallo:'biancaneve', gemelli:'cappuccetto', gemello:'cappuccetto', pisello:'fata', tappeto:'raperonzolo', aladino:'robinhood', kai:'cappuccetto', gerda:'pifferaio'};   // i buoni nuovi riusano un suono con un'altra voce
+  renna:'carrozza', fiammiferaia:'fata', spiritista:'cacciatore', pupazzo:'pinocchio', zucca:'carrozza', gothel:'strega', marzapane:'babajaga', alberich:'nani', sirena:'stregamare', bandersnatch:'bestia', ladroni:'gattovolpe', gigantegh:'gigante', trollspecchio:'tremotino', dragonero:'grifone', krampus:'bestia', jabberwocky:'grifone', kraken:'pescecane', idra:'basilisco', mordred:'cavaliereverde', lupomannaro:'lupo', frankenstein:'gigante', hyde:'tremotino', trollponte:'orco', scheletri:'mummia', soldatineve:'nani', pupazzoneve:'nani', cavcristallo:'biancaneve', gemelli:'cappuccetto', gemello:'cappuccetto', pisello:'fata', tappeto:'raperonzolo', aladino:'robinhood', kai:'cappuccetto', gerda:'pifferaio'};   // i buoni nuovi riusano un suono con un'altra voce
 function sndUnlock() {                                                     // il primo tocco accende l'audio (i browser lo chiedono)
   if (GALLERY) return;
   if (SND.ctx) { if (SND.ctx.state === 'suspended') SND.ctx.resume().catch(() => {}); musicUpdate(); return; }
