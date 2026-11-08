@@ -5797,7 +5797,7 @@ function finish() {
   const key = curWorld + ':' + curLevel, first = ci != null ? !save.capr[ci] : hard ? !crownsOf(curWorld, curLevel) : !starsOf(curWorld, curLevel);
   const g = Math.round(DW.reward(s) * (win && !first ? .3 : 1) * (g2 ? 2 : 1));   // rigiocare un castello già vinto dà solo il 30% dell'oro
   const finale = win && ci == null && curWorld === DW.WORLDS.length - 1 && curLevel === W.n - 1;
-  let got = 0, shardK = s.lv.shard, bonus = 0, ruGot = 0, eggGot = 0;
+  let got = 0, shardK = s.lv.shard, bonus = 0, ruGot = 0, eggGot = 0, exK = null, exN = 0;
   save.gold += g;
   if (win) {
     if (ci != null) {                                                        // Capriccio: premio grosso solo la prima volta, poi si gioca per il record
@@ -5815,6 +5815,10 @@ function finish() {
       }
     }
     if (got) save.shards[shardK] = (save.shards[shardK] || 0) + got;
+    if (ci == null && !BETA) {                                               // piccolo extra: frammenti di un comune o raro a caso (ce ne sono tanti)
+      const cr = DW.ROSTER.filter(k => (RAR[k] || 0) <= 1 && k !== shardK && (isUnlocked(k) || (UNLOCK[k] && UNLOCK[k].fr)) && !(UNLOCK[k] && (UNLOCK[k].secret || UNLOCK[k].cr)));
+      if (cr.length) { exK = cr[Math.floor(Math.random() * cr.length)]; exN = (first ? 3 : 1) * (hard ? 2 : 1); save.shards[exK] = (save.shards[exK] || 0) + exN; }
+    }
     if (first) {                                                              // prima vittoria: i boss lasciano Rubini e un Uovo
       if (ci != null) ruGot = 10;
       else if (s.lv.boss) { ruGot = s.lv.semi ? 4 : 8; eggGot = 1; }
@@ -5836,8 +5840,9 @@ function finish() {
   $('endGold').innerHTML = `+${g + bonus} oro` + (ruGot ? ` · <span class="ruby"></span> +${ruGot}` : '');
   $('stTime').textContent = `${Math.floor(s.t / 60)}:${String(Math.floor(s.t % 60)).padStart(2, '0')}`;
   $('stKills').textContent = s.stats.kills; $('stLost').textContent = s.stats.lost;
-  const un = $('endUnlock'); un.innerHTML = ''; un.hidden = !win || (!got && !fresh.length && !eggGot);
+  const un = $('endUnlock'); un.innerHTML = ''; un.hidden = !win || (!got && !exN && !fresh.length && !eggGot);
   if (win && got) { const d = document.createElement('div'); d.className = 'nu'; d.innerHTML = `<small>Frammenti</small><canvas width="112" height="104"></canvas><b>+${got} ${SHORT[shardK]}</b>`; drawIcon(d.querySelector('canvas'), shardK); un.appendChild(d); }
+  if (win && exN) { const d = document.createElement('div'); d.className = 'nu'; d.innerHTML = `<small>Frammenti</small><canvas width="112" height="104"></canvas><b>+${exN} ${SHORT[exK]}</b>`; drawIcon(d.querySelector('canvas'), exK); un.appendChild(d); }
   if (eggGot) un.appendChild(eggChip('base', eggGot));
   for (const kk of fresh) { const d = document.createElement('div'); d.className = 'nu'; d.innerHTML = `<small>${kk === 'tremotino' || kk === 'dracula' || kk === 'fenice' ? 'Cattivo segreto' : 'Nuovo cattivo'}</small><canvas width="112" height="104"></canvas><b>${SHORT[kk]}</b>`; drawIcon(d.querySelector('canvas'), kk); un.appendChild(d); }
   $('endNote').textContent = finale ? 'Il drago si siede sul trono. E vissero cattivi e contenti.'
