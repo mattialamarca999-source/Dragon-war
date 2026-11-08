@@ -788,7 +788,7 @@ button:focus-visible{outline:3px solid #5aa0ff;outline-offset:2px}
 
     <div class="gal" id="gallery" hidden>
       <p class="galT">Laboratorio personaggi</p>
-      <div class="seg" id="galSet"><button data-v="segreti3">Segreti 3</button><button data-v="nuovi7a">Nuovi 7a</button><button data-v="nuovi7b">Nuovi 7b</button><button data-v="mondi1">Mondi 6-10</button><button data-v="mondi2">Mondi 11-15</button><button data-v="pass">Pass</button><button data-v="mostri1">Mostri 1</button><button data-v="mostri2">Mostri 2</button><button data-v="spiriti">Spiriti</button><button data-v="buoni5">Buoni 11-13</button><button data-v="buoni6">Buoni 13-15</button><button data-v="boss5">Boss nuovi</button><button data-v="nuovi5">Comuni nuovi</button><button data-v="rari2">Rari nuovi</button><button data-v="nuovi4">Cattivi nuovi</button><button data-v="buoni4">Buoni nuovi</button><button data-v="rari">Rari e leggendari</button><button data-v="leggende">Leggende 1</button><button data-v="leggende2">Leggende 2</button><button data-v="nuovi" aria-pressed="true">Buoni nuovi 1</button><button data-v="nuovi2">Buoni nuovi 2</button><button data-v="cattivi">Cattivi 1</button><button data-v="cattivi2">Cattivi 2</button><button data-v="buoni">Buoni</button></div>
+      <div class="seg" id="galSet"><button data-v="aspetti">Aspetti</button><button data-v="segreti3">Segreti 3</button><button data-v="nuovi7a">Nuovi 7a</button><button data-v="nuovi7b">Nuovi 7b</button><button data-v="mondi1">Mondi 6-10</button><button data-v="mondi2">Mondi 11-15</button><button data-v="pass">Pass</button><button data-v="mostri1">Mostri 1</button><button data-v="mostri2">Mostri 2</button><button data-v="spiriti">Spiriti</button><button data-v="buoni5">Buoni 11-13</button><button data-v="buoni6">Buoni 13-15</button><button data-v="boss5">Boss nuovi</button><button data-v="nuovi5">Comuni nuovi</button><button data-v="rari2">Rari nuovi</button><button data-v="nuovi4">Cattivi nuovi</button><button data-v="buoni4">Buoni nuovi</button><button data-v="rari">Rari e leggendari</button><button data-v="leggende">Leggende 1</button><button data-v="leggende2">Leggende 2</button><button data-v="nuovi" aria-pressed="true">Buoni nuovi 1</button><button data-v="nuovi2">Buoni nuovi 2</button><button data-v="cattivi">Cattivi 1</button><button data-v="cattivi2">Cattivi 2</button><button data-v="buoni">Buoni</button></div>
       <div class="seg" id="galLight"><button data-v="0" aria-pressed="true">Giorno</button><button data-v=".5">Tramonto</button><button data-v="1">Notte</button><button id="galAtk" aria-pressed="true">Attacco</button></div>
     </div>
 
@@ -1792,7 +1792,7 @@ const DW = (() => {
     {name:'Parata dei boss',       txt:'Tre semiboss in fila. Nessuno li ha invitati.',             w:9, c:0, rule:{extra:[['generale', 30], ['capo_nani', 80], ['carrozza_oro', 130]]}, prize:'gigante'}
   ];
   CAPRICCI.forEach((c, i) => { c.fr = 10; c.gold = 300 + 100 * i; });
-  return {INF_WAVE, INF_POWERS, infChoose, costIn, walletCap, nightP, BCOST, COOP, coopLevel, costOf, LEG, DECK, HAND, HARD, CAPRICCI, EK, U, ELITE, ROSTER, START, LEVELS, WORLDS, TOTAL, levelOf, firstIdx, FIRE, WALLET_MAX_LV, walletMax, walletRate, walletCost, create, spawn, canSpawn, upgradeWallet, fire, step, stars, reward};
+  return {PARENT, INF_WAVE, INF_POWERS, infChoose, costIn, walletCap, nightP, BCOST, COOP, coopLevel, costOf, LEG, DECK, HAND, HARD, CAPRICCI, EK, U, ELITE, ROSTER, START, LEVELS, WORLDS, TOTAL, levelOf, firstIdx, FIRE, WALLET_MAX_LV, walletMax, walletRate, walletCost, create, spawn, canSpawn, upgradeWallet, fire, step, stars, reward};
 })();
 
 const BETA = false;
@@ -2200,6 +2200,12 @@ function goblin(o, alt) {
     P(cap(-15, -5, -25, 4 + Math.sin(o.t * 4) * 2, 4), '#c8352b', -20, 0, 5); }
   eye(4, -2, 5.5, 6.2, 0, o.blink); eye(13, -3, 4.2, 5.4, 0, o.blink);
   P(E(16, 4, 6, 4.5, .4), mix(skin, '#2a2050', .12), 16, 4, 6);
+  if (o.look === 'pirata') {                                                // Goblin Pirata
+    D(E(13, -3, 5.4, 6), '#1a1418'); D(cap(-15, -12, 18, -7, 1.3), '#1a1418');
+    const h = new Path2D(); h.moveTo(-24, -10); h.quadraticCurveTo(-12, -6, 0, -9); h.quadraticCurveTo(12, -6, 24, -12); h.quadraticCurveTo(14, -16, 12, -26); h.quadraticCurveTo(0, -36, -12, -26); h.quadraticCurveTo(-14, -16, -24, -10); h.closePath();
+    P(h, '#1e1a24', 0, -18, 18); D(cap(-22, -10, 22, -11, 1.4), '#e8b440');
+    D(E(0, -19, 4, 3.6), '#f4efe2'); D(E(-1.4, -19.4, 1, 1.1), '#1e1a24'); D(E(1.4, -19.4, 1, 1.1), '#1e1a24'); D(cap(-4, -14, 4, -14, 1), '#f4efe2');
+  }
   ctx.restore();
   ctx.save(); ctx.translate(7, -50);
   if (!alt) {
@@ -2232,12 +2238,18 @@ function orco(o) {
   P(PL([-24, -66, 24, -66, 20, -44, -20, -44]), '#7a5c3c', 0, -56, 20);
   D(RR(-22, -46, 44, 7, 3), '#3a2a1a');
   ctx.save(); ctx.translate(6, -88); ctx.rotate(Math.sin(o.t * 1.5) * .03 + o.lean * .4);
-  P(cap(-8, -16, -14, -30 + Math.sin(o.t * 3) * 2, 7), '#2a221c', -10, -22, 7);
+  if (o.look !== 'vichingo') P(cap(-8, -16, -14, -30 + Math.sin(o.t * 3) * 2, 7), '#2a221c', -10, -22, 7);
   P(E(0, 0, 19, 17), skin, 0, 0, 19);
+  if (o.look === 'vichingo') {                                              // Orco Vichingo
+    for (const sg of [-1, 1]) { const hn = new Path2D(); hn.moveTo(sg * 14, -10); hn.quadraticCurveTo(sg * 30, -12, sg * 30, -34); hn.quadraticCurveTo(sg * 24, -18, sg * 10, -16); hn.closePath(); P(hn, sg < 0 ? mix('#f2e8d2', '#2a2050', .2) : '#f2e8d2', sg * 22, -20, 10); }
+    const hm = new Path2D(); hm.moveTo(-19, -4); hm.quadraticCurveTo(-18, -26, 0, -27); hm.quadraticCurveTo(18, -26, 19, -4); hm.closePath(); P(hm, '#9aa0ac', 0, -14, 18);
+    D(RR(-20, -7, 40, 5, 2), '#7a5a30'); for (const x of [-14, -5, 4, 13]) D(E(x, -4.5, 1.3, 1.3), '#e8d090'); D(cap(0, -26, 0, -7, 1.6), '#7a7e8a');
+  }
   P(E(14, 7, 10, 8), mix(skin, '#2a2050', .1), 14, 7, 9);
   D(RR(-6, -9, 22, 4, 2), '#2a221c');
   eye(4, -3, 3.8, 3.4, 0, o.blink); eye(13, -3, 3.4, 3.2, 0, o.blink);
   D(PL([12, 10, 14, 1, 17, 10]), '#fff4dc', {glow:'#e8dcc0'}); D(PL([20, 10, 22, 2, 24, 10]), '#fff4dc', {glow:'#e8dcc0'});
+  if (o.look === 'vichingo') for (const x of [8, 17]) { P(cap(x, 12, x + 1, 30, 4), '#c8702a', x, 21, 4); D(E(x + 1, 31, 3, 2), '#e8b440'); }   // barba a trecce
   ctx.restore();
   ctx.save(); ctx.translate(12, -70); ctx.rotate(-.9 + o.arm * 1.1);
   P(cap(0, 0, 14, 4, 10), skin, 7, 2, 9);
@@ -4986,11 +4998,18 @@ function poseOf(u) {
   if (u.st === 'atk') { const prog = 1 - Math.max(0, u.atkT) / d.rate; if (prog > .5) return .42 * (prog - .5) / .5; }   // carica
   return -1;
 }
+/* ---------- aspetti: skin speciali (accessori) e stili di colore che si sbloccano col livello ---------- */
+const LOOK_ST = {ghiaccio:{lv:4, c:'170,225,255', a:.42}, inferno:{lv:6, c:'255,96,40', a:.38}, spettro:{lv:8, c:'200,180,255', a:.42, ghost:.62}, oro:{lv:10, c:'255,205,60', a:.48}};
+function unitLook(u) {
+  if (u.look !== undefined) return u.look;                                  // nel laboratorio
+  if (u.side !== 0 || !s || s.mp || NET.g || !save.look) return null;
+  return save.look[DW.PARENT[u.k] || u.k] || null;
+}
 function unitParams(u) {
   const d = UD(u.k), walking = u.st === 'walk' && !u.dead && u.kb <= 0;
   const pz = attackPose(poseOf(u));
   const bt = (time + u.id * 1.37) % 4.2, blink = bt < .14 ? Math.abs(Math.cos(bt / .14 * Math.PI)) : 1;
-  return {ph:time * d.spd / 7.5 + u.id, walking, t:time + u.id, blink, arm:pz.arm, lean:pz.lean + (u.kb > 0 ? -.28 : 0), sq:pz.sq, id:u.id, van:u.disg && DW.U[u.k].vanish || (GALLERY && u.k === 'stregatto' && time % 6 > 3) ? 1 : 0, hpf:GALLERY && u.k === 'idra' ? .5 + .5 * Math.cos(time * .6) : u.max ? u.hp / u.max : 1, hyde:u.hyde || (GALLERY && u.k === 'hyde' && time % 6 > 3) ? 1 : 0};   // nel laboratorio l'Idra mette le teste e Jekyll si trasforma
+  return {ph:time * d.spd / 7.5 + u.id, walking, t:time + u.id, blink, arm:pz.arm, lean:pz.lean + (u.kb > 0 ? -.28 : 0), sq:pz.sq, id:u.id, van:u.disg && DW.U[u.k].vanish || (GALLERY && u.k === 'stregatto' && time % 6 > 3) ? 1 : 0, hpf:GALLERY && u.k === 'idra' ? .5 + .5 * Math.cos(time * .6) : u.max ? u.hp / u.max : 1, hyde:u.hyde || (GALLERY && u.k === 'hyde' && time % 6 > 3) ? 1 : 0, look:unitLook(u)};   // nel laboratorio l'Idra mette le teste e Jekyll si trasforma
 }
 function drawUnits(dt) {
   const list = s.units.slice().sort((a, b) => dyAt(a.x, a.y) - dyAt(b.x, b.y));
@@ -5012,7 +5031,9 @@ function drawUnits(dt) {
     ctx.scale(sc * dir, sc);
     if (DW.LEG.has(u.k) && !u.dead && u.side === 0) { ctx.globalCompositeOperation = 'lighter'; glow(ctx, 0, -50, 70, '255,210,90', .22 + .1 * Math.sin(time * 3)); ctx.globalCompositeOperation = 'source-over'; }   // alone d'oro dei leggendari
     if (el && el.tint && !u.dead) { ctx.globalCompositeOperation = 'lighter'; glow(ctx, 0, -50, 75, hexRgb(el.tint), .35 + .15 * Math.sin(time * 4)); ctx.globalCompositeOperation = 'source-over'; }   // aura del boss
+    const lst = LOOK_ST[o.look]; if (lst && lst.ghost) ctx.globalAlpha *= lst.ghost;
     CHAR = true; RIM = dir; if (u.pig > 0 && !u.dead) maiale(o); else DRAW[vis(u.k)](o);   // trasformato in maiale da Circe
+    if (lst && !u.dead && !(u.pig > 0)) { MODE = 'flash'; FLASHC = lst.c; FLASH = lst.a + (o.look === 'oro' ? .12 * Math.sin(time * 4 + u.id) : 0); DRAW[vis(u.k)](o); FLASHC = '255,255,255'; MODE = 'normal'; }   // stile di colore
     if (u.stone > 0) { MODE = 'flash'; FLASHC = '150,150,160'; FLASH = .75; DRAW[vis(u.k)](o); FLASHC = '255,255,255'; MODE = 'normal'; }   // pietrificato
     if (u.mirror) { MODE = 'flash'; FLASHC = '200,190,255'; FLASH = .35; DRAW[vis(u.k)](o); FLASHC = '255,255,255'; MODE = 'normal'; }   // la copia dello specchio luccica d'argento
     if (u.stun > 0 && frostT > 0 && u.side === 1) { MODE = 'flash'; FLASHC = '190,235,255'; FLASH = .45; DRAW[vis(u.k)](o); FLASHC = '255,255,255'; MODE = 'normal'; }   // gelati
@@ -6667,7 +6688,32 @@ function paintLives() {
   if (!$('ovLives').hidden) $('livesTxt').textContent = save.lives.n > 0 ? `Hai ${save.lives.n} vite: si gioca!` : `La prossima vita arriva tra ${mmss(lifeWait())}.`;
 }
 setInterval(paintLives, 1000);
-function abandonBattle() { if (!BETA && !NET.g && running && !ended && !battleCharged) { battleCharged = true; livesUse(); toast('Partita lasciata: -1 vita'); } }   // uscire a metà conta come perdere
+/* ---------- partita in sospeso: se chiudi il gioco a metà, alla riapertura la ritrovi in pausa ---------- */
+const RESUME_K = BETA ? 'dw_resume_beta' : 'dw_resume';
+function battleStash() {
+  if (!running || ended || inMenu || NET.g || !s || s.mp || tut || GALLERY) return;
+  try { localStorage.setItem(RESUME_K, JSON.stringify({s, opt:curOpt, world:curWorld, level:curLevel, charged:battleCharged, at:Date.now()})); } catch (e) {}
+}
+const battleUnstash = () => { try { localStorage.removeItem(RESUME_K); } catch (e) {} };
+function battleResume() {                                                  // riapre la partita salvata, ferma in pausa
+  let d = null; try { d = JSON.parse(localStorage.getItem(RESUME_K) || 'null'); } catch (e) {}
+  if (!d || !d.s || Date.now() - d.at > 864e5) { battleUnstash(); return false; }
+  try {
+    const opt = d.opt || {}; curLevel = d.level; curWorld = d.world; curOpt = opt; HERO = !!opt.hard;
+    TH = opt.inf ? DW.WORLDS[(d.s.inf && d.s.inf.w) || 0].theme : DW.WORLDS[d.world].theme;
+    inMenu = false; inStory = false; document.body.classList.remove('inMenu');
+    for (const id of ['story', 'menu', 'worlds', 'capr', 'miss', 'wanted', 'shop', 'map', 'squad', 'forge', 'ovEnd', 'ovInf']) if ($(id)) $(id).hidden = true;
+    s = d.s; if (s.fire.charge == null) s.fire.charge = Infinity; s.ev = [];
+    if (s.inf && s.inf.hold) { s.inf.hold = false; s.inf.done5 = s.inf.wave - 1; }   // se era sulla scelta del potere, la riproponiamo
+    tut = null; abCnt = {}; battleCharged = !!d.charged; resize(); buildButtons(); handShown = '';
+    const cp = opt.cap != null ? DW.CAPRICCI[opt.cap] : null;
+    $('lvlName').textContent = cp ? cp.name : s.lv.name; $('lvlSub').textContent = opt.inf ? `Ondate senza fine · record ${(save.inf && save.inf.best) || 0}` : cp ? 'Capriccio del Drago' : `${opt.hard ? 'Eroica · ' : ''}${DW.WORLDS[d.world].name} · ${d.level + 1}/${DW.WORLDS[d.world].n}`;
+    particles = []; nums = []; bubbles = []; hooks = []; seenId = s.id; endT = 0; ended = false; dragon.fireT = 0; dragon.phase = 'idle';
+    running = true; countT = 0; viaT = 0; lightP = 0; pause(); setTimeout(musicUpdate, 0);
+    return true;
+  } catch (e) { battleUnstash(); return false; }
+}
+function abandonBattle() { battleUnstash(); if (!BETA && !NET.g && running && !ended && !battleCharged) { battleCharged = true; livesUse(); toast('Partita lasciata: -1 vita'); } }   // uscire a metà conta come perdere
 function showNoLives() {
   $('livesH').textContent = save.lives.n > 0 ? 'Le tue vite' : 'Niente vite!'; $('ovLives').hidden = false; paintLives();
   $('livesRu').textContent = `Ricarica tutte · ${LIFE_RU}`; $('livesRu').disabled = save.ru < LIFE_RU;
@@ -6726,7 +6772,7 @@ function infPickShow(e) {                                                   // p
     b.onclick = () => { if (!DW.infChoose(s, id)) return; infWorldGo(s.inf.w); $('ovInf').hidden = true; paused = false; countT = 2; UIS.card(); }; box.appendChild(b); }
   $('ovInf').hidden = false; vibrate(40);
 }
-function finishInf() {                                                      // Modalità Infinita: record, punti del Pass
+function finishInf() { battleUnstash();                                                      // Modalità Infinita: record, punti del Pass
   const n = s.inf.wave, done = Math.max(0, n - 1), I = save.inf = save.inf || {best:0, bestT:0}, rec = n > I.best || (n === I.best && s.t > I.bestT);
   if (rec) { I.best = n; I.bestT = s.t; }
   const pts = 10 * Math.floor(done / 5); if (pts) passXp(pts);
@@ -6742,7 +6788,7 @@ function finishInf() {                                                      // M
   $('endMenuBtn').textContent = 'Mondi'; $('againBtn').textContent = 'Riprova';
   $('ovEnd').hidden = false;
 }
-function finish() {
+function finish() { battleUnstash();
   if (NET.g) return mpFinish();
   if (curOpt.inf) { ended = true; $('againBtn').disabled = false; return finishInf(); }
   ended = true; $('againBtn').disabled = false;
@@ -6963,7 +7009,8 @@ $('worldsBack').onclick = showMenu; $('mapBack').onclick = showWorlds; $('sqBack
 $('sqGo').onclick = () => { if (!sqSel.length) return; if (sqMax === DW.DECK) { save.squad = sqSel.slice(); save.decks[save.deckI] = save.squad; persist(); } newBattle(sqWorld, sqLevel, sqOpt); };
 $('resumeBtn').onclick = resume; $('pauseBtn').onclick = () => paused ? resume() : pause();
 document.querySelectorAll('[data-soon]').forEach(b => b.addEventListener('click', () => toast(`${b.dataset.soon}: arriva presto!`)));
-document.addEventListener('visibilitychange', () => { if (document.hidden && !NET.g) pause(); });
+document.addEventListener('visibilitychange', () => { if (document.hidden && !NET.g) { pause(); battleStash(); } });
+addEventListener('pagehide', battleStash); setInterval(() => { if (running && !paused) battleStash(); }, 5000);   // la partita resta salvata anche se il telefono chiude il gioco
 $('storyBtn').onclick = () => startStory();
 if (BETA) {
   $('tutAgainBtn').onclick = () => { save.tutorialDone = false; persist(); newBattle(0, 0); };
@@ -8520,7 +8567,7 @@ function clanEditor(edit) {                                                    /
 
 /* ================= laboratorio personaggi ================= */
 const GSETS = {mondi1:['pupazzo', 'zucca', 'gothel', 'marzapane', 'alberich'], mondi2:['sirena', 'bandersnatch', 'ladroni', 'gigantegh', 'trollspecchio'], pass:['dragonero', 'diavolo', 'krampus'], mostri1:['krampus', 'jabberwocky', 'kraken', 'idra', 'scheletri'], mostri2:['mordred', 'lupomannaro', 'frankenstein', 'hyde', 'trollponte'], spiriti:['spiritista', 'cacciatore', 'fantasma'], nuovi:['musicanti', 'carrozza', 'nani', 'pifferaio'], nuovi2:['hanselgretel', 'raperonzolo', 'ranocchio', 'pollicino'], cattivi:['goblin', 'fionda', 'orco', 'strega', 'lupo', 'topi', 'gattovolpe'], cattivi2:['gnomo', 'fantasma', 'uncino', 'coccodrillo', 'barbablu', 'spaventapasseri', 'mangiafuoco', 'gigante', 'tremotino'], rari:['matrigna', 'retopi', 'omino', 'babajaga', 'stregamare', 'reginacattiva', 'reginanevi'], leggende:['pandizenzero', 'mummia', 'morgana', 'grifone', 'spirito', 'bestia'], leggende2:['ciclope', 'senzatesta', 'dracula', 'medusa', 'basilisco', 'cavaliereverde', 'peterpan'], buoni:['soldatino', 'arciere', 'principe', 'cacciatore', 'porcellino', 'fata', 're'], nuovi4:['reginacuori', 'stregone', 'pescecane', 'diavolo'], buoni4:['cappuccetto', 'robinhood', 'gattostivali', 'biancaneve', 'pinocchio', 'merlino', 'alice'], buoni5:['bimbi', 'wendy', 'giglio', 'cappellaio', 'brucaliffo', 'lepre', 'alibaba', 'sinbad'], buoni6:['guardie', 'renna', 'fiammiferaia', 'soldatineve', 'cavcristallo', 'gemelli', 'pisello'], boss5:['tappeto', 'aladino', 'kai', 'gerda']};
-GSETS.segreti3 = ['minotauro', 'fenice', 'dracula']; GSETS.nuovi7a = ['fuocofatuo', 'diavoletto', 'rospo', 'cornacchia']; GSETS.nuovi7b = ['lumacone', 'ecate', 'circe'];
+GSETS.segreti3 = ['minotauro', 'fenice', 'dracula']; GSETS.aspetti = ['goblin', 'goblin', 'orco', 'orco', 'goblin', 'goblin', 'goblin', 'goblin']; const GLOOKS = {aspetti:[null, 'pirata', null, 'vichingo', 'ghiaccio', 'inferno', 'spettro', 'oro']}; GSETS.nuovi7a = ['fuocofatuo', 'diavoletto', 'rospo', 'cornacchia']; GSETS.nuovi7b = ['lumacone', 'ecate', 'circe'];
 GSETS.nuovi5 = ['sciame', 'ragno', 'zombie', 'lupetti', 'scimmie', 'gargoyle']; GSETS.rari2 = ['stregatto', 'stregaovest', 'sherekhan'];
 const VILLAINS = new Set(['pupazzo', 'zucca', 'gothel', 'marzapane', 'alberich', 'sirena', 'bandersnatch', 'ladroni', 'ladrone', 'capoladroni', 'gigantegh', 'trollspecchio', 'dragonero', 'krampus', 'jabberwocky', 'kraken', 'idra', 'mordred', 'lupomannaro', 'frankenstein', 'hyde', 'trollponte', 'scheletri', 'scheletro', 'goblin', 'fionda', 'orco', 'strega', 'lupo', 'troll', 'topi', 'topo', 'gattovolpe', 'gnomo', 'fantasma', 'uncino', 'coccodrillo', 'barbablu', 'spaventapasseri', 'mangiafuoco', 'gigante', 'burattino', 'corvo', 'tremotino', 'matrigna', 'matrigna_m', 'sorella', 'retopi', 'omino', 'babajaga', 'stregamare', 'reginacattiva', 'reginanevi', 'morgana', 'miraggio', 'basilisco', 'grifone', 'cavaliereverde', 'spirito', 'bestia', 'pandizenzero', 'ciclope', 'senzatesta', 'dracula', 'pipistrello', 'mummia', 'medusa', 'reginacuori', 'reginacuori_q', 'carta', 'stregone', 'pescecane', 'diavolo']);
 VILLAINS.add('minotauro'); VILLAINS.add('fenice'); for (const k of ['fuocofatuo', 'diavoletto', 'rospo', 'cornacchia', 'lumacone', 'ecate', 'circe']) VILLAINS.add(k);
@@ -8533,7 +8580,7 @@ const gal = {set:'nuovi', light:0, atk:true};
 function galBuild() {
   const list = GSETS[gal.set], n = list.length, side = gal.set === 'buoni' ? 1 : 0;
   let id = 2000;
-  s.units = list.map((kk, i) => ({id:++id, k:kk, side:VILLAINS.has(kk) ? 0 : 1, x:230 + (n > 1 ? i * 580 / (n - 1) : 290), y:.5, hp:1, max:1, st:gal.atk ? 'atk' : 'idle', atkT:UD(kk).rate * ((.3 + i * .37) % 1), swing:0, kb:0, flash:0}));
+  s.units = list.map((kk, i) => ({id:++id, k:kk, side:VILLAINS.has(kk) ? 0 : 1, x:230 + (n > 1 ? i * 580 / (n - 1) : 290), y:.5, hp:1, max:1, st:gal.atk ? 'atk' : 'idle', atkT:UD(kk).rate * ((.3 + i * .37) % 1), swing:0, kb:0, flash:0, look:(GLOOKS[gal.set] || [])[i] ?? null}));
 }
 function startGallery() {
   inMenu = true; inStory = false; running = false; $('menu').hidden = true; $('gallery').hidden = false; document.body.classList.add('inMenu');
@@ -8559,7 +8606,7 @@ function galLabels() {
 }
 
 new ResizeObserver(resize).observe($('stage'));
-resize(); if (GALLERY) startGallery(); else if (save.seenStory) showMenu(); else startStory();
+resize(); if (GALLERY) startGallery(); else if (save.seenStory) { showMenu(); battleResume(); } else startStory();
 if (!GALLERY) netInit();
 requestAnimationFrame(frame);
 })();

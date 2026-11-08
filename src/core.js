@@ -793,6 +793,6 @@ const DW = (() => {
     {name:'Parata dei boss',       txt:'Tre semiboss in fila. Nessuno li ha invitati.',             w:9, c:0, rule:{extra:[['generale', 30], ['capo_nani', 80], ['carrozza_oro', 130]]}, prize:'gigante'}
   ];
   CAPRICCI.forEach((c, i) => { c.fr = 10; c.gold = 300 + 100 * i; });
-  return {INF_WAVE, INF_POWERS, infChoose, costIn, walletCap, nightP, BCOST, COOP, coopLevel, costOf, LEG, DECK, HAND, HARD, CAPRICCI, EK, U, ELITE, ROSTER, START, LEVELS, WORLDS, TOTAL, levelOf, firstIdx, FIRE, WALLET_MAX_LV, walletMax, walletRate, walletCost, create, spawn, canSpawn, upgradeWallet, fire, step, stars, reward};
+  return {PARENT, INF_WAVE, INF_POWERS, infChoose, costIn, walletCap, nightP, BCOST, COOP, coopLevel, costOf, LEG, DECK, HAND, HARD, CAPRICCI, EK, U, ELITE, ROSTER, START, LEVELS, WORLDS, TOTAL, levelOf, firstIdx, FIRE, WALLET_MAX_LV, walletMax, walletRate, walletCost, create, spawn, canSpawn, upgradeWallet, fire, step, stars, reward};
 })();
 if (typeof module !== 'undefined') module.exports = DW;
