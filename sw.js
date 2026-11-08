@@ -1,7 +1,7 @@
 // Dragon War: tiene il gioco nel telefono per giocare anche senza internet.
 // Con internet scarica sempre l'ultima versione del gioco; senza, usa quella salvata.
 // Musica, effetti e versi invece si scaricano una volta sola e poi partono subito dal telefono.
-const CACHE = 'dragon-war-v19';
+const CACHE = 'dragon-war-v20';
 const AUDIO = 'dragon-war-audio-v1';                 // cambia nome solo se cambiano i file audio
 const FILES = ['./', './index.html', './manifest.webmanifest', './icon-192.png', './icon-512.png'];
 const FIRST = ['audio/mus_menu.mp3', 'audio/mus_story.mp3', 'audio/mus_w1.mp3'];   // la prima musica è pronta già all'installazione
