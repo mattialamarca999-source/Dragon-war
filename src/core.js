@@ -38,7 +38,7 @@ const DW = (() => {
     cavaliereverde:{side:0, cost:350, cd:12, hp:850, dmg:40, rate:1.5, range:32, spd:32, splash:45, revive:.8},
     spirito:    {side:0, cost:240, cd:10, hp:300, dmg:20, rate:1.2, range:26, spd:40, grow:{every:12, t:4}},
     bestia:     {side:0, cost:140, cd:9,  hp:245, dmg:15, rate:.8, range:22, spd:90, beast:1, fear:{every:9, r:120, t:1.2}},
-    pandizenzero:{side:0, cost:50, cd:5, hp:50,  dmg:7, rate:.7, range:18, spd:120, dodge:.3},
+    pandizenzero:{side:0, cost:30, cd:5, hp:50,  dmg:7, rate:.7, range:18, spd:120, dodge:.3},
     ciclope:    {side:0, cost:280, cd:11, hp:500, dmg:30, rate:2.2, range:150, spd:26, ranged:1, splash:55},
     senzatesta: {side:0, cost:150, cd:10, hp:171, dmg:10, rate:1.6, range:110, spd:60, ranged:1, splash:20, fear:{every:12, r:110, t:1}},
     dracula:    {side:0, cost:300, cd:10, hp:420, dmg:28, rate:1, range:24, spd:46, drain:.7, splash:30, summon:{k:'pipistrello', every:6, max:5}},   // il secondo segreto: fortissimo
@@ -306,7 +306,7 @@ const DW = (() => {
       rateMul:1 + .05 * (ut.rate || 0), fireMul:1 + .08 * (ud.dmg || 0), fireWall:FIRE.wall + FIRE.wallUp * (ud.wall || 0), uLv:up.units || {},
       cds:{}, timers:lv.waves.map(w => w[1]), eMul:(lv.eMul || 1) * (o.hard === true ? HARD : o.hard || 1), hard:!!o.hard,
       rule:o.rule || {}, boss:(o.rule && o.rule.boss) || lv.boss, bossAt:(o.rule && o.rule.bossAt) || lv.bossAt, extra:((o.rule && o.rule.extra) || []).map(e => e.slice()),
-      units:[], shots:[], ev:[], inf:o.inf ? {wave:0, next:2, q:[], qt:0} : null,
+      units:[], shots:[], ev:[], inf:o.inf ? {wave:0, next:2, q:[], qt:0, w:0, B:{dmg:1, hp:1, spd:1, low:1, leg:1, cost:1, loot:1}, picks:[], hold:false, done5:0, special:null, lastSp:0, gold:0, chests:[]} : null, rar:o.rar || {},
       stats:{kills:0, lost:0, spent:0, stolen:0, spawns:0, fires:0, kidnaps:0, beaten:{}}
     };
     for (const k of squad) s.cds[k] = 0;
@@ -339,6 +339,10 @@ const DW = (() => {
     const m = (d.side === 0 ? 1 + UP_K * ((lvMap[PARENT[k] || k] || 1) - 1) : s.eMul) * (d.side === 0 && LEG.has(k) ? LEG_MUL : 1);   // +5,6% per livello ai cattivi; i buoni crescono coi castelli
     const u = {id:++s.id, k, side, x:x ?? (side ? s.castle.x - 30 : s.base.x + 30), y:y ?? Math.random(), dm:m,
       hp:Math.round(d.hp * m * (side === 1 && d.side === 1 ? (s.lv.hpMul || 1) * (s.mp || (s.lv.world || 0) < NIGHT.from ? 1 : 1 + NIGHT.hp * nightP(s.t)) : 1)), max:Math.round(d.hp * m * (side === 1 && d.side === 1 ? (s.lv.hpMul || 1) * (s.mp || (s.lv.world || 0) < NIGHT.from ? 1 : 1 + NIGHT.hp * nightP(s.t)) : 1)), disg:d.disguise ? 1 : 0, atkT:.2, kb:0, st:'walk', swing:0, born:s.t, abT:ab ? d[ab].every * .5 : 0, fear:0, stun:0, spdMul:1, charged:false};
+    if (s.inf && side === 0 && d.side === 0) {                        // Infinita: i poteri scelti valgono per tutti i cattivi della partita
+      const B = s.inf.B, r = s.rar[PARENT[k] || k] || 0, dm = B.dmg * (r <= 1 ? B.low : 1) * (r >= 3 ? B.leg : 1);
+      u.dm *= dm; u.hp = Math.round(u.hp * B.hp); u.max = Math.round(u.max * B.hp); u.spdMul *= B.spd;
+    }
     s.units.push(u);
     return u;
   }
@@ -353,13 +357,15 @@ const DW = (() => {
 
   const plr = (s, pi) => pi ? s.p2 : s;                          // giocatore 0 (chi ospita) o 1 (l'amico)
   const costOf = k => U[k].cost ?? BCOST[k] ?? 100;
+  const costIn = (s, k, pi = 0) => !pi && s && s.inf ? Math.round(costOf(k) * s.inf.B.cost) : costOf(k);   // nell'Infinita c'è lo «Sconto del drago»
+  const walletCap = (s, pi = 0) => { const pl = plr(s, pi); return walletMax(pl.wallet.lv) + (!pi && s.inf ? s.inf.wPlus || 0 : 0); };
   function canSpawn(s, k, pi = 0) {
     const pl = plr(s, pi);
-    return !s.over && !!pl && pl.hand.includes(k) && pl.wallet.cur >= costOf(k);
+    return !s.over && !!pl && pl.hand.includes(k) && pl.wallet.cur >= costIn(s, k, pi);
   }
   function spawn(s, k, pi = 0) {
     if (!canSpawn(s, k, pi)) return false;
-    const pl = plr(s, pi), c = costOf(k), side = pi ? s.p2.side : 0;
+    const pl = plr(s, pi), c = costIn(s, k, pi), side = pi ? s.p2.side : 0;
     pl.wallet.cur -= c; pl.stats.spawns++; if (!pi) s.stats.spent += c;
     if (pl.queue.length) { const i = pl.hand.indexOf(k); pl.queue.push(k); pl.hand[i] = pl.queue.shift(); }   // la carta giocata va in fondo, entra la prossima
     const got = addGroup(s, k, undefined, {side, uLv:pl.uLv}); s.ev.push({type:'spawn', k, pi});
@@ -413,6 +419,7 @@ const DW = (() => {
     if (u.hp <= 0) {
       u.dead = true;
       s.ev.push({type:'die', k:u.k, x:u.x, y:u.y, side:u.side});
+      if (s.inf && s.inf.special === 'gold' && u.side === 1) { const g = Math.round(6 * (d.boss ? 5 : 1) * s.inf.B.loot); s.inf.gold += g; s.ev.push({type:'coin', x:u.x, y:u.y, n:g}); }   // ondata d'oro: ogni buono lascia monete
       if (s.mp) { const r = d.bounty || Math.round((d.cost || 20) * .3); if (s.mp === 'coop') { if (u.side === 1) { gain(s, r * .6); gain(s, r * .6, 1); } } else gain(s, r, u.side === 1 ? 0 : 1); }   // in due: chi abbatte guadagna
       if (d.split && !u.splitDone) { const c = addUnit(s, u.k, u.x + 6, (u.y + .4) % 1); c.side = u.side; c.splitDone = 1; c.hp = c.max = Math.round(u.max * d.split); s.ev.push({type:'mirror', x:c.x, y:c.y}); }   // i Gemelli dello Specchio
       if (u.side === 1) { s.stats.kills++; if (!s.mp) gain(s, d.bounty || 0); const bk = d.sub ? 'nani' : u.k; s.stats.beaten[bk] = (s.stats.beaten[bk] || 0) + 1; }
@@ -457,17 +464,51 @@ const DW = (() => {
   const infBosses = () => Object.keys(ELITE).filter(k => U[k] && !/dracula/.test(k)).sort((a, b) => ELITE[a].hp - ELITE[b].hp);
   const infLevel = () => ({world:5, castle:0, g:40, name:'Modalità Infinita', hp:1e9, gold:0, eMul:1, waves:[], rush:[], shard:null, shardN:0, boss:null, bossAt:1e9, semi:false, inf:true});
   const infMul = n => 1.15 * (.85 + .07 * (n - 1) + .0025 * (n - 1) * (n - 1));
+  // Infinita: ogni 5 ondate si sceglie un potere, il campo si svuota e si passa al mondo dopo; ondate speciali; forzieri ogni 10
+  const INF_POWERS = {
+    artigli:{f:B => { B.dmg *= 1.15; }}, pelle:{f:B => { B.hp *= 1.15; }}, passo:{f:B => { B.spd *= 1.2; }},
+    rapida:{f:(B, s) => { s.rateMul *= 1.2; }}, borsa:{f:(B, s) => { s.inf.wPlus = (s.inf.wPlus || 0) + 100; }}, sconto:{f:B => { B.cost *= .9; }},
+    rovente:{f:(B, s) => { s.fireMul *= 1.3; }}, fiato:{f:(B, s) => { s.fire.charge *= .75; }},
+    tana:{f:(B, s) => { const m = Math.round(s.base.max * 1.25); s.base.hp = Math.min(m, s.base.hp + Math.round(m / 3) + (m - s.base.max)); s.base.max = m; }},
+    piccoli:{f:B => { B.low *= 1.25; }}, leggende:{f:B => { B.leg *= 1.2; }}, bottino:{f:B => { B.loot *= 1.5; }}
+  };
+  const INF_SPECIAL = ['boss2', 'gold', 'flash', 'night'];
+  const infWorld = n => Math.floor((n - 1) / 5) % WORLDS.length;
+  function infPool(w) { return w === 0 || !WORLDS[w].pool ? INF_POOL[0][1] : WORLDS[w].pool; }
+  function infChoose(s, id) {                                    // il giocatore ha scelto: potere, campo pulito, mondo nuovo
+    const I = s.inf; if (!I || !I.hold) return false;
+    if (INF_POWERS[id]) { INF_POWERS[id].f(I.B, s); I.picks.push(id); }
+    for (const u of s.units) u.dead = true; s.units = []; s.shots = [];      // il drago richiama tutti: campo vuoto
+    s.wallet.cur = walletCap(s);                                           // e la Cattiveria torna piena
+    I.hold = false; I.next = 3; I.w = infWorld(I.wave + 1);
+    s.ev.push({type:'infReset', w:I.w});
+    return true;
+  }
   function infAI(s, dt) {
-    const I = s.inf;
+    const I = s.inf; if (I.hold) return;
     if ((I.next -= dt) <= 0) {
+      if (I.wave > 0 && I.wave % 5 === 0 && I.done5 < I.wave) {          // fine di 5 ondate: pausa per scegliere il potere (e il forziere ogni 10)
+        I.done5 = I.wave; I.hold = true;
+        const ids = Object.keys(INF_POWERS), opts = []; while (opts.length < 3) { const k = ids[Math.floor(Math.random() * ids.length)]; if (!opts.includes(k)) opts.push(k); }
+        if (I.wave % 10 === 0) { I.chests.push(I.wave); s.ev.push({type:'infChest', n:I.wave}); }
+        s.ev.push({type:'infPick', opts, n:I.wave}); return;
+      }
       const n = ++I.wave; I.next = INF_WAVE; I.qt = 0; s.eMul = infMul(n);
-      const pool = INF_POOL.filter(p => n >= p[0]).flatMap(p => p[1]), cnt = Math.min(16, 3 + Math.floor(n * 1.1));
-      for (let i = 0; i < cnt; i++) I.q.push([i * 16 / cnt, pool[Math.floor(Math.random() * pool.length)]]);
-      s.ev.push({type:'wave', n});
-      if (n % 3 === 0) { const B = infBosses(), b = B[(n / 3 - 1) % B.length]; addUnit(s, b); s.ev.push({type:'boss', k:b}); }
+      I.special = null;
+      if (n >= 4 && n % 3 !== 0 && n % 5 !== 1 && n - I.lastSp >= 3 && Math.random() < .3) { I.special = INF_SPECIAL[Math.floor(Math.random() * INF_SPECIAL.length)]; I.lastSp = n; }
+      const pool = infPool(I.w), cnt = Math.min(14, 3 + Math.floor(n * 1.1));
+      if (I.special === 'flash') for (let i = 0; i < Math.round(cnt * 1.6); i++) I.q.push([i * 10 / cnt, 'soldatino', 'flash']);
+      else for (let i = 0; i < cnt; i++) I.q.push([i * 16 / cnt, pool[Math.floor(Math.random() * pool.length)], I.special === 'night' ? 'night' : '']);
+      s.ev.push({type:'wave', n, special:I.special, w:I.w});
+      const B = infBosses(), bi = Math.floor(n / 3) - 1;
+      if (n % 3 === 0) { const b = B[bi % B.length]; addUnit(s, b); s.ev.push({type:'boss', k:b}); }
+      if (I.special === 'boss2') for (const b of [B[Math.max(0, bi) % B.length], B[(Math.max(0, bi) + 1) % B.length]]) { addUnit(s, b); s.ev.push({type:'boss', k:b}); }
     }
     I.qt += dt;
-    while (I.q.length && I.q[0][0] <= I.qt && s.units.filter(u => u.side === 1 && !u.dead).length < 24) addGroup(s, I.q.shift()[1]);
+    while (I.q.length && I.q[0][0] <= I.qt && s.units.filter(u => u.side === 1 && !u.dead).length < 18) {   // al massimo 18 buoni in campo: si capisce cosa succede
+      const [, k, fl] = I.q.shift(), got = addGroup(s, k);
+      for (const u of got) { if (fl === 'flash') { u.spdMul *= 1.7; u.hp = u.max = Math.round(u.max * .6); } if (fl === 'night') { u.hp = u.max = Math.round(u.max * 1.2); } }
+    }
   }
   function castleAI(s, dt) {
     if (s.inf) infAI(s, dt);
@@ -607,7 +648,7 @@ const DW = (() => {
     s.t += dt; s._dtk = dt * 60;
     s.night = s.mp || (s.lv.world || 0) < NIGHT.from ? .25 : Math.max(.25, nightP(s.t));   // quanto è buio: il Lupo Mannaro ci vede bene
     const w = s.wallet;
-    w.cur = Math.min(walletMax(w.lv), w.cur + walletRate(w.lv) * s.rateMul * (s.beta ? 6 : 1) * dt);
+    w.cur = Math.min(walletCap(s), w.cur + walletRate(w.lv) * s.rateMul * (s.beta ? 6 : 1) * dt);
     s.fire.v = Math.min(1, s.fire.v + dt / s.fire.charge);
     if (s.p2) { const p = s.p2, w2 = p.wallet; w2.cur = Math.min(walletMax(w2.lv), w2.cur + walletRate(w2.lv) * p.rateMul * dt); p.fire.v = Math.min(1, p.fire.v + dt / p.fire.charge); }
     for (const k in s.cds) s.cds[k] = Math.max(0, s.cds[k] - dt);
@@ -739,6 +780,6 @@ const DW = (() => {
     {name:'Parata dei boss',       txt:'Tre semiboss in fila. Nessuno li ha invitati.',             w:9, c:0, rule:{extra:[['generale', 30], ['capo_nani', 80], ['carrozza_oro', 130]]}, prize:'gigante'}
   ];
   CAPRICCI.forEach((c, i) => { c.fr = 10; c.gold = 300 + 100 * i; });
-  return {INF_WAVE, nightP, BCOST, COOP, coopLevel, costOf, LEG, DECK, HAND, HARD, CAPRICCI, EK, U, ELITE, ROSTER, START, LEVELS, WORLDS, TOTAL, levelOf, firstIdx, FIRE, WALLET_MAX_LV, walletMax, walletRate, walletCost, create, spawn, canSpawn, upgradeWallet, fire, step, stars, reward};
+  return {INF_WAVE, INF_POWERS, infChoose, costIn, walletCap, nightP, BCOST, COOP, coopLevel, costOf, LEG, DECK, HAND, HARD, CAPRICCI, EK, U, ELITE, ROSTER, START, LEVELS, WORLDS, TOTAL, levelOf, firstIdx, FIRE, WALLET_MAX_LV, walletMax, walletRate, walletCost, create, spawn, canSpawn, upgradeWallet, fire, step, stars, reward};
 })();
 if (typeof module !== 'undefined') module.exports = DW;
