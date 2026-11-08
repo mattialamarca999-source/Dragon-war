@@ -3729,6 +3729,139 @@ function drawSkyScreen() {
   ctx.fillStyle = g; ctx.fillRect(0, 0, W, H);
   if (L.N > 0) for (const st of STARS) { const a = L.N * (.3 + .7 * Math.abs(Math.sin(time * 1.4 + st.p))); ctx.fillStyle = `rgba(255,250,230,${a})`; ctx.beginPath(); ctx.arc(st.x * W, st.y * hy * .8, st.r, 0, 7); ctx.fill(); }
 }
+/* ================= la strada a U e l'ostacolo in mezzo: i personaggi ci girano attorno ================= */
+const OBST = {                                                             // per ogni mondo 3 ostacoli che si alternano tra i castelli
+  bosco:['lago', 'rocce', 'funghi'], brema:['campo', 'stagno', 'fieno'], ghiaccio:['gelo', 'crepa', 'cristalli'],
+  miniera:['pozzo', 'rocce', 'fiume'], mare:['corallo', 'laguna', 'alghe'], balocchi:['cubi', 'lecca', 'limonata'],
+  ballo:['fontana', 'zucche', 'siepe'], torre:['rovi', 'orto', 'fossato'], marzapane:['caramello', 'dolci', 'torrone'],
+  lietofine:['fontanaoro', 'rose', 'statue'], isola:['laguna', 'rocce', 'falo'], meraviglie:['lacrime', 'fungo', 'te'],
+  deserto:['oasi', 'dune', 'rocce'], ghiaccioeterno:['gelo', 'cristalli', 'crepa'], specchi:['argento', 'cristalli', 'siepe']
+};
+const OBST_BY_NAME = [                                                     // se il nome del castello lo dice, l'ostacolo è quello
+  [/lago (gelato|ghiacciato)/i, 'gelo'], [/lago d.argento/i, 'argento'], [/laguna/i, 'laguna'], [/oasi/i, 'oasi'], [/dune/i, 'dune'], [/lacrime/i, 'lacrime'],
+  [/fungo/i, 'fungo'], [/tè del/i, 'te'], [/rose/i, 'rose'], [/zucche/i, 'zucche'], [/rovi/i, 'rovi'], [/orto/i, 'orto'], [/fiume/i, 'fiume'], [/pozzo/i, 'pozzo'],
+  [/corallo/i, 'corallo'], [/alghe/i, 'alghe'], [/caramello/i, 'caramello'], [/mulino|fattoria/i, 'campo'], [/stalla/i, 'fieno'], [/cristall|diamanti/i, 'cristalli'],
+  [/labirinto di vetro|labirinto di cristallo/i, 'cristalli'], [/ponte di neve|ponte di stalattiti/i, 'crepa'], [/ponte dei ladri/i, 'fiume'], [/lecca/i, 'lecca'],
+  [/torrone/i, 'torrone'], [/accampamento/i, 'falo'], [/tesoro|rimessa d.oro/i, 'fontanaoro'], [/giardino a mezzanotte/i, 'fontana']
+];
+const ROADC = {bosco:'#a07a50', brema:'#b08850', ghiaccio:'#f4f8ff', miniera:'#6a5e58', mare:'#e8d4a0', balocchi:'#f0b8d0', ballo:'#e8e2d8', torre:'#8a7258', marzapane:'#f2c8a0',
+  lietofine:'#d8c8a0', isola:'#e8d4a0', meraviglie:'#c8b4d8', deserto:'#e8c888', ghiaccioeterno:'#e8f4ff', specchi:'#d8dcec'};
+function obstKind() {
+  const lv = s && s.lv; if (!lv) return null;
+  const nm = lv.name || '', hit = OBST_BY_NAME.find(([re]) => re.test(nm)); if (hit) return hit[1];
+  const list = OBST[TH] || OBST.bosco; return list[((lv.castle || 0) + (lv.world || 0)) % list.length];
+}
+let OBC = null;                                                            // la forma dell'ostacolo, rifatta solo quando cambia il campo o il castello
+function obGeo() {
+  const kind = obstKind(), key = kind + '|' + Math.round(DY) + '|' + (s.base && s.base.x) + '|' + (s.castle && s.castle.x) + '|' + (s.lv && s.lv.name);
+  if (OBC && OBC.key === key) return OBC;
+  let q = 7; for (const ch of key) q = (q * 31 + ch.charCodeAt(0)) % 2147483647;
+  const R = () => (q = (q * 16807) % 2147483647) / 2147483647;
+  const yT = 14, bot = x => (.78 * PATH(x) - .075) * DY, xs = [];
+  for (let x = s.base.x + 40; x <= s.castle.x - 40; x += 12) if (bot(x) > yT + 26) xs.push(x);
+  const x0 = xs[0], x1 = xs[xs.length - 1], cx = (x0 + x1) / 2, cy = (yT + bot(cx)) / 2;
+  const wob = xs.map((_, i) => Math.sin(i * .9 + R() * 6) * 4 + Math.sin(i * .37) * 6);
+  const shape = (sh, jag = 1) => {                                        // il contorno, stretto verso il centro di «sh»
+    const p = new Path2D(), pt = (x, y) => [cx + (x - cx) * sh, cy + (y - cy) * sh];
+    xs.forEach((x, i) => { const [a, b] = pt(x, yT + wob[i] * .4 * jag); i ? p.lineTo(a, b) : p.moveTo(a, b); });
+    for (let i = xs.length - 1; i >= 0; i--) { const [a, b] = pt(xs[i], bot(xs[i]) + wob[i] * jag); p.lineTo(a, b); }
+    p.closePath(); return p;
+  };
+  const inside = (x, y, sh = 1) => { if (x < cx + (x0 - cx) * sh || x > cx + (x1 - cx) * sh) return false; const t = cy + (yT - cy) * sh, b = cy + (bot(x) - cy) * sh; return y > t && y < b; };
+  const pts = (n, sh = .85) => { const out = []; for (let t = 0; out.length < n && t < n * 40; t++) { const x = x0 + R() * (x1 - x0), y = yT + R() * (bot(cx) - yT); if (inside(x, y, sh)) out.push({x, y, r:R()}); } return out.sort((a, b) => a.y - b.y); };
+  OBC = {key, kind, x0, x1, cx, cy, yT, bot, shape, inside, R, sc:y => CS * (.8 + .9 * y / DY), many:pts(44, .9), few:pts(7, .65), rim:pts(22, .98)};
+  return OBC;
+}
+function drawRoad() {                                                      // la strada a U che fanno i cattivi e i buoni
+  const c = dayNight(ROADC[TH] || ROADC.bosco), b0 = s.base.x - 60, b1 = s.castle.x + 60, top = x => (.78 * PATH(x) - .01) * DY, low = x => (.78 * PATH(x) + .235) * DY;
+  const p = new Path2D(); p.moveTo(b0, top(b0)); for (let x = b0; x <= b1; x += 15) p.lineTo(x, top(x)); for (let x = b1; x >= b0; x -= 15) p.lineTo(x, low(x)); p.closePath();
+  ctx.save(); ctx.globalAlpha *= .42; D(p, c); ctx.restore();
+  ctx.save(); ctx.globalAlpha *= .3; ctx.strokeStyle = mix(c, '#2a1a10', .45); ctx.lineWidth = 6;
+  for (const f of [top, low]) { ctx.beginPath(); for (let x = b0; x <= b1; x += 15) ctx.lineTo(x, f(x)); ctx.stroke(); }
+  ctx.restore();
+}
+function drawObstacle() {
+  const g = obGeo(); if (!g.x0) return;
+  const t = time, k2 = g.kind, sc = g.sc;
+  const water = (shoreC, wC, opt = {}) => {                                 // laghi, lagune, caramello, specchi d'acqua
+    D(g.shape(1.02), dayNight(shoreC));
+    D(g.shape(.86, .8), dayNight(wC));
+    if (opt.ice) { ctx.save(); ctx.globalAlpha *= .5; for (const p of g.few) D(cap(p.x - 30 * sc(p.y), p.y, p.x + 26 * sc(p.y), p.y + 10 * (p.r - .5), 2.5), '#ffffff'); ctx.restore(); }
+    else { ctx.save(); ctx.globalAlpha *= .35; for (const [i, p] of g.few.entries()) { const w = (24 + p.r * 30) * sc(p.y), o = Math.sin(t * 1.2 + i) * 6; D(E(p.x + o, p.y, w, w * .16), opt.shine || '#ffffff'); } ctx.restore(); }
+    return g.rim.filter((_, i) => i % 2 === 0);
+  };
+  const scatter = (list, fn) => { for (const p of list) { const s2 = sc(p.y); ctx.save(); ctx.translate(p.x, p.y); ctx.scale(s2, s2); fn(p); ctx.restore(); } };
+  const reeds = col => scatter(g.rim.filter((_, i) => i % 3 === 0), p => { for (const a of [-.3, 0, .35]) P(cap(0, 0, a * 16 + Math.sin(t * 2 + p.x) * 2, -34 - p.r * 10, 3), dayNight(col), a * 8, -16, 4); D(E(4, -38, 3, 7), dayNight('#6a4a2a')); });
+  const lily = () => scatter(g.few.slice(0, 5), p => { D(E(0, 0, 16, 6), dayNight('#5a9a48')); if (p.r > .5) D(E(4, -2, 5, 3), dayNight('#ffd8e8')); });
+  const field = (soil, rows) => {                                           // campi, orti, aiuole
+    D(g.shape(1.02), dayNight(mix(soil, '#2a1a10', .25))); D(g.shape(.95), dayNight(soil));
+    ctx.save(); ctx.clip(g.shape(.95)); ctx.strokeStyle = dayNight(mix(soil, '#2a1a10', .35)); ctx.lineWidth = 5;
+    for (let r = 1; r <= rows; r++) { const f = r / (rows + 1); ctx.beginPath(); for (let x = g.x0; x <= g.x1; x += 12) ctx.lineTo(x, g.yT + (g.bot(x) - g.yT) * f); ctx.stroke(); }
+    ctx.restore();
+  };
+  const ground = (c1, c2) => { D(g.shape(1.02), dayNight(c2)); D(g.shape(.94), dayNight(c1)); };
+  const rocks = (c1, c2, n = 30) => scatter(g.many.slice(0, n), p => { const r = 18 + p.r * 22; P(E(0, -r * .55, r, r * .65), dayNight(p.r > .5 ? c1 : c2), 0, -r * .55, r); D(E(-r * .3, -r * .8, r * .3, r * .15), dayNight(mix(c1, '#ffffff', .3))); });
+  const crystals = (c1, c2) => scatter(g.many.slice(0, 26), p => { const h = 30 + p.r * 40, w = 9 + p.r * 7; for (const [dx, hh, a] of [[-w, h * .7, -.25], [0, h, 0], [w, h * .6, .3]]) { ctx.save(); ctx.translate(dx, 0); ctx.rotate(a); P(PL([-w * .5, 0, 0, -hh, w * .5, 0]), dayNight(p.r > .5 ? c1 : c2), 0, -hh / 2, w); D(PL([-w * .15, -2, 0, -hh * .9, w * .1, -2]), '#ffffff', {alpha:.5}); ctx.restore(); } });
+  const chasm = (edge, deep, plank) => {
+    D(g.shape(.98), dayNight(edge)); D(g.shape(.8, 2.4), dayNight(mix(deep, '#000000', .3))); D(g.shape(.62, 3), '#07050c');
+    if (plank) scatter(g.rim.filter((_, i) => i % 4 === 0), () => { P(RR(-18, -6, 36, 8, 2), dayNight(plank), 0, -2, 14); D(RR(-14, -5, 3, 6, 1), '#2a1a10'); D(RR(11, -5, 3, 6, 1), '#2a1a10'); });
+  };
+  const centre = fn => { const y = g.cy + (g.bot(g.cx) - g.cy) * .35, s2 = sc(y); ctx.save(); ctx.translate(g.cx, y); ctx.scale(s2 * 1.7, s2 * 1.7); fn(); ctx.restore(); };
+  FOG = 0;
+  switch (k2) {
+    case 'lago': water('#6a9a48', '#4a8ac8'); reeds('#5f9a48'); lily(); break;
+    case 'stagno': water('#8a7a48', '#5a7a5a'); reeds('#8aa848'); scatter(g.few.slice(0, 3), () => { P(E(0, -6, 12, 7), dayNight('#f4f4f0'), 0, -6, 10); P(E(10, -14, 5, 5), dayNight('#f4f4f0'), 10, -14, 5); D(PL([14, -14, 21, -12, 14, -11]), dayNight('#f0a020')); }); break;   // le oche
+    case 'gelo': water('#e8f0f8', '#b8dcf4', {ice:1}); scatter(g.rim.filter((_, i) => i % 4 === 0), p => P(E(0, -8, 16 + p.r * 10, 10), dayNight('#f4f8ff'), 0, -8, 14)); break;
+    case 'laguna': water('#e8d4a0', '#3ac0c8'); scatter(g.rim.filter((_, i) => i % 5 === 0), p => { D(E(0, -4, 7, 4), dayNight(p.r > .5 ? '#f8b8a8' : '#f4e8d0')); }); break;
+    case 'limonata': water('#f8c8e0', '#ffe070', {shine:'#fffbe0'}); scatter(g.rim.filter((_, i) => i % 3 === 0), p => { P(cap(0, 0, 0, -30, 4), dayNight('#f4f0e8'), 0, -15, 3); P(E(0, -36, 11, 11), dayNight(['#ff6a8a', '#6ac8ff', '#ffd040', '#8ae06a'][Math.floor(p.r * 4)]), 0, -36, 10); }); break;
+    case 'caramello': water('#f2c8a0', '#c8782a', {shine:'#ffe0a0'}); scatter(g.rim.filter((_, i) => i % 3 === 0), p => { P(RR(-10, -18, 20, 18, 5), dayNight(['#ff8ab0', '#ffffff', '#8ad8ff'][Math.floor(p.r * 3)]), 0, -9, 10); }); break;
+    case 'lacrime': water('#c8b4d8', '#5a9ad8'); scatter(g.few.slice(0, 2), () => { P(E(0, -4, 18, 5), dayNight('#3a2a40'), 0, -4, 14); P(RR(-10, -26, 20, 22, 3), dayNight('#3a2a40'), 0, -15, 12); D(RR(-10, -10, 20, 4, 1), dayNight('#c84a4a')); }); break;   // il cilindro del Cappellaio che galleggia
+    case 'oasi': ground('#e8c888', '#c8a060'); D(g.shape(.6, .7), dayNight('#3aa0c8')); scatter(g.rim.filter((_, i) => i % 4 === 0), p => { P(cap(0, 0, 6, -70, 7), dayNight('#8a6a3a'), 3, -35, 6); for (const a of [-2.6, -1.9, -1.2, -.5, .2]) { ctx.save(); ctx.translate(6, -70); ctx.rotate(a + Math.sin(t + p.x) * .05); P(E(18, 0, 20, 5), dayNight('#4a9a3a'), 18, 0, 10); ctx.restore(); } }); break;
+    case 'argento': water('#4a5088', '#b8c8f4', {shine:'#ffffff'}); ctx.save(); ctx.globalAlpha *= .55; ctx.clip(g.shape(.86, .8)); for (let i = 0; i < 4; i++) D(PL([g.x0 + i * 180 + (t * 20) % 180, g.yT, g.x0 + i * 180 + 60 + (t * 20) % 180, g.yT, g.x0 + i * 180 - 80 + (t * 20) % 180, g.bot(g.cx), g.x0 + i * 180 - 140 + (t * 20) % 180, g.bot(g.cx)]), '#ffffff'); ctx.restore(); break;
+    case 'fiume': water('#6a6a72', '#3a6a9a'); rocks('#8a8a96', '#6a6a76', 10); break;
+    case 'fossato': water('#7a7a72', '#3a5a3a'); reeds('#4a6a3a'); break;
+    case 'rocce': ground('#8a8a6a', '#6a6a52'); rocks('#9a96a6', '#7a7686'); break;
+    case 'cristalli': ground(TH === 'specchi' ? '#c8cce0' : '#d8e8f8', TH === 'specchi' ? '#a0a4c0' : '#a8c4e0'); crystals(TH === 'specchi' ? '#e8ecff' : '#9ae0ff', TH === 'miniera' ? '#c87aff' : '#c8f0ff'); break;
+    case 'crepa': chasm(TH === 'ghiaccio' || TH === 'ghiaccioeterno' ? '#e8f4ff' : '#8a7a6a', '#3a5a8a', TH === 'ghiaccio' ? '#8a6038' : null); break;
+    case 'pozzo': chasm('#6a5e58', '#2a2028', '#8a6038'); ctx.save(); ctx.strokeStyle = dayNight('#5a5a66'); ctx.lineWidth = 5; for (const f of [.97, 1.06]) { ctx.beginPath(); for (let x = g.x0; x <= g.x1; x += 12) ctx.lineTo(x, g.yT + (g.bot(x) - g.yT) * f); ctx.stroke(); } ctx.restore(); break;   // binari attorno alla voragine
+    case 'corallo': ground('#e8d4a0', '#c8b080'); scatter(g.many.slice(0, 22), p => { const c = ['#ff7a8a', '#ff9a4a', '#c86ae0', '#ffd04a'][Math.floor(p.r * 4)]; for (const [a, l] of [[-.5, 30], [0, 40], [.45, 26]]) P(cap(0, 0, Math.sin(a) * l, -Math.cos(a) * l, 7), dayNight(c), Math.sin(a) * l / 2, -l / 2, 6); }); break;
+    case 'alghe': ground('#e8d4a0', '#c8b080'); scatter(g.many.slice(0, 30), p => { for (let j = 0; j < 3; j++) { const h = 40 + p.r * 40, sw = Math.sin(t * 1.4 + p.x * .05 + j) * 8; P(cap(j * 8 - 8, 0, j * 8 - 8 + sw, -h, 6), dayNight(j % 2 ? '#3a8a4a' : '#5aaa5a'), j * 8 - 8 + sw / 2, -h / 2, 5); } }); break;
+    case 'campo': field('#8a6038', 6); scatter(g.many.slice(0, 40), p => { for (const a of [-.4, 0, .4]) P(cap(a * 10, 0, a * 14, -26 - p.r * 8, 3), dayNight('#e8c050'), a * 6, -13, 4); }); break;
+    case 'fieno': field('#a88a50', 4); scatter(g.few, p => { const r = 18 + p.r * 6; P(RR(-r, -r * 1.5, r * 2, r * 1.5, 6), dayNight('#e8c050'), 0, -r, r); D(E(r * .9, -r * .75, r * .3, r * .7), dayNight('#c8a030')); }); break;
+    case 'funghi': ground('#5f9a48', '#4a7a3a'); scatter(g.many.slice(0, 18), p => { const r = 14 + p.r * 14; P(RR(-r * .25, -r * 1.2, r * .5, r * 1.2, 3), dayNight('#f3ead6'), 0, -r * .6, r * .4); const c = new Path2D(); c.ellipse(0, -r * 1.2, r, r * .7, 0, Math.PI, 0); c.closePath(); P(c, dayNight('#d8382f'), 0, -r * 1.5, r); D(E(-r * .35, -r * 1.5, r * .16, r * .16), '#ffffff'); D(E(r * .3, -r * 1.35, r * .13, r * .13), '#ffffff'); }); break;
+    case 'zucche': field('#6a4a2a', 5); scatter(g.many.slice(0, 26), p => { const r = 12 + p.r * 10; P(E(0, -r * .7, r, r * .75), dayNight('#f08a2a'), 0, -r * .7, r); D(cap(0, -r * 1.4, 2, -r * 1.75, 4), dayNight('#4a7a3a')); }); break;
+    case 'orto': field('#5a3a22', 5); scatter(g.many.slice(0, 34), p => { const r = 10 + p.r * 6; P(E(0, -r * .6, r, r * .7), dayNight(p.r > .5 ? '#7ab848' : '#9a5ab8'), 0, -r * .6, r); D(E(0, -r * .6, r * .5, r * .4), dayNight('#c8e888')); }); break;
+    case 'rose': ground('#5f9a48', '#4a7a3a'); scatter(g.many.slice(0, 30), p => { P(E(0, -14, 18, 14), dayNight('#3a7a3a'), 0, -14, 16); for (const [a, b] of [[-7, -20], [6, -16], [0, -26]]) D(E(a, b, 4, 4), dayNight(TH === 'meraviglie' && p.r > .5 ? '#f4f4f0' : '#d8202a')); }); break;
+    case 'lecca': ground('#a8e0a0', '#78c070'); scatter(g.many.slice(0, 24), p => { P(cap(0, 0, 0, -40, 3.5), dayNight('#f4f0e8'), 0, -20, 3); P(E(0, -48, 14, 14), dayNight(['#ff6a8a', '#6ac8ff', '#ffd040', '#b07be0'][Math.floor(p.r * 4)]), 0, -48, 12); D(cap(-8, -48, 8, -48, 2.5), '#ffffff'); }); break;
+    case 'dolci': ground('#ffe0ec', '#f8b8d0'); scatter(g.many.slice(0, 30), p => { const c = ['#ff6a8a', '#6ac8ff', '#ffd040', '#8ae06a', '#ffffff'][Math.floor(p.r * 5)]; P(RR(-9, -14, 18, 14, 5), dayNight(c), 0, -7, 9); D(cap(-11, -7, -15, -10, 4), dayNight(c)); D(cap(11, -7, 15, -10, 4), dayNight(c)); }); break;
+    case 'torrone': ground('#f2c8a0', '#d8a070'); scatter(g.many.slice(0, 20), p => { const w = 22 + p.r * 14; P(RR(-w / 2, -w * .8, w, w * .8, 4), dayNight('#f4e8d0'), 0, -w * .4, w / 2); for (const [a, b] of [[-5, -10], [4, -16], [7, -6]]) D(E(a, b, 2.5, 2), dayNight('#a86a3a')); }); break;
+    case 'cubi': ground('#a8e0a0', '#78c070'); scatter(g.many.slice(0, 22), p => { const w = 22 + p.r * 10, c = ['#ff6a5a', '#4aa8ff', '#ffd040', '#5ac86a'][Math.floor(p.r * 4)]; P(RR(-w / 2, -w, w, w, 4), dayNight(c), 0, -w / 2, w / 2); D(RR(-w / 2 + 4, -w + 4, w - 8, w - 8, 3), dayNight(mix(c, '#ffffff', .35))); }); break;
+    case 'siepe': ground(TH === 'specchi' ? '#c8cce0' : '#d8d0c0', '#a8a090'); ctx.save(); ctx.clip(g.shape(.92)); for (let r = 1; r <= 4; r++) { const f = r / 5; ctx.strokeStyle = dayNight(TH === 'specchi' ? '#b8c0e8' : '#3a7a3a'); ctx.lineWidth = 22; ctx.beginPath(); for (let x = g.x0; x <= g.x1; x += 12) { if ((Math.floor(x / 90) + r) % 4 === 0) { ctx.stroke(); ctx.beginPath(); continue; } ctx.lineTo(x, g.yT + (g.bot(x) - g.yT) * f); } ctx.stroke(); } ctx.restore(); break;   // il labirinto di siepi
+    case 'rovi': ground('#4a5a38', '#3a4a2a'); scatter(g.many.slice(0, 40), p => { for (let j = 0; j < 3; j++) { ctx.save(); ctx.rotate(-.6 + j * .6); P(cap(0, 0, 0, -30 - p.r * 14, 5), dayNight('#3a2a30'), 0, -18, 5); for (let s3 = 8; s3 < 30; s3 += 9) D(PL([-2, -s3, -8, -s3 - 3, -2, -s3 - 4]), dayNight('#5a3a40')); ctx.restore(); } if (p.r > .6) D(E(4, -16, 4, 4), dayNight('#7a2a8a')); }); break;
+    case 'dune': ground('#e8c888', '#c8a060'); scatter(g.few, p => { const w = 70 + p.r * 40; const d = new Path2D(); d.moveTo(-w, 0); d.quadraticCurveTo(-w * .2, -w * .55, w * .2, -w * .45); d.quadraticCurveTo(w * .6, -w * .3, w, 0); d.closePath(); P(d, dayNight('#f0d090'), 0, -w * .2, w); D(PL([w * .2, -w * .45, w * .6, -w * .3, w, 0, w * .4, 0]), dayNight('#d8b070')); }); break;
+    case 'statue': ground('#d8c8a0', '#b8a880'); scatter(g.few, p => { P(RR(-12, -18, 24, 18, 2), dayNight('#c8c4b8'), 0, -9, 12); P(RR(-7, -50, 14, 32, 6), dayNight(p.r > .5 ? '#ffd040' : '#d8d4c8'), 0, -34, 8); P(E(0, -56, 7, 7), dayNight(p.r > .5 ? '#ffd040' : '#d8d4c8'), 0, -56, 7); }); rocks('#6a9a48', '#5a8a3a', 14); break;   // statue (qualcuna d'oro: Re Mida è passato)
+    case 'fontana': case 'fontanaoro': {
+      const gold = k2 === 'fontanaoro'; ground(gold ? '#e8d8a8' : '#e8e2d8', gold ? '#c8b080' : '#c8c0b4');
+      rocks(gold ? '#ffd040' : '#5f9a48', gold ? '#e8b030' : '#4a7a3a', 16);
+      centre(() => { P(E(0, 0, 60, 18), dayNight(gold ? '#e8b830' : '#d8d4cc'), 0, 0, 50); D(E(0, -2, 52, 14), dayNight('#5aa8e0')); P(RR(-8, -50, 16, 50, 4), dayNight(gold ? '#ffd040' : '#e8e4dc'), 0, -25, 8); P(E(0, -50, 22, 7), dayNight(gold ? '#e8b830' : '#d8d4cc'), 0, -50, 18);
+        ctx.save(); ctx.globalAlpha *= .75; ctx.strokeStyle = '#dff2ff'; ctx.lineWidth = 3.5; ctx.lineCap = 'round'; for (const a of [-1, -.5, .5, 1]) { const w = (30 + Math.sin(t * 6 + a) * 3) * a; ctx.beginPath(); ctx.moveTo(0, -54); ctx.quadraticCurveTo(w * .5, -74, w, -6); ctx.stroke(); } ctx.restore(); });
+      break;
+    }
+    case 'falo': ground('#e8d4a0', '#c8b080'); rocks('#8a8a96', '#6a6a76', 12);
+      centre(() => { for (const a of [-.6, 0, .6]) { ctx.save(); ctx.rotate(a); P(RR(-3, -26, 6, 30, 2), dayNight('#6a4a2a'), 0, -10, 6); ctx.restore(); }
+        const f = 1 + Math.sin(t * 9) * .08; D(PL([-14 * f, 0, 0, -44 * f, 14 * f, 0]), '#ff8a2a', {glow:'#ffa040'}); D(PL([-7, 0, 0, -28 * f, 7, 0]), '#ffe070', {glow:'#fff0a0'});
+        if (MODE === 'normal') { ctx.globalCompositeOperation = 'lighter'; glow(ctx, 0, -20, 90, '255,150,60', .35); ctx.globalCompositeOperation = 'source-over'; } });
+      break;
+    case 'fungo': ground('#9ad08a', '#78b068'); scatter(g.many.slice(0, 12), p => { const r = 10 + p.r * 8; P(RR(-r * .25, -r * 1.2, r * .5, r * 1.2, 3), dayNight('#f3ead6'), 0, -r * .6, r * .4); const c = new Path2D(); c.ellipse(0, -r * 1.2, r, r * .7, 0, Math.PI, 0); c.closePath(); P(c, dayNight('#8a5ad8'), 0, -r * 1.5, r); });
+      centre(() => { P(RR(-12, -70, 24, 70, 8), dayNight('#f3ead6'), 0, -35, 12); const c = new Path2D(); c.ellipse(0, -70, 70, 34, 0, Math.PI, 0); c.closePath(); P(c, dayNight('#5a8ae0'), 0, -86, 60); for (const [a, b] of [[-36, -82], [10, -92], [40, -78]]) D(E(a, b, 7, 5), '#ffffff'); }); break;   // il fungo del Brucaliffo
+    case 'te': ground('#9ad08a', '#78b068'); rocks('#e8e0f0', '#c8b8e0', 10);
+      centre(() => { P(RR(-80, -30, 160, 10, 3), dayNight('#f4f0e8'), 0, -25, 70); for (const x of [-70, 70]) P(RR(x - 3, -22, 6, 22, 2), dayNight('#8a6038'), x, -11, 4);
+        for (const [x, c] of [[-50, '#ff6a8a'], [-20, '#6ac8ff'], [12, '#ffd040'], [44, '#8ae06a']]) { P(RR(x - 7, -42, 14, 12, 3), dayNight(c), x, -36, 7); D(cap(x + 7, -38, x + 11, -36, 2), dayNight(c)); }
+        P(E(-2, -50, 12, 10), dayNight('#f4f4f0'), -2, -50, 10); D(cap(10, -52, 20, -58, 3), dayNight('#f4f4f0')); }); break;   // la tavola del tè del Cappellaio
+    default: water('#6a9a48', '#4a8ac8');
+  }
+}
+
 function drawWorldBack() {
   const sp = sun(), mp = moonPos();
   // sole: alone grande dietro la battaglia, scende al tramonto
@@ -3766,8 +3899,11 @@ function drawWorldBack() {
     ctx.strokeStyle = `rgba(70,40,20,${.35 - .15 * L.dark})`; ctx.lineWidth = 3;
     for (const off of [8, 22]) { ctx.beginPath(); for (let x = -500; x <= 1600; x += 40) ctx.lineTo(x, off + Math.sin(x * .01) * 3); ctx.stroke(); }
   }
+  const obOn = P34 && s && s.base && s.castle && s.lv;   // in battaglia: la strada a U e l'ostacolo che fa girare tutti attorno
+  if (obOn) { drawRoad(); drawObstacle(); }
   if (bottom > 70) for (const d of DECO) {
     const y = 52 + d.f * (bottom - 76), sc = d.s * (.8 + d.f * .5) * CS;
+    if (obOn && OBC && OBC.inside(d.x, y, 1.08)) continue;
     ctx.save(); ctx.translate(d.x, y); ctx.scale(sc, sc);
     if (TH === 'brema') {                                                   // ciuffi d'erba gialla, paglia e sassi
       if (d.t === 0) for (const a of [-.6, -.3, 0, .3, .6]) P(cap(0, 0, a * 14 + Math.sin(time * 2 + d.x) * 1.5, -14 - Math.abs(a) * -4, 2.4), '#c8a848', a * 6, -7, 5);
