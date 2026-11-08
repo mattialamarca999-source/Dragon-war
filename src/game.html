@@ -447,6 +447,11 @@ html:not([lang=it]) .scrHead>b{font-size:clamp(18px,5.6vw,24px)}
 .albC{display:flex;flex-direction:column;align-items:center;background:#2a2238;border:2px solid var(--ink);border-radius:9px;padding:2px}.albC canvas{width:100%;height:auto}.albC.no canvas{filter:brightness(0) opacity(.35)}.albC.gold{border-color:#ffc030;box-shadow:0 0 8px rgba(255,192,48,.7)}
 .albPrize{display:flex;align-items:center;gap:8px;justify-content:space-between;background:var(--parch2);border:2px solid var(--ink);border-radius:10px;padding:6px 8px;font:800 13px var(--body)}.albPrize canvas{width:44px;height:auto}
 #ucUp.evoB{flex-direction:column;gap:2px;padding-top:8px;padding-bottom:8px}#ucUp .evT{font-size:24px;line-height:1}#ucUp .evC{font:800 14px var(--body);line-height:1.2}
+.drCard{gap:8px;text-align:center}.drBar{height:10px;border:2px solid var(--ink);border-radius:6px;background:var(--parch2);overflow:hidden}.drBar i{display:block;height:100%;background:#6ac85a;transition:width .4s linear}.drBar i.low{background:#e8483a}
+.drTurn{font:900 16px var(--body);margin:0}.drTurn.me{color:#c8501a}
+.drCards{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}.drC{position:relative;padding-bottom:4px}.drC:disabled{opacity:.6}.drC{min-width:0;overflow:hidden}.drC .nm{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}.drC .drRar{display:block;font:900 8.5px var(--body);color:var(--rc);text-transform:uppercase;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.drLbl{font:900 11px var(--body);text-transform:uppercase;letter-spacing:.6px;color:var(--muted);text-align:left}
+.drDeck{display:grid;grid-template-columns:repeat(6,1fr);gap:4px}.drSlot{aspect-ratio:1;border:2px dashed #8a7a68;border-radius:8px;background:rgba(0,0,0,.08)}.drSlot[data-r]{border-style:solid;border-color:var(--ink);background:#2a2238}.drSlot{min-width:0;overflow:hidden}.drSlot canvas{width:100%;height:100%;display:block}
 .wheelCard{text-align:center}.wheelCard canvas{width:min(78vw,340px);height:auto}
 .evoS{position:absolute;top:4px;right:6px;color:#ffd35a;font:900 13px var(--body);font-style:normal;text-shadow:0 1px 0 #000,0 0 4px #000}
 .infCard{gap:10px;text-align:center}.infCard h2{font-size:26px}
@@ -850,6 +855,17 @@ button:focus-visible{outline:3px solid #5aa0ff;outline-offset:2px}
       <div class="card"><h2>Cosa c'è nelle uova</h2><div id="oddsBody"></div><div class="pair"><button class="big" id="oddsOk">Ho capito</button></div></div>
     </div>
 
+    <div class="ov" id="ovDraft" hidden>
+      <div class="card drCard">
+        <h2 id="drTitle">Scelta del mazzo</h2>
+        <div class="drBar"><i id="drTime"></i></div>
+        <p class="drTurn" id="drTurn"></p>
+        <div class="drCards" id="drCards"></div>
+        <small class="drLbl">Il tuo mazzo</small><div class="drDeck" id="drMe"></div>
+        <small class="drLbl">Avversario</small><div class="drDeck" id="drYou"></div>
+        <button class="big alt" id="drLeave">Esci</button>
+      </div>
+    </div>
     <div class="ov" id="ovWait" hidden>
       <div class="card">
         <h2 id="waitMode">Stanza</h2>
@@ -5302,7 +5318,7 @@ function renderAlbum() {
     list.appendChild(sec);
   });
 }
-$('menuAlbum').onclick = showAlbum; $('albumBack').onclick = () => showMenu();
+$('menuAlbum').onclick = showAlbum; $('drLeave').onclick = () => leaveGame(); $('albumBack').onclick = () => showMenu();
 function showWanted() {
   toScene(); $('wanted').hidden = false;
   const grid = $('wantedGrid'); grid.innerHTML = '';
@@ -6743,13 +6759,15 @@ function renderOnlineFriends(box) {                                        // ne
     box.appendChild(r);
   }
 }
-const NET_VER = KL.length + ':' + DW.ROSTER.length;
+const NET_VER = KL.length + ':' + DW.ROSTER.length + ':r1';   // r1: Classificata con la scelta del mazzo
 const ET = ['hit', 'die', 'boom', 'fire', 'legend', 'freeze', 'revive', 'stone', 'dive', 'kidnap', 'donkey', 'mirror', 'mirage', 'summon', 'heal', 'steal', 'overtime', 'grow', 'dodge', 'vanish', 'curse', 'gaze', 'mute', 'fear', 'charm', 'stun', 'leap', 'release', 'rush', 'boss', 'bhit', 'wallet', 'behead', 'swallow', 'genie', 'robbed', 'spawn', 'midas', 'inspire', 'smoke', 'chain', 'tentacle', 'betray', 'hyde', 'spring', 'roll', 'cookie', 'song', 'dash', 'stomp', 'bounce', 'wave'];
 const NET = {room:null, db:null, user:null, myId:null, peer:null, peers:[], g:null, invSeen:new Set(), board:{}, boardOk:false, lastBoard:''};
-const MODES = {duel:{name:'Duello', txt:'Cattivi contro cattivi: due tane, vince chi abbatte quella dell’altro.'},
+const MODES = {ranked:{name:'Classificata', txt:'Il mazzo si sceglie a turno: 6 giri da 4 carte a caso fra tutti i cattivi, tutti a livello 1. Si vincono trofei.'},
+  duel:{name:'Duello normale', txt:'Il tuo mazzo, ma tutti i cattivi a livello 1: vince chi gioca meglio.'},
   alt:{name:'Duello alternativo', txt:'Uno fa i cattivi, l’altro i buoni. A ogni rivincita ci si scambia.'},
   coop:{name:'Insieme', txt:'In due contro i castelli speciali per due.'}};
-let onMode = 'duel', onCoop = 0;
+let onMode = 'ranked', onCoop = 0;
+const LV1 = {units:{}, tana:{}, drago:{}};                                   // online: tutti i cattivi a livello 1, niente potenziamenti
 save.trophies = save.trophies || 0; save.duelWins = save.duelWins || 0; save.coopWon = save.coopWon || 0; save.bdeck = save.bdeck || null;
 const MP = () => !!(NET.g && NET.g.state === 'play');
 const GUEST = () => !!(NET.g && NET.g.role === 'guest' && NET.g.state === 'play');
@@ -6806,8 +6824,8 @@ async function renderOnline() {
   st.textContent = `Trofei: ${save.trophies} · Duelli vinti: ${save.duelWins}`; box.appendChild(st);
   for (const [m, M] of Object.entries(MODES)) {
     const b = document.createElement('button'); b.className = 'wCard' + (onMode === m ? ' on' : '');
-    b.style.background = m === 'duel' ? 'linear-gradient(120deg,#5a1a2a,#c84a2a)' : m === 'alt' ? 'linear-gradient(120deg,#1a3a6a,#7a4ac8)' : 'linear-gradient(120deg,#1a4a2a,#3a9a6a)';
-    b.innerHTML = `<span class="num">${m === 'duel' ? '⚔' : m === 'alt' ? '⇄' : '✦'}</span><span class="tx"><b>${M.name}</b><small>${M.txt}</small></span>`;
+    b.style.background = m === 'ranked' ? 'linear-gradient(120deg,#6a4a10,#d8a020)' : m === 'duel' ? 'linear-gradient(120deg,#5a1a2a,#c84a2a)' : m === 'alt' ? 'linear-gradient(120deg,#1a3a6a,#7a4ac8)' : 'linear-gradient(120deg,#1a4a2a,#3a9a6a)';
+    b.innerHTML = `<span class="num">${m === 'ranked' ? '🏆' : m === 'duel' ? '⚔' : m === 'alt' ? '⇄' : '✦'}</span><span class="tx"><b>${M.name}</b><small>${M.txt}</small></span>`;
     b.onclick = () => { onMode = m; renderOnline(); };
     box.appendChild(b);
   }
@@ -6869,7 +6887,7 @@ function leaveGame(quiet) {
   const G = NET.g; if (!G) return;
   NET.g = null; try { G.unsub && G.unsub(); } catch (e) {}
   G.nr.leave().catch(() => {});
-  $('ovWait').hidden = true; $('ovInvite').hidden = true;
+  $('ovWait').hidden = true; $('ovInvite').hidden = true; $('ovDraft').hidden = true; clearInterval(G.dT);
   lobbyPresence();
   if (!quiet) { running = false; showOnline(); }
 }
@@ -6891,17 +6909,61 @@ function hostSees(P) {
     for (const c of P.cmds || []) if (c[0] > G.last) { G.last = c[0]; const k = KL[c[2]]; if (c[1] === 's' && k) DW.spawn(s, k, G.gpi); else if (c[1] === 'w') DW.upgradeWallet(s, G.gpi); else if (c[1] === 'f') DW.fire(s, G.gpi); }
     return;
   }
+  if (G.state === 'draft') { draftHost(P); return; }
   if (G.state !== 'wait') return;
   const needB = G.mode === 'alt', hostBuoni = needB && !G.hv;
   if (hostBuoni && !G.bdeck) { if ($('bpick').hidden) showBuoniPick(d => { G.bdeck = d; hostSees(G.otherP); }); return; }
   if (!P.ready) { showWait('L’amico è entrato. Sta preparando il mazzo…'); return; }
+  if (G.mode === 'ranked') { draftHost(P); return; }
   startMp();
 }
+/* ---------- Classificata: il mazzo si sceglie a turno ---------- */
+const DRAFT_T = 30;
+const draftPool = () => DW.ROSTER.filter(k => VILLAINS.has(k) && !DW.PARENT[k] && DW.U[k] && DW.U[k].side === 0);
+function draftDeal(D) { const used = D.h.concat(D.g), pool = draftPool().filter(k => !used.includes(k)); D.c = []; while (D.c.length < 4 && pool.length) D.c.push(pool.splice(Math.floor(Math.random() * pool.length), 1)[0]); D.n = 0; D.t = D.r % 2 ? 'g' : 'h'; D.left = DRAFT_T; D.at = Date.now(); }
+function draftHost(P) {                                                      // l'ospite guida la scelta
+  const G = NET.g;
+  if (G.state === 'wait') { G.state = 'draft'; G.draft = {r:0, h:[], g:[], c:[], n:0, t:'h'}; draftDeal(G.draft); draftPublish(); clearInterval(G.dT); G.dT = setInterval(draftTick, 500); }
+  const D = G.draft; if (!D || G.state !== 'draft') return;
+  if (P.dp && P.dp[0] === D.r && D.t === 'g' && D.c.includes(P.dp[1])) draftPick('g', P.dp[1]);
+}
+function draftPublish() { const G = NET.g, D = G.draft; G.nr.presence({st:'draft', mode:'ranked', dr:{r:D.r, c:D.c, h:D.h, g:D.g, t:D.t, left:Math.max(0, Math.round(DRAFT_T - (Date.now() - D.at) / 1000))}}).catch(() => {}); draftShow(D, 'h'); }
+function draftPick(who, k) {
+  const G = NET.g, D = G.draft; if (!D || D.t !== who || !D.c.includes(k)) return;
+  D[who].push(k); D.c = D.c.filter(x => x !== k); D.n++;
+  if (D.n < 2) { D.t = who === 'h' ? 'g' : 'h'; D.left = DRAFT_T; D.at = Date.now(); }
+  else { D.r++; if (D.r >= DW.DECK) { clearInterval(G.dT); $('ovDraft').hidden = true; startMp(); return; } draftDeal(D); }
+  draftPublish();
+}
+function draftTick() {                                                       // tempo scaduto: carta a caso
+  const G = NET.g; if (!G || G.state !== 'draft' || !G.draft) { if (G) clearInterval(G.dT); return; }
+  const D = G.draft; if (Date.now() - D.at > DRAFT_T * 1000) draftPick(D.t, D.c[Math.floor(Math.random() * D.c.length)]);
+  else draftTimer(DRAFT_T - (Date.now() - D.at) / 1000);
+}
+let draftLocal = null;
+function draftShow(D, me) {
+  draftLocal = {D, me, at:Date.now()};
+  $('ovWait').hidden = true; $('ovDraft').hidden = false;
+  $('drTitle').textContent = `Scelta del mazzo · giro ${Math.min(DW.DECK, D.r + 1)}/${DW.DECK}`;
+  const mine = D.t === me; $('drTurn').textContent = mine ? 'Tocca a te: scegli una carta!' : 'Sceglie l’avversario…'; $('drTurn').className = 'drTurn' + (mine ? ' me' : '');
+  const box = $('drCards'); box.innerHTML = '';
+  for (const k of D.c) { const b = document.createElement('button'), r = RAR[k] || 0; b.className = 'card2 drC'; b.dataset.r = r; b.disabled = !mine;
+    b.innerHTML = `<span class="mana">${DW.costOf(k)}</span><canvas width="112" height="104"></canvas><span class="nm">${SHORT[k]}</span><small class="drRar" style="--rc:${UC_RCOL[r]}">${RNAME[r]}</small>`;
+    drawIcon(b.querySelector('canvas'), k, null);
+    b.onclick = () => { if (!mine) return; if (NET.g.role === 'host') draftPick('h', k); else { NET.g.nr.presence({dp:[D.r, k]}).catch(() => {}); $('drTurn').textContent = 'Scelta fatta!'; box.querySelectorAll('button').forEach(x => x.disabled = true); } };
+    b.oncontextmenu = e => e.preventDefault(); longPress(b, () => openUnit(k, 'squad'));
+    box.appendChild(b); }
+  for (const [id, list] of [['drMe', D[me]], ['drYou', D[me === 'h' ? 'g' : 'h']]]) { const el = $(id); el.innerHTML = '';
+    for (let i = 0; i < DW.DECK; i++) { const c = document.createElement('span'); c.className = 'drSlot'; if (list[i]) { c.innerHTML = '<canvas width="112" height="104"></canvas>'; drawIcon(c.querySelector('canvas'), list[i], null); c.dataset.r = RAR[list[i]] || 0; } el.appendChild(c); } }
+  draftTimer(D.left != null ? D.left : DRAFT_T);
+}
+function draftTimer(left) { const el = $('drTime'); if (el) { el.style.width = Math.max(0, Math.min(100, 100 * left / DRAFT_T)) + '%'; el.classList.toggle('low', left < 8); } }
+setInterval(() => { if (draftLocal && NET.g && NET.g.role === 'guest' && !$('ovDraft').hidden) draftTimer((draftLocal.D.left || DRAFT_T) - (Date.now() - draftLocal.at) / 1000); }, 500);
 function guestSees(P) {
   const G = NET.g;
   G.mode = P.mode; G.coop = P.coop;
   if (P.st === 'wait') {
-    if (G.state === 'end') { G.state = 'wait'; $('ovEnd').hidden = true; running = false; }
+    if (G.state === 'end' || G.state === 'draft') { G.state = 'wait'; $('ovEnd').hidden = true; running = false; G.drK = null; }
     const guestBuoni = P.mode === 'alt' && P.hv;
     if (!G.ready) {
       if (guestBuoni) { if ($('bpick').hidden) { $('ovWait').hidden = true; showBuoniPick(d => { G.ready = true; G.nr.presence({ready:true, bdeck:d}).catch(() => {}); showWait('Pronto! Aspetto l’ospite…'); }); } }
@@ -6909,7 +6971,9 @@ function guestSees(P) {
     }
     return;
   }
+  if (P.st === 'draft' && P.dr) { G.state = 'draft'; const k = JSON.stringify(P.dr); if (k !== G.drK) { G.drK = k; draftShow(P.dr, 'g'); } return; }
   if (P.st === 'play' && P.g) {
+    $('ovDraft').hidden = true;
     if (G.state === 'end') return;                                       // partita finita: si aspetta la rivincita
     if (G.state !== 'play') enterGuestBattle(P);
     if (P.g !== G.lastG) { G.lastG = P.g; applySnap(P.g); }
@@ -6921,11 +6985,12 @@ function startMp() {                                                       // l'
   const G = NET.g, P = G.otherP, mine = save.squad.filter(isUnlocked).slice(0, DW.DECK);
   let o;
   if (G.mode === 'coop') { o = {coop:G.coop, squad:mine, up:upEff(), mp:{mode:'coop', squad:P.deck, up:P.up}}; G.myPi = 0; G.gpi = 1; }
-  else if (G.mode === 'duel') { o = {world:0, level:0, squad:mine, up:upEff(), mp:{mode:'duel', squad:P.deck, up:P.up}}; G.myPi = 0; G.gpi = 1; }
+  else if (G.mode === 'duel') { o = {world:0, level:0, squad:mine, up:LV1, mp:{mode:'duel', squad:P.deck, up:LV1}}; G.myPi = 0; G.gpi = 1; }
+  else if (G.mode === 'ranked') { o = {world:0, level:0, squad:G.draft.h, up:LV1, mp:{mode:'duel', squad:G.draft.g, up:LV1}}; G.myPi = 0; G.gpi = 1; }
   else if (G.hv) { o = {world:0, level:0, squad:mine, up:upEff(), mp:{mode:'alt', squad:P.bdeck}}; G.myPi = 0; G.gpi = 1; }
   else { o = {world:0, level:0, squad:P.deck, up:P.up, mp:{mode:'alt', squad:G.bdeck}}; G.myPi = 1; G.gpi = 0; }
   G.last = 0; G.evq = []; G.state = 'play'; G.sendT = 0;
-  TH = G.mode === 'coop' ? DW.WORLDS[DW.COOP[G.coop].w].theme : G.mode === 'duel' ? 'balocchi' : 'ballo'; HERO = false;
+  TH = G.mode === 'coop' ? DW.WORLDS[DW.COOP[G.coop].w].theme : G.mode === 'duel' || G.mode === 'ranked' ? 'balocchi' : 'ballo'; HERO = false;
   battleUi();
   s = DW.create(o);
   $('lvlName').textContent = G.mode === 'coop' ? DW.COOP[G.coop].name : MODES[G.mode].name;
@@ -6942,10 +7007,10 @@ function battleUi() {
   running = true; paused = false; countT = 3; viaT = 0; lightP = 0; setTimeout(musicUpdate, 0);
 }
 function enterGuestBattle(P) {
-  const G = NET.g; G.state = 'play'; G.gpi = P.gpi; G.mirror = P.mode === 'duel'; G.um = new Map();
-  TH = P.mode === 'coop' ? DW.WORLDS[DW.COOP[P.coop].w].theme : P.mode === 'duel' ? 'balocchi' : 'ballo'; HERO = false;
+  const G = NET.g; G.state = 'play'; G.gpi = P.gpi; G.mirror = P.mode === 'duel' || P.mode === 'ranked'; G.um = new Map();
+  TH = P.mode === 'coop' ? DW.WORLDS[DW.COOP[P.coop].w].theme : G.mirror ? 'balocchi' : 'ballo'; HERO = false;
   battleUi();
-  s = {t:0, over:0, units:[], shots:[], ev:[], guest:true, mp:P.mode, rule:{}, lv:{name:''}, stats:{kills:0, lost:0, beaten:{}},
+  s = {t:0, over:0, units:[], shots:[], ev:[], guest:true, mp:P.mode === 'ranked' ? 'duel' : P.mode, rule:{}, lv:{name:''}, stats:{kills:0, lost:0, beaten:{}},
     base:{x:70, hp:1200, max:1200}, castle:{x:930, hp:1200, max:1200}, wallet:{cur:100, lv:1}, fire:{v:0, charge:25}, hand:[], queue:[], squad:[]};
   $('lvlName').textContent = P.mode === 'coop' ? DW.COOP[P.coop].name : MODES[P.mode].name;
   $('lvlSub').textContent = P.mode === 'alt' ? (G.gpi === 0 ? 'Tu fai i cattivi' : 'Tu fai i buoni') : Lf('Online · stanza {code}', {code:G.code});
@@ -7012,8 +7077,8 @@ function mpFinish() {
   const G = NET.g, win = s.over > 0, coop = G.mode === 'coop', today0 = today();
   let gold = 0, ru = 0, egg = 0, tr = 0;
   if (coop) { gold = win ? 300 : 60; if (win && G.coop >= save.coopWon) { save.coopWon = G.coop + 1; egg = 1; ru = 5; } }
-  else if (win) { gold = 150; tr = 30; save.duelWins++; if (save.duelDay !== today0) { save.duelDay = today0; ru = 3; } if (save.duelWins % 5 === 0) egg = 1; }
-  else { gold = 40; tr = -Math.min(20, save.trophies); }
+  else if (win) { gold = 150; tr = G.mode === 'ranked' ? 30 : 0; save.duelWins++; if (save.duelDay !== today0) { save.duelDay = today0; ru = 3; } if (save.duelWins % 5 === 0) egg = 1; }
+  else { gold = 40; tr = G.mode === 'ranked' ? -Math.min(20, save.trophies) : 0; }
   save.gold += gold; save.ru += ru; save.eggInv.base += egg; save.trophies += tr; persist(); syncBoard();
   if (G.role === 'host') G.nr.presence({st:'end', res:s.over, g:encodeSnap()}).catch(() => {});
   G.state = 'end';
@@ -7033,6 +7098,7 @@ function mpFinish() {
 function mpRematch() {
   const G = NET.g; if (!G || G.role !== 'host') return;
   if (G.mode === 'alt') { G.hv = !G.hv; G.bdeck = null; }                   // a turno: chi faceva i buoni ora fa i cattivi
+  G.draft = null;                                                            // Classificata: nuovo mazzo a ogni rivincita
   G.state = 'wait'; $('ovEnd').hidden = true; running = false;
   G.nr.presence({st:'wait', hv:G.hv, res:null, g:null}).catch(() => {});
   showWait('Rivincita: aspetto l’amico…');
