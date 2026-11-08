@@ -6468,6 +6468,7 @@ const VALIAS = {bimbi:'pollicino', bimbo:'pollicino', wendy:'biancaneve', giglio
   renna:'carrozza', fiammiferaia:'fata', spiritista:'cacciatore', pupazzo:'pinocchio', zucca:'carrozza', gothel:'strega', marzapane:'babajaga', alberich:'nani', sirena:'stregamare', bandersnatch:'bestia', ladroni:'gattovolpe', gigantegh:'gigante', trollspecchio:'tremotino', dragonero:'grifone', krampus:'bestia', jabberwocky:'grifone', kraken:'pescecane', idra:'basilisco', mordred:'cavaliereverde', lupomannaro:'lupo', frankenstein:'gigante', hyde:'tremotino', trollponte:'orco', scheletri:'mummia', soldatineve:'nani', pupazzoneve:'nani', cavcristallo:'biancaneve', gemelli:'cappuccetto', gemello:'cappuccetto', pisello:'fata', tappeto:'raperonzolo', aladino:'robinhood', kai:'cappuccetto', gerda:'pifferaio'};   // i buoni nuovi riusano un suono con un'altra voce
 function sndUnlock() {                                                     // il primo tocco accende l'audio (i browser lo chiedono)
   if (GALLERY) return;
+  if (arguments.length) SND.blocked = false;                                 // un tocco vero (arriva con l'evento): si riprova la musica
   if (SND.ctx) { if (SND.ctx.state === 'suspended') SND.ctx.resume().catch(() => {}); musicUpdate(); return; }
   try { SND.ctx = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) { return; }
   SND.g = SND.ctx.createGain(); SND.g.gain.value = 1.6 * SND.set.sfx; SND.g.connect(SND.ctx.destination);
@@ -6479,7 +6480,8 @@ Object.assign(VOICE, {sciame:1.5, ragno:.9, zombie:.8, lupetti:1.35, scimmie:1.3
   for (const k of Object.keys(VOICE)) if (!VALIAS[k]) load('audio/v_' + k + '.mp3', b => { SND.vbuf[k] = b; });
   musicUpdate();
 }
-for (const ev of ['pointerdown', 'pointerup', 'touchend', 'click', 'keydown']) addEventListener(ev, sndUnlock, true);   // sul telefono l'audio si sblocca al rilascio del dito
+for (const ev of ['pointerdown', 'pointerup', 'touchend', 'click', 'keydown']) addEventListener(ev, sndUnlock, true);
+setTimeout(() => sndUnlock(), 300);   // all'apertura provo subito: se il telefono lo permette (l'app installata sì) la musica parte senza aspettare un tocco   // sul telefono l'audio si sblocca al rilascio del dito
 function sfx(n, o = {}) {                                                  // un effetto vero, con un filo di variazione per non stancare
   const buf = o.voice ? SND.vbuf[VALIAS[n] || n] : SND.buf[n];
   if (!SND.ctx || !buf || document.hidden || !(o.voice ? SND.set.vox : SND.set.sfx)) return;
@@ -6560,7 +6562,7 @@ function fadeTo(el, target, ms, done) {                                    // di
   el._fade = setInterval(() => { const f = Math.min(1, (performance.now() - t0) / ms); el.volume = Math.max(0, Math.min(1, v0 + (target - v0) * f)); if (f >= 1) { clearInterval(el._fade); done && done(); } }, 16);
 }
 function musicUpdate() {                                                   // storia, menu e un brano per ogni mondo: cambio quasi immediato
-  if (!SND.ctx || GALLERY) return;
+  if (!SND.ctx || GALLERY || SND.blocked) return;
   const want = musicWant();
   if (want === SND.track) return;
   const old = SND.el[SND.track]; SND.track = want;
@@ -6568,7 +6570,7 @@ function musicUpdate() {                                                   // st
   if (!want) return;
   const el = musicEl(want), target = Math.min(1, MUS_VOL[want[0]] * SND.set.mus);
   el.volume = 0; if (el.readyState > 0) { try { el.currentTime = 0; } catch (e) {} }
-  const p = el.play(); if (p) p.then(() => fadeTo(el, target, 160), () => { SND.track = null; }); else fadeTo(el, target, 160);
+  const p = el.play(); if (p) p.then(() => fadeTo(el, target, 160), () => { SND.track = null; SND.blocked = true; }); else fadeTo(el, target, 160);   // bloccata dal browser: riprovo al primo tocco
 }
 const MUS_VOL = {m:.3, s:.3, w:.24};                                      // tutti i brani hanno lo stesso livello (normalizzati): qui solo menu, storia, battaglia                                      // menu, storia, battaglia (poi la barra Musica)
 setInterval(musicUpdate, 250); try { musicEl('menu'); musicEl('story'); } catch (e) {}   // menu e storia pronti fin dall'apertura document.addEventListener('visibilitychange', musicUpdate);
