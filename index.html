@@ -1096,7 +1096,7 @@ const DW = (() => {
     gattostivali:{side:1, hp:140, dmg:17, rate:1,  range:24,  spd:60, bounty:45, dodge:.3},
     biancaneve: {side:1, hp:110, dmg:8,  rate:1.4, range:110, spd:38, bounty:50, ranged:1, healAura:{every:5, r:100, n:18}},
     pinocchio:  {side:1, hp:110, dmg:11, rate:1.2, range:45,  spd:45, bounty:40},
-    merlino:    {side:1, hp:95,  dmg:14, rate:1.9, range:150, spd:34, bounty:60, ranged:1, splash:30},
+    merlino:    {side:1, hp:95,  dmg:14, rate:1.9, range:110, spd:34, bounty:60, ranged:1, splash:30},   // gittata 110 (era 150): i cattivi riescono ad arrivargli addosso
     alice:      {side:1, hp:120, dmg:13, rate:1.1, range:22,  spd:50, bounty:45, grow:{every:12, t:4}},
     bimbi:      {side:1, group:{k:'bimbo', n:4}},
     bimbo:      {side:1, sub:1, hp:32, dmg:6, rate:.8, range:18, spd:62, bounty:8, small:1},
@@ -1227,6 +1227,8 @@ const DW = (() => {
   const wmulB = w => w <= 4 ? 1.1 + .05 * (w - 1) : 1.25 + .02 * (w - 4);   // mondi 2-5: +10/15/20/25%, poi +2% a mondo (mondo 10: +35%)
   const wmul = w => (w <= 9 ? wmulB(w) : wmulB(9) + .015 * (w - 9)) * (w >= 2 ? 1 + NIGHT.w3 : 1);               // dal mondo 3 un filo in più (w3)
   const WMOD = Object.fromEntries(Array.from({length:14}, (_, i) => [i + 1, {hp:wmul(i + 1), qty:wmul(i + 1)}]));
+  // dal mondo 6 la storia è più gentile: i buoni crescono meno e all'inizio arrivano un tipo alla volta (l'Eroica resta com'era)
+  const EASE = Object.assign({from:5, s:.12, q:.5, gap:16}, typeof process !== 'undefined' && process.env && process.env.DW_EASE ? JSON.parse(process.env.DW_EASE) : {});
   const COMP_EXTRA = +((typeof process !== 'undefined' && process.env && process.env.COMP) || 1.05);
   const SHARD_ORDER = ['goblin', 'strega', 'topi', 'lupo', 'fionda', 'gattovolpe', 'orco', 'gnomo', 'spaventapasseri', 'fantasma', 'coccodrillo', 'barbablu'];
   const LATE = ['uncino', 'mangiafuoco', 'gigante'];
@@ -1254,6 +1256,12 @@ const DW = (() => {
       waves:waves.map(w => [w[0], w[1], w[2] / (last || isSemi ? 1 : (WMOD[w0] || {}).qty || 1)]), hpMul:last || isSemi ? 1 : (WMOD[w0] || {}).hp || 1, rush:active.slice(-3).concat(active.slice(0, 2)),
       shard:shards[g % shards.length], shardN:last || isSemi ? 6 : 4,
       boss:last ? W.boss : isSemi ? semiK : null, bossAt:last ? 70 : 55, semi:isSemi};
+    if (w >= EASE.from) {                                                   // mondo 6: un terzo dello sconto, mondo 7: due terzi, dal mondo 8: tutto
+      const r = Math.min(1, (w - EASE.from + 1) / 3), q = (WMOD[w0] || {}).qty || 1, qe = 1 + (q - 1) * (1 - EASE.q * r);
+      lv.orig = {eMul:lv.eMul, waves:lv.waves, hpMul:lv.hpMul};
+      lv.eMul *= 1 - EASE.s * r;
+      lv.waves = lv.waves.map((x, i) => [x[0], x[1] + 4 * r + i * (EASE.gap - 10) * r, last || isSemi ? x[2] : x[2] * q / qe]);
+    }
     return (cache[key] = lv);
   }
 
@@ -1265,7 +1273,8 @@ const DW = (() => {
   const L = {base:70, castle:930};
 
   function create(o = {}) {
-    const lv = o.inf ? infLevel() : o.coop != null ? coopLevel(o.coop) : levelOf(o.world || 0, o.level || 0), squad = (o.squad || START).slice(0, DECK);
+    let lv = o.inf ? infLevel() : o.coop != null ? coopLevel(o.coop) : levelOf(o.world || 0, o.level || 0); const squad = (o.squad || START).slice(0, DECK);
+    if (o.hard && lv.orig) lv = Object.assign({}, lv, lv.orig);            // in Eroica i buoni restano forti come prima
     const up = o.up || {}, ut = up.tana || {}, ud = up.drago || {};       // potenziamenti della Fucina del Drago
     const baseHp = Math.round(1200 * (1 + .1 * (ut.hp || 0)));
     const s = {
