@@ -289,7 +289,7 @@ const DW = (() => {
   const WALLET_MAX_LV = 8;
   const walletMax  = lv => 200 + 100 * (lv - 1);
   const walletRate = lv => 10 + 4 * (lv - 1);                  // Cattiveria al secondo
-  const FIRE = {charge:25, dmg:49, kb:60, wall:.05};   // wall: la fiammata toglie anche il 5% della vita al castello nemico (+1% per livello di «Fiato sulle mura»)                       // fiammata: 30% di danno in meno (era 70)
+  const FIRE = {charge:25, dmg:49, kb:60, wall:.035, wallUp:.007};   // wall: la fiammata toglie il 3,5% della vita al castello nemico (+0,7% per livello di «Fiato sulle mura») · era 5% e +1%                       // fiammata: 30% di danno in meno (era 70)
   const L = {base:70, castle:930};
 
   function create(o = {}) {
@@ -303,7 +303,7 @@ const DW = (() => {
       castle:{x:L.castle, hp:lv.hp, max:lv.hp, shootT:1, rushed:false, bossDone:false},
       wallet:{lv:o.walletLv || 1, cur:o.startCat ?? 100 + 20 * (ut.cat || 0)},
       fire:{v:o.beta ? 1 : 0, charge:o.beta ? 2 : FIRE.charge * (1 - .06 * (ud.charge || 0))},
-      rateMul:1 + .05 * (ut.rate || 0), fireMul:1 + .08 * (ud.dmg || 0), fireWall:FIRE.wall + .01 * (ud.wall || 0), uLv:up.units || {},
+      rateMul:1 + .05 * (ut.rate || 0), fireMul:1 + .08 * (ud.dmg || 0), fireWall:FIRE.wall + FIRE.wallUp * (ud.wall || 0), uLv:up.units || {},
       cds:{}, timers:lv.waves.map(w => w[1]), eMul:(lv.eMul || 1) * (o.hard === true ? HARD : o.hard || 1), hard:!!o.hard,
       rule:o.rule || {}, boss:(o.rule && o.rule.boss) || lv.boss, bossAt:(o.rule && o.rule.bossAt) || lv.bossAt, extra:((o.rule && o.rule.extra) || []).map(e => e.slice()),
       units:[], shots:[], ev:[], inf:o.inf ? {wave:0, next:2, q:[], qt:0} : null,
@@ -317,7 +317,7 @@ const DW = (() => {
       s.mp = m.mode; s.eMul = m.mode === 'alt' ? ALT_BMUL : s.eMul;
       s.p2 = {side:m.mode === 'coop' ? 0 : 1, squad:sq2, hand:sq2.slice(0, HAND), queue:sq2.slice(HAND), uLv:u2.units || {},
         wallet:{lv:1, cur:100 + 20 * (t2.cat || 0)}, fire:{v:0, charge:m.mode === 'alt' ? Infinity : FIRE.charge * (1 - .06 * (d2.charge || 0))},
-        rateMul:1 + .05 * (t2.rate || 0), fireMul:1 + .08 * (d2.dmg || 0), fireWall:FIRE.wall + .01 * (d2.wall || 0), stats:{spawns:0, fires:0}};
+        rateMul:1 + .05 * (t2.rate || 0), fireMul:1 + .08 * (d2.dmg || 0), fireWall:FIRE.wall + FIRE.wallUp * (d2.wall || 0), stats:{spawns:0, fires:0}};
       if (m.mode !== 'coop') {                                               // niente ondate automatiche: l'altro lato lo gioca una persona
         s.lv = Object.assign({}, lv, {waves:[], rush:[], boss:null}); s.timers = []; s.boss = null; s.extra = [];
         const hp2 = m.mode === 'duel' ? Math.round(1200 * (1 + .1 * (t2.hp || 0))) : ALT_CASTLE;
