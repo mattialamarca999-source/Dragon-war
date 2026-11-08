@@ -446,6 +446,9 @@ html:not([lang=it]) .scrHead>b{font-size:clamp(18px,5.6vw,24px)}
 .albGrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(56px,1fr));gap:5px;margin:8px 0}
 .albC{display:flex;flex-direction:column;align-items:center;background:#2a2238;border:2px solid var(--ink);border-radius:9px;padding:2px}.albC canvas{width:100%;height:auto}.albC.no canvas{filter:brightness(0) opacity(.35)}.albC.gold{border-color:#ffc030;box-shadow:0 0 8px rgba(255,192,48,.7)}
 .albPrize{display:flex;align-items:center;gap:8px;justify-content:space-between;background:var(--parch2);border:2px solid var(--ink);border-radius:10px;padding:6px 8px;font:800 13px var(--body)}.albPrize canvas{width:44px;height:auto}
+#ucUp.evoB{flex-direction:column;gap:2px;padding-top:8px;padding-bottom:8px}#ucUp .evT{font-size:24px;line-height:1}#ucUp .evC{font:800 14px var(--body);line-height:1.2}
+.wheelCard{text-align:center}.wheelCard canvas{width:min(78vw,340px);height:auto}
+.evoS{position:absolute;top:4px;right:6px;color:#ffd35a;font:900 13px var(--body);font-style:normal;text-shadow:0 1px 0 #000,0 0 4px #000}
 .infCard{gap:10px;text-align:center}.infCard h2{font-size:26px}
 .infChest{display:flex;align-items:center;justify-content:center;gap:8px;flex-wrap:wrap;background:linear-gradient(180deg,#fff0a0,#f2b33d);border:3px solid var(--ink);border-radius:14px;padding:8px 10px;font:900 15px var(--body)}
 .infOpts{display:flex;flex-direction:column;gap:8px}
@@ -1094,6 +1097,10 @@ function checkUnlocks() {                                                   // f
 save.up = save.up || {};
 save.up.units = save.up.units || {}; save.up.tana = Object.assign({hp:0, cat:0, rate:0}, save.up.tana); save.up.drago = Object.assign({dmg:0, charge:0, wall:0}, save.up.drago);
 const unitLv = kk => save.up.units[kk] || 1;
+save.evo = save.evo || {};
+const EVO = [{w:9, gold:5000, fr:30}, {w:14, gold:10000, fr:50}];        // evoluzione 1 dal mondo 10, evoluzione 2 dal mondo 15 (ognuna vale come 2 livelli)
+const evoOf = kk => save.evo[kk] || 0;
+function upEff() { const units = {}; for (const [k, v] of Object.entries(save.up.units)) units[k] = v + 2 * evoOf(k); for (const k of Object.keys(save.evo)) if (!units[k]) units[k] = 1 + 2 * evoOf(k); return Object.assign({}, save.up, {units}); }
 const LINES = {
   morgana:['Quello che vedi non c’è.','Un miraggio, due miraggi…'], basilisco:['Guardami negli occhi.','Sssstatue, tutti.'], grifone:['Dall’alto si vede meglio.','Picchiata!'],
   cavaliereverde:['Colpisci pure. Mi rialzo.','Un colpo d’ascia per Natale?'], spirito:['Tre desideri? No. Tre schiaffi.','Fuori dalla bottiglia!'], bestia:['Bau. Ma tanti.','Mi state cercando?'],
@@ -5332,6 +5339,9 @@ function rollEgg(t) {                                                        // 
   if (pool.length && Math.random() < C.ch) {
     out.char = pool[Math.floor(Math.random() * pool.length)];
     save.unlocked.push(out.char); save.shards[out.char] = 0; if (save.squad.length < DW.DECK) save.squad.push(out.char);
+  } else if (Math.random() < Math.max(.25, C.ch)) {                         // doppione: un cattivo che hai già → tanti frammenti di lui
+    const have = DW.ROSTER.filter(k => isUnlocked(k) && (RAR[k] || 0) <= Math.max(1, C.max) && !(UNLOCK[k] && (UNLOCK[k].secret || UNLOCK[k].cr)));
+    if (have.length) { const k = have[Math.floor(Math.random() * have.length)], n = C.fr * 2; save.shards[k] = (save.shards[k] || 0) + n; out.shards.push({k, n, dup:1}); }
   }
   giveShards(C.fr, C.parts, out.shards);
   out.life = BETA ? 0 : r >= 2 ? 2 : Math.random() < .35 ? 1 : 0; if (out.life) livesAdd(out.life);   // nelle uova, a volte, vite in regalo
@@ -5489,7 +5499,29 @@ function chestOfWeek() {                                                     // 
   const wk = weekKey(), pool = DW.ROSTER.filter(k => (RAR[k] === 2 || RAR[k] === 3) && UNLOCK[k] && UNLOCK[k].fr), fk = pool[hashStr(wk) % pool.length];
   return {name:`Scrigno di ${SHORT[fk]}`, txt:`Uovo Leggendario + 2 Uova Grandi + 5000 oro + 40 frammenti di ${SHORT[fk]}.`, ru:250, was:420, give:{eggs:{leg:1, big:2}, gold:5000, fr:{k:fk, n:40}}, k:fk};
 }
-const shopReady = () => save.eggInv.base + save.eggInv.big + save.eggInv.leg > 0 || save.shop.free !== today();
+const shopReady = () => save.eggInv.base + save.eggInv.big + save.eggInv.leg > 0 || save.shop.free !== today() || !(save.wheel && save.wheel.d === today());   // anche il giro gratis della ruota
+const WHEEL = [{w:21, r:{gold:150}, t:'150 oro', c:'#f2b33d'}, {w:4, r:{ru:15}, t:'15 Rubini', c:'#c81a3a'}, {w:17, r:{frR:8}, t:'8 frammenti', c:'#7b3fb3'}, {w:2.5, r:{eggs:{big:1}}, t:'Uovo Grande', c:'#4aa8ff'},
+  {w:14, r:{lives:2}, t:'2 vite', c:'#ff7a9a'}, {w:12, r:{ru:5}, t:'5 Rubini', c:'#e8483a'}, {w:1.5, r:{eggs:{leg:1}}, t:'Jackpot!', c:'#ffd35a'}, {w:12, r:{gold:400}, t:'400 oro', c:'#e8b440'},
+  {w:8, r:{eggs:{base:1}}, t:'Uovo', c:'#6ac85a'}, {w:8, r:{frR:20}, t:'20 frammenti', c:'#5a2a9a'}];   // spicchi larghi quanto la probabilità: i premi rari sono sottili
+const WHEEL_RU = [0, 10, 20];
+const FR_PRICE = [300, 600, 1200, 2000, 3000];
+const shardShop = () => pickN(DW.ROSTER.filter(k => VILLAINS.has(k) && !DW.PARENT[k] && !(UNLOCK[k] && (UNLOCK[k].secret || UNLOCK[k].cr || UNLOCK[k].pass)) && (isUnlocked(k) || (UNLOCK[k] && UNLOCK[k].fr))), 3, 'fr' + today());
+function wheelSpin(sp) {                                                     // la ruota: si decide subito il premio, poi si anima
+  const d = today(); if (sp > 0) { if (save.ru < WHEEL_RU[sp]) return; save.ru -= WHEEL_RU[sp]; }
+  save.wheel = {d, n:sp + 1};
+  let x = Math.random() * WHEEL.reduce((a, b) => a + b.w, 0), i = 0; for (; i < WHEEL.length - 1; i++) { x -= WHEEL[i].w; if (x < 0) break; }
+  persist(); renderShop();
+  const ov = document.createElement('div'); ov.className = 'ov'; ov.innerHTML = '<div class="card wheelCard"><h2>Ruota della fortuna</h2><canvas width="520" height="520"></canvas><p class="note"></p></div>'; document.body.appendChild(ov);
+  const cv = ov.querySelector('canvas'), c = cv.getContext('2d'), TOT = WHEEL.reduce((a, b) => a + b.w, 0), A = []; let acc = 0; for (const Wd of WHEEL) { A.push([acc, acc + Wd.w / TOT * Math.PI * 2]); acc = A[A.length - 1][1]; }
+  const land = A[i][0] + (A[i][1] - A[i][0]) * (.2 + Math.random() * .6), end = Math.PI * 2 * 6 - land - Math.PI / 2, t0 = performance.now(), dur = 4200;
+  const draw = a => { c.setTransform(1, 0, 0, 1, 0, 0); c.clearRect(0, 0, 520, 520); c.translate(260, 270); c.rotate(a);
+    WHEEL.forEach((W, j) => { const [a0, a1] = A[j], fs = Math.max(11, Math.min(22, (a1 - a0) * 170)); c.beginPath(); c.moveTo(0, 0); c.arc(0, 0, 230, a0, a1); c.closePath(); c.fillStyle = W.c; c.fill(); c.lineWidth = 4; c.strokeStyle = '#1c1a24'; c.stroke();
+      c.save(); c.rotate((a0 + a1) / 2); c.fillStyle = '#fff'; c.strokeStyle = '#1c1a24'; c.lineWidth = fs / 4.4; c.font = `900 ${fs}px Nunito, sans-serif`; c.textAlign = 'right'; c.textBaseline = 'middle'; const tx = typeof tr === 'function' ? tr(W.t) : W.t; c.strokeText(tx, 215, 0); c.fillText(tx, 215, 0); c.restore(); });
+    c.setTransform(1, 0, 0, 1, 0, 0); c.beginPath(); c.arc(260, 270, 28, 0, Math.PI * 2); c.fillStyle = '#f6e7c4'; c.fill(); c.lineWidth = 5; c.stroke();
+    c.beginPath(); c.moveTo(240, 18); c.lineTo(280, 18); c.lineTo(260, 58); c.closePath(); c.fillStyle = '#e8483a'; c.fill(); c.stroke(); };
+  const step = now => { const k = Math.min(1, (now - t0) / dur), e = 1 - Math.pow(1 - k, 4); draw(end * e); if (k < 1) requestAnimationFrame(step); else setTimeout(() => { ov.remove(); passGive(WHEEL[i].r, 'Ruota della fortuna'); renderShop(); }, 500); };
+  requestAnimationFrame(step); try { UIS.card(); } catch (e) {}
+}
 function showShop() { toScene(); $('shop').hidden = false; renderShop(); }
 function renderShop() {
   $('shopGold').textContent = save.gold.toLocaleString(LOC()); $('shopRu').textContent = save.ru.toLocaleString(LOC());
@@ -5518,6 +5550,14 @@ function renderShop() {
   eggRow('base', 'Uovo di Drago', 'Da Comune a Leggendario. Pacco da 10: un cattivo nuovo Comune o Raro sicuro.', [['×1', 250, 0, 1], ['×10', 2250, 0, 10]]);
   eggRow('big', 'Uovo Grande', 'Almeno Raro. Pacco da 10: un cattivo nuovo fino a Epico sicuro.', [['×1', 0, 30, 1], ['×1', 1000, 0, 1], ['×10', 0, 270, 10], ['×10', 9000, 0, 10]]);
   eggRow('leg', 'Uovo Leggendario', 'Almeno Epico. Pacco da 10: un Mitico e un Leggendario nuovi sicuri.', [['×1', 0, 100, 1], ['×10', 0, 900, 10]]);
+  const sp = save.wheel && save.wheel.d === d ? save.wheel.n : 0;
+  head('Ruota della fortuna', '<small>Un giro gratis al giorno</small>');
+  item('<span class="bIco">🎡</span>', sp === 0 ? 'Giro gratis' : sp < 3 ? `Giro extra ${sp}/2` : 'Giri finiti', sp === 0 ? 'Oro, frammenti, Rubini, vite, uova… e un Uovo Leggendario!' : sp < 3 ? 'Prova ancora la fortuna.' : 'Torna domani per un altro giro gratis.', sp === 0 ? 'Gira!' : sp < 3 ? price(0, WHEEL_RU[sp]) : 'Domani', sp === 0 || (sp < 3 && save.ru >= WHEEL_RU[sp]), () => wheelSpin(sp));
+  const bt = shardShop(); save.shop.frD === d || (save.shop.frD = d, save.shop.fr = []);
+  head('Bottega dei frammenti', '<small>Cambia a mezzanotte</small>');
+  for (const k of bt) { const got = save.shop.fr.includes(k), pr = FR_PRICE[RAR[k] || 0];
+    const r = item('<canvas width="112" height="104" style="width:46px"></canvas>', `10 frammenti di ${SHORT[k]}`, got ? 'Presi! Domani altri.' : isUnlocked(k) ? 'Per potenziarlo o evolverlo.' : 'Per sbloccarlo.', got ? 'Preso' : price(pr, 0), !got && save.gold >= pr, () => { if (pay(pr, 0)) { save.shards[k] = (save.shards[k] || 0) + 10; save.shop.fr.push(k); persist(); checkUnlocks(); toast(`+10 frammenti di ${SHORT[k]}`); renderShop(); } });
+    drawIcon(r.querySelector('canvas'), k); }
   head('Aspetti', '<small>Cambiano solo il look</small>');
   for (const [id, L] of Object.entries(LOOKS).filter(([, L]) => L.from === 'shop')) { const own = save.looks.includes(id);
     const r = item(L.k === 'drago' ? '<span class="bIco">🐉</span>' : '<canvas width="112" height="104" style="width:46px"></canvas>', L.name, own ? 'Ce l’hai! Lo scegli nella Fucina.' : L.k === 'drago' ? 'Il tuo drago cambia colore.' : `Aspetto per ${SHORT[L.k]}.`, own ? 'Preso' : price(0, L.ru), !own && save.ru >= L.ru, () => { if (pay(0, L.ru)) { lookGive(id); persist(); toast(`${L.name}!`); renderShop(); } });
@@ -5699,7 +5739,7 @@ function renderForge() {
       const lock = !isUnlocked(kk), c = document.createElement('button');
       c.className = 'card2' + (lock ? ' lock' : '') + (secretLocked(kk) ? ' secret' : '') + (kk === forgeJust ? ' just' : ''); c.dataset.r = secretLocked(kk) ? 's' : RAR[kk] || 0;
       c.innerHTML = `${secretLocked(kk) ? '' : `<span class="mana" title="Costo in Cattiveria">${DW.costOf(kk)}</span>`}<canvas width="112" height="104"></canvas><span class="nm">${dispName(kk)}</span><span class="lv">${secretLocked(kk) ? 'Segreto' : lock ? 'Bloccato' : 'Liv ' + unitLv(kk) + ' · ' + (save.shards[kk] || 0) + ' fr'}</span>`;
-      drawCard(c.querySelector('canvas'), kk);
+      drawCard(c.querySelector('canvas'), kk); if (evoOf(kk)) { const st = document.createElement('i'); st.className = 'evoS'; st.textContent = '★'.repeat(evoOf(kk)); c.appendChild(st); }
       c.onclick = () => openUnit(kk, 'forge');
       grid.appendChild(c);
     }
@@ -5760,12 +5800,12 @@ let ucKey = null, ucCtx = '';
 function openUnit(kk, from) { ucKey = kk; ucCtx = from; paintUnit(); $('ovUnit').hidden = false; }
 function paintUnit() {
   const kk = ucKey; if (!kk) return;
-  const lv = unitLv(kk), mx = umax(kk), a = statsOf(kk, lv), nx = statsOf(kk, Math.min(mx, lv + 1)), max = lv >= mx, lock = !isUnlocked(kk), sec = secretLocked(kk), cost = unitCost(lv),
+  const lv = unitLv(kk), mx = umax(kk), ev = evoOf(kk), a = statsOf(kk, lv + 2 * ev), nx = statsOf(kk, Math.min(mx, lv + 1) + 2 * ev), max = lv >= mx, lock = !isUnlocked(kk), sec = secretLocked(kk), cost = unitCost(lv),
     frNeed = lv < 5 ? 0 : Math.ceil((lv - 3) * (kk === 'strega' || kk === 'orco' ? 1 : {2:1.5, 3:1.5, 4:2}[RAR[kk]] || 1)), frHave = save.shards[kk] || 0;   // dopo il 5 servono frammenti: epici ×1,5, leggendari ×2
   drawCard($('ucCv'), kk);
   $('ucName').textContent = dispName(kk);
   const r = RAR[kk] || 0; $('ovUnit').dataset.r = sec ? 's' : r; $('ucRar').textContent = sec ? '' : RNAME[r]; $('ucRar').style.setProperty('--rc', UC_RCOL[r]);
-  $('ucLv').textContent = sec ? 'Segreto' : lock ? 'Bloccato' : `Liv ${lv}/${mx} · ${frHave} fr`;
+  $('ucLv').textContent = sec ? 'Segreto' : lock ? 'Bloccato' : `Liv ${lv}/${mx}${ev ? ' ' + '★'.repeat(ev) : ''} · ${frHave} frammenti`;
   const up = (x, y) => !lock && !max && y !== x ? `<i>→ ${y}</i>` : '';
   const ud = DW.U[kk], ub = ud.group ? DW.U[ud.group.k || ud.group.ks[0]] : ud, sp = ub.spd || 0;
   const spW = sp < 35 ? 'Lento' : sp < 55 ? 'Medio' : sp < 85 ? 'Veloce' : 'Velocissimo';
@@ -5780,10 +5820,19 @@ function paintUnit() {
     for (const [id, nm, need] of opts) { const c = document.createElement('button'), ok = lv >= need, on = (save.look[kk] || '') === id; c.className = 'lkC' + (on ? ' on' : ''); c.disabled = !ok; c.textContent = ok ? nm : `${nm} · Liv ${need}`;
       c.onclick = () => { if (id) save.look[kk] = id; else delete save.look[kk]; persist(); paintUnit(); }; lb.appendChild(c); }
   }
-  const b = $('ucUp'); b.hidden = ucCtx !== 'forge' || lock || sec;
+  const b = $('ucUp'); b.hidden = ucCtx !== 'forge' || lock || sec; b.classList.remove('evoB');
   b.disabled = max || save.gold < cost || frHave < frNeed;
   b.innerHTML = max ? 'Al massimo' : frHave < frNeed ? `Mancano ${frNeed - frHave} frammenti` : save.gold < cost ? `Ti mancano <span class="coin"></span>${cost - save.gold}` : `Potenzia · <span class="coin"></span>${cost}`;   // il tasto dice cosa manca, non «Potenzia»
   b.onclick = () => { if (max || frHave < frNeed) return; buy(cost, () => { save.up.units[kk] = lv + 1; save.shards[kk] = frHave - frNeed; forgeJust = kk; }, `${SHORT[kk]} livello ${lv + 1}!`); paintUnit(); };
+  if (max && ucCtx === 'forge' && !lock && !sec) {                           // al livello massimo: evoluzione
+    const E = EVO[ev];
+    if (!E) { b.innerHTML = 'Evoluto al massimo ★★'; return; }
+    const open = worldOpen(E.w), ok = open && save.gold >= E.gold && frHave >= E.fr;
+    b.disabled = !ok;
+    const sub = !open ? `Si sblocca dal mondo ${E.w + 1}` : frHave < E.fr ? `Mancano ${E.fr - frHave} frammenti` : save.gold < E.gold ? `Ti mancano ${(E.gold - save.gold).toLocaleString(LOC())} oro` : `${E.gold.toLocaleString(LOC())} oro + ${E.fr} frammenti`;
+    b.innerHTML = `<span class="evT">Evolvi ${'★'.repeat(ev + 1)}</span><small class="evC"></small>`; b.querySelector('.evC').textContent = sub; b.classList.add('evoB');
+    b.onclick = () => { if (!ok) return; buy(E.gold, () => { save.evo[kk] = ev + 1; save.shards[kk] = frHave - E.fr; forgeJust = kk; }, `${SHORT[kk]} evoluto ${'★'.repeat(ev + 1)}!`); paintUnit(); };
+  }
 }
 $('ucClose').onclick = () => { $('ovUnit').hidden = true; ucKey = null; };
 $('ovUnit').addEventListener('click', e => { if (e.target === $('ovUnit')) $('ucClose').onclick(); });
@@ -5865,7 +5914,7 @@ function newBattle(world = curWorld, level = curLevel, opt = curOpt) {
   tutHide(); tut = !save.tutorialDone && world === 0 && level === 0 && !cp && !opt.hard ? {i:0, shown:false, t:0} : null; resize();
   const secret = !cp && opt.hard && world === DW.WORLDS.length - 1 && level === W0.n - 1 && draculaReady(squad);   // la notte giusta, al Trono del Drago, arriva il Conte
   abCnt = {};
-  s = DW.create(Object.assign({world, level, squad, up:save.up, hard:!!opt.hard, inf:!!opt.inf, rar:RAR, rule:cp ? cp.rule : secret ? {extra:[['dracula_boss', 35]]} : null}, BETA ? {beta:true, walletLv:DW.WALLET_MAX_LV, startCat:DW.walletMax(DW.WALLET_MAX_LV)} : {}));
+  s = DW.create(Object.assign({world, level, squad, up:upEff(), hard:!!opt.hard, inf:!!opt.inf, rar:RAR, rule:cp ? cp.rule : secret ? {extra:[['dracula_boss', 35]]} : null}, BETA ? {beta:true, walletLv:DW.WALLET_MAX_LV, startCat:DW.walletMax(DW.WALLET_MAX_LV)} : {}));
   if (!BETA && save.boost.fire > 0) { s.fire.v = 1; save.boost.fire--; persist(); setTimeout(() => toast(`Fiammata pronta! (ne restano ${save.boost.fire})`), 400); }   // potenziamento del negozio
   buildButtons();
   if (secret) setTimeout(() => { if (running) toast('Qualcuno ti osserva dal buio…'); }, 4200);
@@ -6811,7 +6860,7 @@ async function guestJoin(code) {
   leaveGame(true);
   const nr = await joinRoom(code); if (!nr) return;
   NET.g = {role:'guest', nr, code, mode:null, cmds:[], seq:0, state:'wait', um:new Map(), ready:false, lastG:null};
-  nr.presence({r:'guest', v:NET_VER, ready:false, id:NET.myId, deck:save.squad.filter(isUnlocked).slice(0, DW.DECK), up:save.up, bdeck:null, cmds:[]}).catch(() => {});
+  nr.presence({r:'guest', v:NET_VER, ready:false, id:NET.myId, deck:save.squad.filter(isUnlocked).slice(0, DW.DECK), up:upEff(), bdeck:null, cmds:[]}).catch(() => {});
   NET.g.unsub = nr.onPeers(ch => roomPeers(ch), () => roomLost());
   lobbyPresence(); showWait('Entro nella stanza…');
 }
@@ -6871,9 +6920,9 @@ const guestWon = res => NET.g.mode === 'coop' ? res > 0 : (NET.g.gpi === 1 ? res
 function startMp() {                                                       // l'ospite prepara la battaglia
   const G = NET.g, P = G.otherP, mine = save.squad.filter(isUnlocked).slice(0, DW.DECK);
   let o;
-  if (G.mode === 'coop') { o = {coop:G.coop, squad:mine, up:save.up, mp:{mode:'coop', squad:P.deck, up:P.up}}; G.myPi = 0; G.gpi = 1; }
-  else if (G.mode === 'duel') { o = {world:0, level:0, squad:mine, up:save.up, mp:{mode:'duel', squad:P.deck, up:P.up}}; G.myPi = 0; G.gpi = 1; }
-  else if (G.hv) { o = {world:0, level:0, squad:mine, up:save.up, mp:{mode:'alt', squad:P.bdeck}}; G.myPi = 0; G.gpi = 1; }
+  if (G.mode === 'coop') { o = {coop:G.coop, squad:mine, up:upEff(), mp:{mode:'coop', squad:P.deck, up:P.up}}; G.myPi = 0; G.gpi = 1; }
+  else if (G.mode === 'duel') { o = {world:0, level:0, squad:mine, up:upEff(), mp:{mode:'duel', squad:P.deck, up:P.up}}; G.myPi = 0; G.gpi = 1; }
+  else if (G.hv) { o = {world:0, level:0, squad:mine, up:upEff(), mp:{mode:'alt', squad:P.bdeck}}; G.myPi = 0; G.gpi = 1; }
   else { o = {world:0, level:0, squad:P.deck, up:P.up, mp:{mode:'alt', squad:G.bdeck}}; G.myPi = 1; G.gpi = 0; }
   G.last = 0; G.evq = []; G.state = 'play'; G.sendT = 0;
   TH = G.mode === 'coop' ? DW.WORLDS[DW.COOP[G.coop].w].theme : G.mode === 'duel' ? 'balocchi' : 'ballo'; HERO = false;
