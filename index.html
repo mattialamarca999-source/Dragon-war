@@ -1013,6 +1013,7 @@ button:focus-visible{outline:3px solid #5aa0ff;outline-offset:2px}
 /* ===== Dragon War – motore della battaglia (logica pura, senza disegno) ===== */
 const DW = (() => {
   // side 0 = noi (I Senza Lieto Fine, marciano verso destra) · side 1 = il castello (i buoni, verso sinistra)
+  // bilanciamento v77: i tiratori dei buoni non tirano più da lontanissimo (max 120), Principe, Fata, Cacciatore e cariche un po' più deboli
   const U = {
     goblin:     {side:0, cost:50,  cd:2,  hp:65,  dmg:12, rate:.8,  range:20,  spd:55},
     topi:       {side:0, cost:80,  cd:6,  group:{k:'topo', n:5}},
@@ -1114,25 +1115,25 @@ const DW = (() => {
     fenice:     {side:0, cost:300, cd:11, hp:300, dmg:22, rate:1.2, range:110, spd:55, fly:1, beast:1, ranged:1, splash:25, burn:{t:3, k:.4}, revive:1, rebirth:{dmg:60, r:90}},   // segreto: 20 castelli in meno di 2 minuti · esplode e rinasce
     // i buoni
     soldatino:  {side:1, hp:70,  dmg:9,  rate:.9,  range:20,  spd:42, bounty:20},
-    arciere:    {side:1, hp:45,  dmg:10, rate:1.3, range:150, spd:38, bounty:30, ranged:1},
-    principe:   {side:1, hp:380, dmg:26, rate:1.5, range:26,  spd:30, bounty:90},
-    cacciatore: {side:1, hp:160, dmg:16, rate:1.2, range:22,  spd:40, bounty:45, vsBeast:3},
+    arciere:    {side:1, hp:45,  dmg:10, rate:1.3, range:120, spd:38, bounty:30, ranged:1},
+    principe:   {side:1, hp:380, dmg:22, rate:1.5, range:26,  spd:30, bounty:90},
+    cacciatore: {side:1, hp:160, dmg:16, rate:1.2, range:22,  spd:40, bounty:45, vsBeast:2.5},
     spiritista: {side:1, hp:110, dmg:10, rate:1.1, range:60,  spd:50, bounty:35, vsGhost:2},   // il cacciatore di spiriti: lanterna e sale contro i fantasmi
-    porcellino: {side:1, hp:330, dmg:8,  rate:1.4, range:20,  spd:26, bounty:60, armorRanged:.5},
-    fata:       {side:1, hp:80,  dmg:0,  rate:2.5, range:120, spd:40, bounty:50, heal:28},
+    porcellino: {side:1, hp:300, dmg:8,  rate:1.4, range:20,  spd:26, bounty:60, armorRanged:.6},
+    fata:       {side:1, hp:80,  dmg:0,  rate:2.5, range:120, spd:40, bounty:50, heal:26},
     re:         {side:1, hp:1300, dmg:32, rate:2.2, range:34, spd:18, bounty:300, splash:50, boss:1},
-    hanselgretel:{side:1, hp:70, dmg:9,  rate:1.2, range:130, spd:45, bounty:30, ranged:1},
+    hanselgretel:{side:1, hp:70, dmg:8,  rate:1.2, range:115, spd:45, bounty:30, ranged:1},
     nani:       {side:1, group:{k:'nano', n:7}},
     nano:       {side:1, sub:1, hp:22, dmg:5, rate:.8, range:16, spd:45, bounty:6},
     raperonzolo:{side:1, hp:110, dmg:14, rate:1.4, range:70,  spd:40, bounty:40},
-    pifferaio:  {side:1, hp:90,  dmg:6,  rate:1.5, range:150, spd:35, bounty:50, ranged:1, charm:{every:6, r:170, t:3}},
+    pifferaio:  {side:1, hp:90,  dmg:6,  rate:1.5, range:120, spd:35, bounty:50, ranged:1, charm:{every:6, r:170, t:3}},
     musicanti:  {side:1, hp:300, dmg:6,  rate:2,   range:60,  spd:30, bounty:70, stunAura:{every:5, r:80, t:1}},
-    carrozza:   {side:1, hp:260, dmg:12, rate:1.5, range:26,  spd:90, bounty:60, charge:{dmg:40, r:50, kb:70}},
+    carrozza:   {side:1, hp:260, dmg:12, rate:1.5, range:26,  spd:90, bounty:60, charge:{dmg:30, r:50, kb:70}},
     ranocchio:  {side:1, hp:100, dmg:14, rate:1.2, range:20,  spd:60, bounty:35, leap:{every:6, d:80}},
     peterpan:   {side:1, hp:65, dmg:9, rate:1, range:22, spd:65, bounty:40, fly:1},
     cappuccetto:{side:1, hp:80,  dmg:11, rate:.9,  range:20,  spd:70, bounty:30},
-    robinhood:  {side:1, hp:70,  dmg:12, rate:1.3, range:160, spd:40, bounty:45, ranged:1, manaSteal:2},
-    gattostivali:{side:1, hp:140, dmg:17, rate:1,  range:24,  spd:60, bounty:45, dodge:.3},
+    robinhood:  {side:1, hp:70,  dmg:12, rate:1.3, range:120, spd:40, bounty:45, ranged:1, manaSteal:2},
+    gattostivali:{side:1, hp:140, dmg:17, rate:1,  range:24,  spd:60, bounty:45, dodge:.22},
     biancaneve: {side:1, hp:110, dmg:8,  rate:1.4, range:110, spd:38, bounty:50, ranged:1, healAura:{every:5, r:100, n:18}},
     pinocchio:  {side:1, hp:110, dmg:11, rate:1.2, range:45,  spd:45, bounty:40},
     merlino:    {side:1, hp:95,  dmg:14, rate:1.9, range:110, spd:34, bounty:60, ranged:1, splash:30},   // gittata 110 (era 150): i cattivi riescono ad arrivargli addosso
@@ -1140,22 +1141,22 @@ const DW = (() => {
     bimbi:      {side:1, group:{k:'bimbo', n:4}},
     bimbo:      {side:1, sub:1, hp:32, dmg:6, rate:.8, range:18, spd:62, bounty:8, small:1},
     wendy:      {side:1, hp:90,  dmg:6,  rate:1.3, range:100, spd:40, bounty:50, ranged:1, inspire:{every:6, r:130, t:4}},
-    giglio:     {side:1, hp:75,  dmg:11, rate:1.1, range:150, spd:70, bounty:40, ranged:1},
+    giglio:     {side:1, hp:75,  dmg:11, rate:1.1, range:120, spd:55, bounty:40, ranged:1},
     cappellaio: {side:1, hp:110, dmg:12, rate:1.4, range:120, spd:38, bounty:45, ranged:1, splash:15},
     brucaliffo: {side:1, hp:150, dmg:8,  rate:1.3, range:90,  spd:30, bounty:50, ranged:1, smoke:{every:8, r:110, t:2}},
     lepre:      {side:1, hp:80,  dmg:8,  rate:.8,  range:20,  spd:110, bounty:35, leap:{every:5, d:70}},
     alibaba:    {side:1, hp:100, dmg:12, rate:1.2, range:22,  spd:55, bounty:45, manaSteal:3},
     sinbad:     {side:1, hp:260, dmg:20, rate:1.3, range:26,  spd:40, bounty:60},
     guardie:    {side:1, group:{k:'guardia', n:3}},
-    guardia:    {side:1, sub:1, hp:110, dmg:12, rate:1.2, range:24, spd:42, bounty:15},
-    renna:      {side:1, hp:200, dmg:16, rate:1.2, range:24,  spd:90, bounty:55, beast:1, charge:{dmg:35, r:50, kb:60}},
-    fiammiferaia:{side:1, hp:70, dmg:0,  rate:2.4, range:110, spd:40, bounty:50, heal:30},
+    guardia:    {side:1, sub:1, hp:90, dmg:12, rate:1.2, range:24, spd:42, bounty:15},
+    renna:      {side:1, hp:170, dmg:16, rate:1.2, range:24,  spd:90, bounty:55, beast:1, charge:{dmg:28, r:50, kb:60}},
+    fiammiferaia:{side:1, hp:70, dmg:0,  rate:2.4, range:110, spd:40, bounty:50, heal:24},
     soldatineve:{side:1, group:{k:'pupazzoneve', n:3}},
-    pupazzoneve:{side:1, sub:1, hp:90, dmg:9, rate:1, range:20, spd:32, bounty:12, armorRanged:.7},
-    cavcristallo:{side:1, hp:320, dmg:18, rate:1.4, range:26, spd:34, bounty:70, armorRanged:.4},
+    pupazzoneve:{side:1, sub:1, hp:70, dmg:8, rate:1, range:20, spd:32, bounty:12, armorRanged:.8},
+    cavcristallo:{side:1, hp:260, dmg:16, rate:1.4, range:26, spd:34, bounty:70, armorRanged:.6},
     gemelli:    {side:1, group:{k:'gemello', n:2}},
-    gemello:    {side:1, sub:1, hp:120, dmg:12, rate:1.1, range:22, spd:50, bounty:20, split:.6},
-    pisello:    {side:1, hp:50,  dmg:0,  rate:2,   range:110, spd:38, bounty:55, heal:42},
+    gemello:    {side:1, sub:1, hp:95, dmg:11, rate:1.1, range:22, spd:50, bounty:20, split:.5},
+    pisello:    {side:1, hp:50,  dmg:0,  rate:2,   range:110, spd:38, bounty:55, heal:28},
     tappeto:    {side:1, hp:200, dmg:14, rate:1.1, range:24,  spd:80, bounty:60, fly:1},
     aladino:    {side:1, hp:160, dmg:16, rate:1,   range:24,  spd:60, bounty:60, dodge:.25},
     kai:        {side:1, hp:150, dmg:15, rate:1.1, range:24,  spd:50, bounty:55},
@@ -1267,7 +1268,7 @@ const DW = (() => {
   const wmul = w => (w <= 9 ? wmulB(w) : wmulB(9) + .015 * (w - 9)) * (w >= 2 ? 1 + NIGHT.w3 : 1);               // dal mondo 3 un filo in più (w3)
   const WMOD = Object.fromEntries(Array.from({length:14}, (_, i) => [i + 1, {hp:wmul(i + 1), qty:wmul(i + 1)}]));
   // dal mondo 6 la storia è più gentile: i buoni crescono meno e all'inizio arrivano un tipo alla volta (l'Eroica resta com'era)
-  const EASE = Object.assign({from:5, s:.10, q:.45, gap:16}, typeof process !== 'undefined' && process.env && process.env.DW_EASE ? JSON.parse(process.env.DW_EASE) : {});
+  const EASE = Object.assign({from:5, s:.10, q:.45, gap:16, late:1.09}, typeof process !== 'undefined' && process.env && process.env.DW_EASE ? JSON.parse(process.env.DW_EASE) : {});
   const COMP_EXTRA = +((typeof process !== 'undefined' && process.env && process.env.COMP) || 1.05);
   const SHARD_ORDER = ['goblin', 'strega', 'topi', 'lupo', 'fionda', 'gattovolpe', 'orco', 'gnomo', 'spaventapasseri', 'fantasma', 'coccodrillo', 'barbablu'];
   const LATE = ['uncino', 'mangiafuoco', 'gigante'];
@@ -1280,7 +1281,7 @@ const DW = (() => {
     if (w === 0) return Object.assign(LEVELS[c], {world:0, castle:c, g:c, eMul:1, semi:null, shardN:LEVELS[c].boss ? 6 : 4});
     const key = w + ':' + c; if (cache[key]) return cache[key];
     const w0 = w, W = WORLDS[w], n = W.n, g = firstIdx(w) + c, last = c === n - 1, semiAt = W.semi ? Math.floor(n / 2) - 1 : -1, semiK = !last && (W.semiAll ? W.semiAll[c % W.semiAll.length] : W.semis ? W.semis[c] : c === semiAt ? W.semi : null), isSemi = !!semiK;
-    const ge = g <= 79 ? g : 79 + (g - 79) * .3;                                // dopo il mondo 10 il giocatore è al massimo: i buoni crescono piano
+    const PL = EASE.plat || [60, .15], ge = g <= PL[0] ? g : PL[0] + (g - PL[0]) * PL[1];   // dal mondo 9 il giocatore è quasi al massimo: i buoni crescono pianissimo (era: dal 10, a .3)
     const cnt = Math.min(W.pool.length, 2 + Math.floor((c + 1) * (W.pool.length - 1) / n));
     const pool = W.pool.slice(0, cnt), quick = Math.max(.75, 1 - .02 * w);
     const active = [...new Set([pool[0], ...pool.slice(Math.max(1, cnt - 2), cnt)])];   // al massimo 3 tipi di buoni per castello
@@ -1298,7 +1299,7 @@ const DW = (() => {
     if (w >= EASE.from) {                                                   // mondo 6: un terzo dello sconto, mondo 7: due terzi, dal mondo 8: tutto
       const r = Math.min(1, (w - EASE.from + 1) / 3), q = (WMOD[w0] || {}).qty || 1, qe = 1 + (q - 1) * (1 - EASE.q * r);
       lv.orig = {eMul:lv.eMul, waves:lv.waves, hpMul:lv.hpMul};
-      lv.eMul *= 1 - EASE.s * r;
+      lv.eMul *= (1 - EASE.s * r) * (w >= 8 ? EASE.late : 1);            // dal mondo 9 è il finale: un po' più tosto
       lv.waves = lv.waves.map((x, i) => [x[0], x[1] + 4 * r + i * (EASE.gap - 10) * r, last || isSemi ? x[2] : x[2] * q / qe]);
     }
     return (cache[key] = lv);
@@ -1617,8 +1618,8 @@ const DW = (() => {
       for (const e of cand) { const n = cand.filter(f => Math.abs(f.x - e.x) <= d.genie.r).length; if (n > bn) { bn = n; best = e; } }
       if (best) { s.ev.push({type:'genie', x:best.x, y:best.y}); for (const e of cand) if (Math.abs(e.x - best.x) <= d.genie.r) hurt(s, e, d.genie.dmg * u.dm * (U[e.k].boss ? .5 : 1), u.k, u.k); u.abT = d.genie.every; } else u.abT = 1;
     } else if (d.healAura) {                                       // Biancaneve: cura i buoni vicini
-      const fr = alive.filter(a => a.side === u.side && !a.dead && Math.abs(a.x - u.x) <= d.healAura.r && a.hp < a.max);
-      if (fr.length) { for (const a of fr) { const n = Math.min(d.healAura.n * u.dm, a.max - a.hp); a.hp += n; s.ev.push({type:'heal', x:a.x, y:a.y, n:Math.round(n)}); } u.abT = d.healAura.every; } else u.abT = 1;
+      const fr = alive.filter(a => a.side === u.side && !a.dead && Math.abs(a.x - u.x) <= d.healAura.r && a.hp < a.max && !(a.auraT > s.t));   // chi è appena stato curato aspetta: più Biancaneve non si sommano
+      if (fr.length) { for (const a of fr) { const n = Math.min(d.healAura.n * Math.sqrt(u.dm), a.max - a.hp); a.hp += n; a.auraT = s.t + (d.healAura.cd || 4); s.ev.push({type:'heal', x:a.x, y:a.y, n:Math.round(n)}); } u.abT = d.healAura.every; } else u.abT = 1;
     } else if (d.midas) {                                          // Re Mida: tocca i cattivi vicini e li fa diventare oro
       const es = within(d.midas.r);
       if (es.length) { for (const e of es) { const t = U[e.k].boss ? d.midas.t / 2 : d.midas.t; e.stun = Math.max(e.stun, t); e.goldT = t; } s.ev.push({type:'midas', x:u.x, y:u.y}); u.abT = d.midas.every; } else u.abT = 1;
@@ -1730,7 +1731,7 @@ const DW = (() => {
           u.st = 'atk';
           if ((u.atkT -= dt) <= 0) {
             u.atkT = d.rate;
-            let wnd = null, wr = 1; const healN = d.heal * u.dm;
+            let wnd = null, wr = 1; const healN = d.heal * (u.side === 1 ? Math.sqrt(u.dm) : u.dm);   // i guaritori dei buoni crescono meno nei mondi avanzati
             for (const a of alive) if (a.side === u.side && !a.dead && Math.abs(a.x - u.x) <= d.range && a.hp / a.max < wr) { wr = a.hp / a.max; wnd = a; }
             if (wnd) { const n = Math.min(healN, wnd.max - wnd.hp); wnd.hp += n; u.swing = 1; s.ev.push({type:'heal', x:wnd.x, y:wnd.y, n:Math.round(n)}); }
           }
