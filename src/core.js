@@ -91,6 +91,13 @@ const DW = (() => {
     stregatto:  {side:0, cost:110, cd:6,  hp:120, dmg:14, rate:.9,  range:20, spd:65, beast:1, vanish:{every:9, t:2.5}, disguise:2},
     stregaovest:{side:0, cost:170, cd:8,  hp:110, dmg:13, rate:1.5, range:140, spd:40, ranged:1, splash:25, summon:{k:'scimmia', every:9, max:2}},
     sherekhan:  {side:0, cost:160, cd:8,  hp:230, dmg:20, rate:1,   range:22, spd:70, beast:1, dive:{every:8}},
+    fuocofatuo: {side:0, cost:40,  cd:4,  hp:45,  dmg:6,  rate:.8,  range:18, spd:115, burn:{t:3, k:.6}},                 // comune: velocissimo, brucia chi tocca
+    diavoletto: {side:0, cost:50,  cd:5,  hp:75,  dmg:6,  rate:1,   range:22, spd:70, double:1},                          // comune: due colpi di forcone di fila
+    rospo:      {side:0, cost:60,  cd:5,  hp:85,  dmg:8,  rate:1.4, range:100, spd:40, beast:1, ranged:1, burn:{t:4, k:.5}},   // comune: sputa veleno
+    cornacchia: {side:0, cost:70,  cd:6,  hp:75,  dmg:10, rate:.9,  range:20, spd:80, fly:1, beast:1, loot:15},           // comune: ogni buono che abbatte dà +15 Cattiveria
+    lumacone:   {side:0, cost:50,  cd:6,  hp:240, dmg:6,  rate:1.5, range:22, spd:18, beast:1, slime:{r:70}},             // raro: la bava rallenta i buoni vicini
+    ecate:      {side:0, cost:300, cd:12, hp:380, dmg:0,  rate:1.1, range:120, spd:34, heal:34, inspire:{every:8, r:140, t:4}},   // leggendaria: cura e rende più forti
+    circe:      {side:0, cost:260, cd:11, hp:300, dmg:0,  rate:1.3, range:110, spd:34, heal:26, pig:{every:12, r:200, t:4}},     // mitica: cura e trasforma un buono in maiale
     minotauro:  {side:0, cost:320, cd:12, hp:660, dmg:32, rate:1.5, range:28, spd:40, beast:1, splash:30, roll:{every:8, d:120, dmg:40, kb:70}},   // segreto: 30 giorni di fila · carica e sfonda la prima fila
     fenice:     {side:0, cost:300, cd:11, hp:300, dmg:22, rate:1.2, range:110, spd:55, fly:1, beast:1, ranged:1, splash:25, burn:{t:3, k:.4}, revive:1, rebirth:{dmg:60, r:90}},   // segreto: 20 castelli in meno di 2 minuti · esplode e rinasce
     // i buoni
@@ -143,9 +150,9 @@ const DW = (() => {
     gerda:      {side:1, hp:120, dmg:6,  rate:2,   range:110, spd:45, bounty:55, heal:35},
     pollicino:  {side:1, hp:60,  dmg:8,  rate:1,   range:120, spd:110, bounty:25, ranged:1}
   };
-  const ABIL = ['hook', 'fear', 'summon', 'charm', 'stunAura', 'leap', 'kidnap', 'donkey', 'mute', 'mirror', 'freeze', 'mirage', 'petrify', 'dive', 'grow', 'gaze', 'behead', 'genie', 'swallow', 'healAura', 'midas', 'inspire', 'smoke', 'chain', 'tentacle', 'betray', 'spring', 'roll', 'cookie', 'song', 'dash', 'stomp', 'vanish'];
+  const ABIL = ['hook', 'fear', 'summon', 'charm', 'stunAura', 'leap', 'kidnap', 'donkey', 'mute', 'mirror', 'freeze', 'mirage', 'petrify', 'dive', 'grow', 'gaze', 'behead', 'genie', 'swallow', 'healAura', 'midas', 'inspire', 'smoke', 'chain', 'tentacle', 'betray', 'spring', 'roll', 'cookie', 'song', 'dash', 'stomp', 'vanish', 'pig'];
   const PARENT = {topo:'topi', corvo:'spaventapasseri', burattino:'mangiafuoco', matrigna_m:'matrigna', sorella:'matrigna', miraggio:'morgana', pipistrello:'dracula', reginacuori_q:'reginacuori', carta:'reginacuori', scheletro:'scheletri', capoladroni:'ladroni', ladrone:'ladroni', pipsciame:'sciame', lupetto:'lupetti', scimmia:'scimmie'};
-  const LEG = new Set(['dracula', 'gigante', 'tremotino', 'reginacattiva', 'reginanevi', 'basilisco', 'cavaliereverde', 'diavolo', 'dragonero', 'minotauro', 'fenice']);   // i leggendari: +25% e entrata in scena
+  const LEG = new Set(['dracula', 'gigante', 'tremotino', 'reginacattiva', 'reginanevi', 'basilisco', 'cavaliereverde', 'diavolo', 'dragonero', 'minotauro', 'fenice', 'ecate']);   // i leggendari: +25% e entrata in scena
   const LEG_MUL = 1.25;   // i piccoli prendono il livello di chi li porta
   const ROSTER = Object.keys(U).filter(k => U[k].side === 0 && !U[k].sub).sort((a, b) => U[a].cost - U[b].cost);
   const START = ['goblin', 'topi', 'fionda', 'orco'];
@@ -406,7 +413,8 @@ const DW = (() => {
     if (u.big > 0) dmg *= .5;                                       // lo Spirito gigante incassa la metà
     if (u.stone > 0) dmg *= 1.5;                                    // le statue si crepano
     if (u.smokeT > 0) dmg *= .7;                                    // nel fumo del Brucaliffo
-    if (u.cookie > 0 && src !== 'bounce') dmg *= 3;                // il buono diventato biscotto si sbriciola
+    if (u.cookie > 0 && src !== 'bounce') dmg *= 3;
+    if (u.pig > 0) dmg *= 2;                                         // il buono diventato maiale è molto più fragile                // il buono diventato biscotto si sbriciola
     if (a && a.vsBeast && d.beast) dmg *= a.vsBeast;               // il cacciatore è forte contro gli animali
     if (a && a.vsGhost && d.ghost) dmg *= a.vsGhost;               // il cacciatore di spiriti è forte contro i fantasmi
     if (a && a.ranged && d.armorRanged) dmg *= d.armorRanged;      // il muro del porcellino ferma frecce e sassi
@@ -419,6 +427,7 @@ const DW = (() => {
     if (u.hp <= 0) {
       u.dead = true;
       s.ev.push({type:'die', k:u.k, x:u.x, y:u.y, side:u.side});
+      if (a && a.loot && u.side === 1 && !s.mp) { s.wallet.cur = Math.min(walletCap(s), s.wallet.cur + a.loot); s.ev.push({type:'loot', x:u.x, y:u.y, n:a.loot}); }   // la Cornacchia ruba Cattiveria
       if (s.inf && s.inf.special === 'gold' && u.side === 1) { const g = Math.round(6 * (d.boss ? 5 : 1) * s.inf.B.loot); s.inf.gold += g; s.ev.push({type:'coin', x:u.x, y:u.y, n:g}); }   // ondata d'oro: ogni buono lascia monete
       if (s.mp) { const r = d.bounty || Math.round((d.cost || 20) * .3); if (s.mp === 'coop') { if (u.side === 1) { gain(s, r * .6); gain(s, r * .6, 1); } } else gain(s, r, u.side === 1 ? 0 : 1); }   // in due: chi abbatte guadagna
       if (d.split && !u.splitDone) { const c = addUnit(s, u.k, u.x + 6, (u.y + .4) % 1); c.side = u.side; c.splitDone = 1; c.hp = c.max = Math.round(u.max * d.split); s.ev.push({type:'mirror', x:c.x, y:c.y}); }   // i Gemelli dello Specchio
@@ -444,7 +453,7 @@ const DW = (() => {
     if (a && a.slowHit && !tgt.dead) tgt.slowT = a.slowHit.t;               // le sorellastre: chi viene colpito rallenta
     if (a && a.manaSteal && tgt.side === 0) { const w = s.wallet; const n = Math.min(w.cur, a.manaSteal); w.cur -= n; if (n > 0) s.ev.push({type:'robbed', x:tgt.x, y:tgt.y, n:Math.round(n)}); }   // Robin Hood ruba la Cattiveria
     if (a && a.bounce) { const more = s.units.filter(e => !e.dead && e !== tgt && e.side !== side && Math.abs(e.x - tgt.x) <= a.bounce.r).sort((p, q) => Math.abs(p.x - tgt.x) - Math.abs(q.x - tgt.x)).slice(0, a.bounce.n); if (more.length) { for (const e of more) hurt(s, e, dmg * a.bounce.k, 'bounce', ak); s.ev.push({type:'bounce', x:tgt.x, y:tgt.y, xs:more.map(e => e.x)}); } }   // le schegge dello specchio rimbalzano
-    if (a && a.burn && !tgt.dead) { tgt.burnT = a.burn.t; tgt.burnD = Math.max(tgt.burnD || 0, dmg * a.burn.k); }   // il fuoco del Diavolo continua a bruciare
+    if (a && a.burn && !tgt.dead) { tgt.burnT = a.burn.t; tgt.burnD = Math.max(tgt.burnD || 0, dmg * a.burn.k); tgt.psn = a.poison ? 1 : 0; }   // il Rospo avvelena invece di bruciare   // il fuoco del Diavolo continua a bruciare
     if (a && a.steal) { gain(s, a.steal); s.stats.stolen++; s.ev.push({type:'steal', x:tgt.x, y:tgt.y, n:a.steal}); }
   }
   function hurtBuilding(s, side, dmg, ak) {                        // side = chi viene colpito
@@ -613,6 +622,9 @@ const DW = (() => {
     } else if (d.roll) {                                           // Zucca Stregata: rotola e travolge chi trova davanti
       const ahead = foes.filter(e => (e.x - u.x) * dir > -10 && (e.x - u.x) * dir <= d.roll.d);
       if (ahead.length) { const ox = u.x; u.x = Math.max(s.base.x + 10, Math.min(s.castle.x - 60, u.x + dir * d.roll.d)); for (const e of ahead) { hurt(s, e, d.roll.dmg * u.dm * (U[e.k].boss ? .5 : 1), u.k, u.k); if (!U[e.k].boss) e.kb = Math.max(e.kb, d.roll.kb); } s.ev.push({type:'roll', x:u.x, x1:ox, x2:u.x, y:u.y, k:u.k}); u.abT = d.roll.every; } else u.abT = 1;
+    } else if (d.pig) {                                            // Circe: un buono diventa maiale per qualche secondo
+      const e = within(d.pig.r).filter(e => !U[e.k].boss && !U[e.k].elite && !(e.pig > 0) && !(e.cookie > 0)).sort((a, b) => b.hp - a.hp)[0];
+      if (e) { e.stun = Math.max(e.stun, d.pig.t); e.pig = d.pig.t; s.ev.push({type:'pig', x:e.x, y:e.y}); u.abT = d.pig.every; } else u.abT = 1;
     } else if (d.cookie) {                                         // Strega del Marzapane: un buono diventa biscotto
       const e = within(d.cookie.r).filter(e => !U[e.k].boss && !U[e.k].elite && !(e.cookie > 0)).sort((a, b) => b.hp - a.hp)[0];
       if (e) { e.stun = Math.max(e.stun, d.cookie.t); e.cookie = d.cookie.t; s.ev.push({type:'cookie', x:e.x, y:e.y}); u.abT = d.cookie.every; } else u.abT = 1;
@@ -667,9 +679,10 @@ const DW = (() => {
       u.swing = Math.max(0, u.swing - dt * 4);
       if (u.ttl != null && (u.ttl -= dt) <= 0) { u.dead = true; s.ev.push({type:'vanish', x:u.x, y:u.y}); continue; }   // i miraggi svaniscono
       if (u.big > 0) u.big -= dt;
-      if (u.goldT > 0) u.goldT -= dt; if (u.cookie > 0) u.cookie -= dt; if (u.buffT > 0) u.buffT -= dt; if (u.smokeT > 0) u.smokeT -= dt;
+      if (u.goldT > 0) u.goldT -= dt; if (u.cookie > 0) u.cookie -= dt; if (u.pig > 0) u.pig -= dt; if (u.buffT > 0) u.buffT -= dt; if (u.smokeT > 0) u.smokeT -= dt;
       if (u.burnT > 0) { u.burnT -= dt; u.burnA = (u.burnA || 0) + u.burnD * dt; if (u.burnA >= 4) { const n = Math.floor(u.burnA); u.burnA -= n; hurt(s, u, n, 'burn', 'diavolo'); if (u.dead) continue; } if (u.burnT <= 0) u.burnD = 0; }
       if (u.weakT > 0) u.weakT -= dt;
+      if (d.slime) for (const e of alive) if (!e.dead && e.side !== u.side && Math.abs(e.x - u.x) <= d.slime.r) e.slowT = Math.max(e.slowT || 0, .25);   // la bava del Lumacone
       if (d.hyde && !u.hyde && (u.hydeT = (u.hydeT || 0) + dt) >= d.hyde.t) { u.hyde = 1; u.spdMul *= d.hyde.spd; s.ev.push({type:'hyde', x:u.x, y:u.y}); }   // Jekyll diventa Hyde
       if (u.stone > 0) u.stone -= dt;
       if (u.mute > 0) u.mute -= dt;
@@ -721,7 +734,7 @@ const DW = (() => {
           if (d.ranged) s.shots.push({from:u.x, x:u.x, y:u.y, tid:hitB ? 0 : tgt.id, toB:hitB ? 1 - u.side : -1,
             dmg:d.dmg * u.dm * mul, side:u.side, aid:u.id, t:0, dur:.35 + (hitB ? bDist : best) / 600, kind:d.elite ? d.elite.base : u.k});
           else if (hitB) hurtBuilding(s, 1 - u.side, d.dmg * u.dm * mul, u.k);
-          else { strike(s, u.k, u.side, tgt, d.dmg * u.dm * mul); if (U[tgt.k].curse) { u.weakT = U[tgt.k].curse.t; s.ev.push({type:'curse', x:u.x, y:u.y}); } if (d.drain) u.hp = Math.min(u.max, u.hp + d.dmg * u.dm * mul * d.drain); }   // Dracula si cura mordendo
+          else { strike(s, u.k, u.side, tgt, d.dmg * u.dm * mul); if (d.double && !tgt.dead) strike(s, u.k, u.side, tgt, d.dmg * u.dm * mul); if (U[tgt.k].curse) { u.weakT = U[tgt.k].curse.t; s.ev.push({type:'curse', x:u.x, y:u.y}); } if (d.drain) u.hp = Math.min(u.max, u.hp + d.dmg * u.dm * mul * d.drain); }   // Dracula si cura mordendo
         }
       } else {
         u.st = 'walk';
