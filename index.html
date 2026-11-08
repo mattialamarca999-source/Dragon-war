@@ -356,6 +356,13 @@ html:not([lang=it]) .scrHead>b{font-size:clamp(18px,5.6vw,24px)}
 .fgRow .rwd canvas{width:26px;height:24px}
 .fgRow>canvas{width:46px;height:auto;flex:none}
 .fgRow.got{opacity:.6}
+.fgRow.ready{border-color:#e8453a;box-shadow:0 4px 0 #000,inset 0 0 0 2px #e8453a}
+.rdy{position:absolute;top:-9px;left:-7px;z-index:1;width:22px;height:22px;border-radius:50%;background:#e8453a;color:#fff;border:2px solid var(--ink);font:900 13px/18px var(--body);text-align:center;box-shadow:0 2px 0 #000}
+.tabs3 button{position:relative}
+.tabs3 button .tdot{position:absolute;top:-8px;right:-5px;width:20px;height:20px;border-radius:50%;background:#e8453a;color:#fff;border:2px solid var(--ink);font:900 12px/16px var(--body);font-style:normal;text-align:center}
+.passCell.rdyC{outline:3px solid #e8453a;outline-offset:-1px}
+.passCell .rdy{top:-7px;left:-5px}
+.rdyI{display:inline-block;width:20px;height:20px;margin-right:6px;vertical-align:2px;border-radius:50%;background:#e8453a;color:#fff;border:2px solid var(--ink);font:900 12px/16px var(--body);text-align:center;-webkit-text-stroke:0}
 .tier{display:flex;gap:4px}
 .tier i{width:14px;height:14px;border-radius:50%;border:2px solid var(--ink);background:#cdbb92}
 .tier i.b{background:#c58a4a}.tier i.s{background:#d6d8e0}.tier i.o{background:#ffd35a}
@@ -5599,28 +5606,33 @@ function renderPass() {
   $('passXp').textContent = lv >= PASS_LV ? 'Pass completato!' : `${inLv}/${PASS_XP} punti per il livello ${lv + 1}`;
   $('passEnd').textContent = `Stagione ${p.season + 1} · finisce tra ${passEnds()}`;
   $('passBuy').hidden = p.prem; $('passBuy').innerHTML = `Sblocca il Pass d’oro · <span class="ruby"></span>${PASS_RU}`; $('passBuy').disabled = save.ru < PASS_RU;
-  document.querySelectorAll('#passTabs button').forEach(b => b.setAttribute('aria-selected', String(b.dataset.t === passTab))); $('passHead').hidden = passTab !== 'lv';
+  let lvR = false; for (let i = 1; i <= lv; i++) if (!p.gotF.includes(i) || (p.prem && !p.gotP.includes(i))) { lvR = true; break; }
+  const msR = passDaily().some(m => !p.d.got.includes(m.id) && (p.d.prog[m.id] || 0) >= m.need) || passWeekly().some(m => !p.w.got.includes(m.id) && (p.w.prog[m.id] || 0) >= m.need);
+  document.querySelectorAll('#passTabs button').forEach(b => { b.setAttribute('aria-selected', String(b.dataset.t === passTab)); tabDot(b, b.dataset.t === 'lv' ? lvR : msR); }); $('passHead').hidden = passTab !== 'lv';
   const list = $('passList'); list.innerHTML = '';
   if (passTab === 'lv') {
     for (let i = 1; i <= PASS_LV; i++) {
       const r = document.createElement('div'), open = i <= lv, fG = p.gotF.includes(i), pG = p.gotP.includes(i), f = passFree(i), pr = passPrem(i);
       r.className = 'passRow' + (open ? ' open' : '') + (i === 30 ? ' last' : '');
       r.innerHTML = `<span class="passN">${i}</span>
-        <button class="passCell free${fG ? ' got' : ''}" ${open && !fG ? '' : 'disabled'}>${rwIco(f)}<small>${rwTxt(f)}</small>${fG ? '<i class="calOk">✓</i>' : ''}</button>
-        <button class="passCell prem${pG ? ' got' : ''}${p.prem ? '' : ' lockd'}" ${open && p.prem && !pG ? '' : 'disabled'}>${rwIco(pr)}<small>${rwTxt(pr)}</small>${pG ? '<i class="calOk">✓</i>' : p.prem ? '' : '<i class="passLock">🔒</i>'}</button>`;
+        <button class="passCell free${fG ? ' got' : ''}${open && !fG ? ' rdyC' : ''}" ${open && !fG ? '' : 'disabled'}>${open && !fG ? '<span class="rdy">!</span>' : ''}${rwIco(f)}<small>${rwTxt(f)}</small>${fG ? '<i class="calOk">✓</i>' : ''}</button>
+        <button class="passCell prem${pG ? ' got' : ''}${p.prem ? '' : ' lockd'}${open && p.prem && !pG ? ' rdyC' : ''}" ${open && p.prem && !pG ? '' : 'disabled'}>${open && p.prem && !pG ? '<span class="rdy">!</span>' : ''}${rwIco(pr)}<small>${rwTxt(pr)}</small>${pG ? '<i class="calOk">✓</i>' : p.prem ? '' : '<i class="passLock">🔒</i>'}</button>`;
       const [bf, bp] = r.querySelectorAll('.passCell');
       bf.onclick = () => { if (!open || fG) return; p.gotF.push(i); persist(); passGive(f, `Pass del Drago · livello ${i}`); renderPass(); };
       bp.onclick = () => { if (!open || !p.prem || pG) return; p.gotP.push(i); persist(); passGive(pr, `Pass d’oro · livello ${i}`); renderPass(); };
       if (pr.char) drawIcon(bp.querySelector('canvas'), pr.char);
       list.appendChild(r);
     }
-    requestAnimationFrame(() => { const t = list.children[Math.max(0, lv - 2)]; list.scrollTop = t && lv > 2 ? t.offsetTop - list.offsetTop - 8 : 0; });
+    let first = 0; for (let i = 1; i <= lv; i++) if (!p.gotF.includes(i) || (p.prem && !p.gotP.includes(i))) { first = i; break; }   // si apre sul primo premio da prendere
+    const at = first ? first - 1 : Math.max(0, lv - 2);
+    requestAnimationFrame(() => { const t = list.children[at]; list.scrollTop = t && at > 0 ? t.offsetTop - list.offsetTop - 8 : 0; });
   } else {
     const sec = (title, box, ms, xp) => {
       const h = document.createElement('h3'); h.className = 'shopH'; h.innerHTML = `${title}<small>+${xp} punti l’una</small>`; list.appendChild(h);
-      for (const m of ms) {
-        const v = box.prog[m.id] || 0, done = v >= m.need, got = box.got.includes(m.id), r = document.createElement('div'); r.className = 'fgRow' + (got ? ' got' : '');
-        r.innerHTML = `<span class="bIco">${got ? '✅' : '⭐'}</span><div class="tx"><b>${m.txt}</b><small>${Math.min(v, m.need)}/${m.need}</small><div class="mBar"><i style="width:${Math.round(100 * Math.min(1, v / m.need))}%"></i></div></div><button class="upBtn" ${done && !got ? '' : 'disabled'}>${got ? 'Fatto' : `+${xp}`}</button>`;
+      const st = m => box.got.includes(m.id) ? 2 : (box.prog[m.id] || 0) >= m.need ? 0 : 1;
+      for (const m of ms.slice().sort((x, y) => st(x) - st(y))) {
+        const v = box.prog[m.id] || 0, done = v >= m.need, got = box.got.includes(m.id), r = document.createElement('div'); r.className = 'fgRow' + (got ? ' got' : '') + (done && !got ? ' ready' : '');
+        r.innerHTML = `<span class="bIco">${got ? '✅' : '⭐'}</span><div class="tx"><b>${done && !got ? '<span class="rdyI">!</span>' : ''}${m.txt}</b><small>${Math.min(v, m.need)}/${m.need}</small><div class="mBar"><i style="width:${Math.round(100 * Math.min(1, v / m.need))}%"></i></div></div><button class="upBtn" ${done && !got ? '' : 'disabled'}>${got ? 'Fatto' : `+${xp}`}</button>`;
         r.querySelector('.upBtn').onclick = () => { if (!done || got) return; box.got.push(m.id); passXp(xp); UIS.up(); renderPass(); };
         list.appendChild(r);
       }
@@ -5636,19 +5648,27 @@ function paintMenuDots() { $('menuPass').querySelector('.dot').hidden = !passRea
 function showMiss() { toScene(); $('miss').hidden = false; renderMiss(); }
 const COIN_ICO = '<svg viewBox="0 0 40 40"><circle cx="20" cy="20" r="15" fill="#ffd35a" stroke="#1c1a24" stroke-width="3"/><circle cx="20" cy="20" r="8" fill="none" stroke="#c8941a" stroke-width="2.5"/></svg>';
 const CHEST_ICO = (c = '#c8742a') => `<svg viewBox="0 0 40 40"><path d="M5 17h30v17H5z" fill="${c}" stroke="#1c1a24" stroke-width="2.5"/><path d="M5 17c0-8 6-11 15-11s15 3 15 11z" fill="${c}" stroke="#1c1a24" stroke-width="2.5"/><path d="M5 17h30" stroke="#1c1a24" stroke-width="2.5"/><path d="M14 6v28M26 6v28" stroke="#ffd35a" stroke-width="3"/><rect x="16" y="15" width="8" height="8" rx="1.5" fill="#ffd35a" stroke="#1c1a24" stroke-width="2"/></svg>`;
+function tabDot(b, on) { let d = b.querySelector('.tdot'); if (on && !d) { d = document.createElement('em'); d.className = 'tdot'; d.textContent = '!'; b.appendChild(d); } else if (!on && d) d.remove(); }
 function renderMiss() {
   $('missGold').textContent = save.gold.toLocaleString(LOC());
-  document.querySelectorAll('#missTabs button').forEach(b => b.setAttribute('aria-selected', String(b.dataset.t === missTab)));
+  const ddR = daily(), dayR = ddR.ids.some(id => !ddR.got.includes(id) && (ddR.prog[id] || 0) >= MISS.find(m => m.id === id).need) || (ddR.got.length >= ddR.ids.length && !ddR.chest), achR = ACH.some(a => (save.ach[a.id] || 0) < 3 && a.val() >= a.tiers[save.ach[a.id] || 0]);
+  document.querySelectorAll('#missTabs button').forEach(b => { b.setAttribute('aria-selected', String(b.dataset.t === missTab)); tabDot(b, b.dataset.t === 'day' ? dayR : achR); });
   const list = $('missList'); list.innerHTML = '';
   const row = (icon, title, sub, frac, btn, onClick, got) => {
-    const r = document.createElement('div'); r.className = 'fgRow' + (got ? ' got' : '');
-    r.innerHTML = `${icon}<div class="tx"><b>${title}</b>${sub}<div class="mBar"><i style="width:${Math.round(100 * frac)}%"></i></div></div>${btn}`;
+    const r = document.createElement('div'), ready = /<button class="upBtn" >/.test(btn) && !got; r.className = 'fgRow' + (got ? ' got' : '') + (ready ? ' ready' : '');
+    r.innerHTML = `${icon}<div class="tx"><b>${ready ? '<span class="rdyI" aria-label="Da ritirare">!</span>' : ''}${title}</b>${sub}<div class="mBar"><i style="width:${Math.round(100 * frac)}%"></i></div></div>${btn}`;
     const b = r.querySelector('.upBtn'); if (b && onClick) b.onclick = onClick;
     list.appendChild(r); return r;
   };
   if (missTab === 'day') {
-    const dd = daily();
-    for (const id of dd.ids) {
+    const dd = daily(), mReady = id => { const m = MISS.find(x => x.id === id); return !dd.got.includes(id) && (dd.prog[id] || 0) >= m.need; };
+    const chestReady = dd.got.length >= dd.ids.length && !dd.chest;
+    const chestRow = () => row(CHEST_ICO(), 'Baule del giorno', `<small>Finisci tutte e ${dd.ids.length} le missioni: dentro c’è un Uovo di Drago e 2 vite</small>`, dd.got.length / dd.ids.length,
+      `<button class="upBtn" ${chestReady ? '' : 'disabled'}>${dd.chest ? 'Aperto' : 'Apri'}</button>`,
+      () => { dd.chest = true; if (!BETA) livesAdd(2); persist(); showGift('Baule del giorno', 50, [], {ru:2, eggs:{base:1}, chips:[{small:'Vite', ico:'❤️', big:'+2'}]}); }, dd.chest);
+    if (chestReady) chestRow();                                              // quello che c'è da ritirare va in cima
+    const ord = dd.ids.slice().sort((a, b) => (mReady(b) - mReady(a)) || (dd.got.includes(a) - dd.got.includes(b)));
+    for (const id of ord) {
       const m = MISS.find(x => x.id === id), p = dd.prog[id] || 0, done = p >= m.need, got = dd.got.includes(id);
       const rw = m.ru ? `<span class="rwd"><span class="ruby"></span> ${m.ru} Rubini</span>` : m.gold ? `<span class="rwd"><span class="coin"></span>${m.gold} oro</span>` : `<span class="rwd">${m.k ? `<canvas width="56" height="52"></canvas>` : ''}${m.fr} frammenti${m.k ? ' ' + SHORT[m.k] : ' a caso'}</span>`;
       const r = row(m.k2 ? '<canvas class="mIco" width="112" height="104"></canvas>' : m.ru ? '<span class="ruby rubyL" style="width:34px;height:34px"></span>' : m.gold ? COIN_ICO.replace('<svg', '<svg width="40" height="40"') : CHEST_ICO('#7b3fb3'), m.txt, `<small>${Math.min(p, m.need)}/${m.need}</small>${rw}`, p / m.need,
@@ -5657,12 +5677,11 @@ function renderMiss() {
       if (m.k) { const c = r.querySelector('.rwd canvas'); if (c) drawIcon(c, m.k); }
       if (m.k2) drawIcon(r.querySelector('.mIco'), m.k2);
     }
-    row(CHEST_ICO(), 'Baule del giorno', `<small>Finisci tutte e ${dd.ids.length} le missioni: dentro c’è un Uovo di Drago e 2 vite</small>`, dd.got.length / dd.ids.length,
-      `<button class="upBtn" ${dd.got.length >= dd.ids.length && !dd.chest ? '' : 'disabled'}>${dd.chest ? 'Aperto' : 'Apri'}</button>`,
-      () => { dd.chest = true; if (!BETA) livesAdd(2); persist(); showGift('Baule del giorno', 50, [], {ru:2, eggs:{base:1}, chips:[{small:'Vite', ico:'❤️', big:'+2'}]}); }, dd.chest);
+    if (!chestReady) chestRow();
     const nt = document.createElement('p'); nt.className = 'note'; nt.style.textAlign = 'center'; nt.textContent = 'Domani arrivano 3 missioni nuove.'; list.appendChild(nt);
   } else {
-    for (const a of ACH) {
+    const aSt = a => { const t = save.ach[a.id] || 0; return t >= 3 ? 2 : a.val() >= a.tiers[t] ? 0 : 1; };   // 0 da ritirare, 1 in corso, 2 finita
+    for (const a of ACH.slice().sort((x, y) => aSt(x) - aSt(y))) {
       const t = save.ach[a.id] || 0, v = a.val(), goal = a.tiers[Math.min(2, t)], done = t < 3 && v >= goal, pr = ACH_PRIZE[Math.min(2, t)];
       const tiers = `<span class="tier">${['b', 's', 'o'].map((c, i) => `<i class="${i < t ? c : ''}"></i>`).join('')}</span>`;
       row(tiers.replace('class="tier"', 'class="tier" style="flex-direction:column"'), a.name, `<small>${t >= 3 ? 'Completata!' : `${Math.min(v, goal)}/${goal} ${a.what}`}</small>${t < 3 ? `<span class="rwd"><span class="coin"></span>${pr.gold}${pr.fr ? ` + ${pr.fr} frammenti` : ''} + <span class="ruby"></span>${pr.ru}</span>` : ''}`,
