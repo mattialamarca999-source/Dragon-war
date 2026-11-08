@@ -255,7 +255,7 @@ const DW = (() => {
   const wmul = w => (w <= 9 ? wmulB(w) : wmulB(9) + .015 * (w - 9)) * (w >= 2 ? 1 + NIGHT.w3 : 1);               // dal mondo 3 un filo in più (w3)
   const WMOD = Object.fromEntries(Array.from({length:14}, (_, i) => [i + 1, {hp:wmul(i + 1), qty:wmul(i + 1)}]));
   // dal mondo 6 la storia è più gentile: i buoni crescono meno e all'inizio arrivano un tipo alla volta (l'Eroica resta com'era)
-  const EASE = Object.assign({from:5, s:.12, q:.5, gap:16}, typeof process !== 'undefined' && process.env && process.env.DW_EASE ? JSON.parse(process.env.DW_EASE) : {});
+  const EASE = Object.assign({from:5, s:.10, q:.45, gap:16}, typeof process !== 'undefined' && process.env && process.env.DW_EASE ? JSON.parse(process.env.DW_EASE) : {});
   const COMP_EXTRA = +((typeof process !== 'undefined' && process.env && process.env.COMP) || 1.05);
   const SHARD_ORDER = ['goblin', 'strega', 'topi', 'lupo', 'fionda', 'gattovolpe', 'orco', 'gnomo', 'spaventapasseri', 'fantasma', 'coccodrillo', 'barbablu'];
   const LATE = ['uncino', 'mangiafuoco', 'gigante'];
