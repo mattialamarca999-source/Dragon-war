@@ -6150,7 +6150,7 @@ function musicEl(k) {                                                       // o
   return el;
 }
 function musicPreload(w) { if (GALLERY) return; const k = 'w' + (Math.min(DW.WORLDS.length - 1, Math.max(0, w)) + 1); musicEl(k); if (MUS_BOSS[k]) musicEl(MUS_BOSS[k]); }
-const MUS_FILE = {w10:'w10c', w15:'w10c'}, MUS_BOSS = {w11:'w11b', w13:'w13b'};          // il mondo 15 usa la musica del 10; nell'Isola e nel Deserto il boss cambia la musica
+const MUS_FILE = {w10:'w10d', w15:'w10d'}, MUS_BOSS = {w11:'w11b', w13:'w13b'};          // il mondo 15 usa la musica del 10; nell'Isola e nel Deserto il boss cambia la musica
 function musicWant() {
   if (!SND.set.mus || document.hidden) return null; if (inStory) return 'story'; if (!(running || !inMenu)) return 'menu';
   const k = 'w' + (Math.min(DW.WORLDS.length - 1, Math.max(0, musicWorld())) + 1);
