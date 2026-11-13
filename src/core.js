@@ -78,7 +78,7 @@ const DW = (() => {
     gigantegh:  {side:0, cost:320, cd:13, hp:860, dmg:31, rate:2.1, range:32, spd:20, splash:45, stomp:{every:9, r:120, t:2.2}},
     trollspecchio:{side:0, cost:230, cd:9, hp:200, dmg:16, rate:1.3, range:140, spd:42, ranged:1, fly:1, bounce:{n:2, k:.6, r:110}},
     dragonero:  {side:0, cost:340, cd:12, hp:460, dmg:24, rate:1.4, range:120, spd:42, fly:1, beast:1, ranged:1, splash:40, burn:{t:3, k:.4}},   // il Drago Nero: solo dal Pass del Drago
-    gigante:    {side:0, cost:350, cd:14, hp:700, dmg:30, rate:2.4, range:30,  spd:22, siege:3},
+    gigante:    {side:0, cost:350, cd:14, hp:560, dmg:30, rate:2.4, range:30,  spd:22, siege:3},
     // ---- nuovi comuni e rari (8 nov 2026) ----
     sciame:     {side:0, cost:60,  cd:5,  group:{k:'pipsciame', n:5}},
     pipsciame:  {side:0, sub:1, small:1, hp:16, dmg:4, rate:.7, range:16, spd:100, fly:1},
@@ -153,8 +153,8 @@ const DW = (() => {
   };
   const ABIL = ['hook', 'fear', 'summon', 'charm', 'stunAura', 'leap', 'kidnap', 'donkey', 'mute', 'mirror', 'freeze', 'mirage', 'petrify', 'dive', 'grow', 'gaze', 'behead', 'genie', 'swallow', 'healAura', 'midas', 'inspire', 'smoke', 'chain', 'tentacle', 'betray', 'spring', 'roll', 'cookie', 'song', 'dash', 'stomp', 'vanish', 'pig'];
   const PARENT = {topo:'topi', corvo:'spaventapasseri', burattino:'mangiafuoco', matrigna_m:'matrigna', sorella:'matrigna', miraggio:'morgana', pipistrello:'dracula', reginacuori_q:'reginacuori', carta:'reginacuori', scheletro:'scheletri', capoladroni:'ladroni', ladrone:'ladroni', pipsciame:'sciame', lupetto:'lupetti', scimmia:'scimmie'};
-  const LEG = new Set(['dracula', 'gigante', 'tremotino', 'reginacattiva', 'reginanevi', 'basilisco', 'cavaliereverde', 'diavolo', 'dragonero', 'minotauro', 'fenice', 'ecate']);   // i leggendari: +25% e entrata in scena
-  const LEG_MUL = 1.25;   // i piccoli prendono il livello di chi li porta
+  const LEG = new Set(['dracula', 'gigante', 'tremotino', 'reginacattiva', 'reginanevi', 'basilisco', 'cavaliereverde', 'diavolo', 'dragonero', 'minotauro', 'fenice', 'ecate']);   // i leggendari: +15% e entrata in scena
+  const LEG_MUL = 1.15;   // i piccoli prendono il livello di chi li porta
   const ROSTER = Object.keys(U).filter(k => U[k].side === 0 && !U[k].sub).sort((a, b) => U[a].cost - U[b].cost);
   const START = ['goblin', 'topi', 'fionda', 'orco'];
   const LEVELS = [
@@ -652,7 +652,7 @@ const DW = (() => {
       if (e) { const ox = u.x; u.x = e.x - dir * (d.range + 4); s.ev.push({type:'leap', x1:ox, x2:u.x, y:u.y}); u.abT = 15; } else u.abT = 1;
     } else if (d.leap) {                                           // Ranocchio: salta oltre il primo nemico
       const e = foes.find(e => (e.x - u.x) * dir > 0 && (e.x - u.x) * dir <= d.range + 6);
-      if (e) { const ox = u.x; u.x += dir * d.leap.d; s.ev.push({type:'leap', x1:ox, x2:u.x, y:u.y}); u.abT = d.leap.every; }
+      if (e) { const ox = u.x; u.x = Math.max(s.base.x + 40, Math.min(s.castle.x - 40, u.x + dir * d.leap.d)); s.ev.push({type:'leap', x1:ox, x2:u.x, y:u.y}); u.abT = d.leap.every; }
     }
   }
 
@@ -703,7 +703,8 @@ const DW = (() => {
         if (e.disg) continue;                                      // il lupo travestito da pecora passa inosservato
         if ((U[e.k].ghost || U[e.k].fly) && !d.ranged && !d.heal && !(d.vsGhost && U[e.k].ghost)) continue;   // chi combatte corpo a corpo non tocca fantasmi e grifoni
         const dist = (e.x - u.x) * dir - (d.vsGhost && U[e.k].ghost ? 80 : 0);   // il cacciatore di spiriti punta prima i fantasmi
-        if (dist > -6 && dist < best) { best = dist; tgt = e; }
+        const dd = u.side === 0 && dist < 0 ? -dist : dist;      // i cattivi si girano e colpiscono chi gli è appena passato dietro (conigli, ranocchi)
+        if (dist > (u.side === 0 ? -50 : -6) && dd < best) { best = dd; tgt = e; }
       }
       const range = d.range;
       const bDist = u.side ? u.x - s.base.x - 34 : s.castle.x - u.x - 34;
