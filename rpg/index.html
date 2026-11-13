@@ -327,22 +327,28 @@ function hurtHero(d,dir){H.sn=false;d=Math.max(1,Math.round(d*(1-((CL[sv.cls]||{
   if(H.hp<=0){H.st='dead';H.t=0;say('"Ecco. Lo sapevo che finiva così."',2.6)}}
 function alertNear(e,r){for(const o of E)if(o!==e&&o.st!=='dead'&&!o.aware&&o.ty!=='orc'&&Math.hypot(o.x-e.x,o.z-e.z)<r){o.aware=true;o.st='chase';o.t=0;o.cool=.5+Math.random()*1.2;num(o.x,height(o.x,o.z)+2.6,o.z,'!','#ff5a4a')}}
 function steer(e,vx,vz){if(Math.abs(vx)+Math.abs(vz)<.01)return[0,0];for(const a of[0,.55,-.55,1.1,-1.1,1.7,-1.7,2.4,-2.4]){const c=Math.cos(a),s=Math.sin(a),rx=vx*c-vz*s,rz=vx*s+vz*c;if(efree(e,e.x+rx*.12,e.z+rz*.12))return[rx,rz]}return[0,0]}
+// pattuglia: 3-4 punti attorno alla casa del nemico, raggiungibili
+function mkPatrol(e){const P=[[e.hx,e.hz]];for(let k=0;k<12&&P.length<4;k++){const a=Math.random()*6.28,r=3.5+Math.random()*4.5,x=e.hx+Math.cos(a)*r,z=e.hz+Math.sin(a)*r;if(navFree(x,z,.3)&&navLine(e.hx,e.hz,x,z))P.push([x,z])}return P}
+// formazione: ogni nemico del gruppo ha un posto (fila e lato) rispetto alla direzione verso l'eroe
+function fmSlot(e){if(!e.fm)return[H.x,H.z];const g=E.filter(o=>o.fm&&o.fm.g===e.fm.g&&o.st!=='dead');let cx=0,cz=0;for(const o of g){cx+=o.x;cz+=o.z}cx/=g.length;cz/=g.length;let ux=H.x-cx,uz=H.z-cz;const l=Math.hypot(ux,uz)||1;ux/=l;uz/=l;
+  const b=3.2+e.fm.back*1.7,sd=e.fm.side*1.9;return[H.x-ux*b-uz*sd,H.z-uz*b+ux*sd]}
 function enemies(){let atk=0;for(const e of E)if(e.st==='go'||e.st==='wind'||e.st==='hit')atk++;
  const aw=E.filter(e=>e.aware&&e.st!=='dead');for(const e of aw)if(e.ang===undefined)e.ang=Math.atan2(e.z-H.z,e.x-H.x);
- for(let i=E.length-1;i>=0;i--){const e=E[i],dx=H.x-e.x,dz=H.z-e.z,ds=Math.hypot(dx,dz);if(ds>50)continue;e.t+=DT;e.fl=Math.max(0,e.fl-DT);e.cool=(e.cool||0)-DT;e.dcd=(e.dcd||0)-DT;e.mv=0;let vx=0,vz=0,kx=0;const y=height(e.x,e.z);
+ for(let i=E.length-1;i>=0;i--){const e=E[i],dx=H.x-e.x,dz=H.z-e.z,ds=Math.hypot(dx,dz);if(ds>50&&!e.raid)continue;e.t+=DT;e.fl=Math.max(0,e.fl-DT);e.cool=(e.cool||0)-DT;e.dcd=(e.dcd||0)-DT;e.mv=0;let vx=0,vz=0,kx=0;const y=height(e.x,e.z);
   if(e.kv){kx=e.kv;e.kv*=.82;if(Math.abs(e.kv)<.3)e.kv=0}
   if(e.ty==='orc'){if(e.st!=='dead')orcAI(e,dx,dz,ds,y);continue}
   if(e.st==='dead'){if(e.t>4)E.splice(i,1);continue}
   e.blk=(e.blk||0)-DT;if(e.noSh>0)e.noSh-=DT;
   if(e.ty==='shaman'){if(e.aware&&H.hp<=0){e.aware=false;e.st='idle'}if(!e.aware&&e.st==='idle'&&H.hp>0&&sees(e,ds,dx,0)){e.aware=true;e.st='chase';num(e.x,y+2.6,e.z,'!','#ff5a4a');alertNear(e,11)}shamanAI(e,dx,dz,ds,y);continue}
-  if(e.aware){e.lost=sees(e,ds,dx,1)?0:(e.lost||0)+DT;if(H.hp<=0||Math.hypot(e.x-e.hx,e.z-e.hz)>28||ds>22||e.lost>(hidF?1.2:3)){if(e.lost>.5)num(e.x,y+2.6,e.z,'?','#ffe27a');e.lost=0;e.st='idle';e.aware=false;e.t=3;e.ang=undefined}}
+  if(e.aware&&!e.raid){e.lost=sees(e,ds,dx,1)?0:(e.lost||0)+DT;if(H.hp<=0||Math.hypot(e.x-e.hx,e.z-e.hz)>28||ds>22||e.lost>(hidF?1.2:3)){if(e.lost>.5)num(e.x,y+2.6,e.z,'?','#ffe27a');e.lost=0;e.st='idle';e.aware=false;e.t=3;e.ang=undefined}}
   if(e.st==='stag'){if(e.t>.5){e.st='back';e.t=0}}
-  else if(e.st==='idle'){if(e.t>2.5){e.t=0;e.wx=e.hx+(Math.random()-.5)*6;e.wz=e.hz+(Math.random()-.5)*5}const wx=e.wx-e.x,wz=e.wz-e.z,wl=Math.hypot(wx,wz);if(wl>.4){vx=wx/wl*1.4;vz=wz/wl*1.4;e.dir=wx>0?1:-1;e.mv=1}
+  else if(e.st==='idle'){if(!e.pat)e.pat=mkPatrol(e);if(e.pw>0)e.pw-=DT;else{const tg=e.pat[e.pk||0],d=Math.hypot(tg[0]-e.x,tg[1]-e.z)<.6?null:navToward(e,tg[0],tg[1]);if(!d){e.pk=((e.pk||0)+1)%e.pat.length;e.pw=1.2+Math.random()*2.6;e.path=null;e.goal=null}else{vx=d[0]*1.4;vz=d[1]*1.4;e.dir=vx>0?1:-1;e.mv=1}}
     if(H.hp>0&&sees(e,ds,dx,0)){e.aware=true;e.st='chase';e.t=0;e.cool=.4;num(e.x,y+2.6,e.z,'!','#ff5a4a');alertNear(e,11)}}
   else if(e.st==='chase'){e.dir=dx>0?1:-1;
     if(H.st==='atk'&&H.t<.12&&ds<2.8&&e.dcd<=0){e.dcd=1.6;if(Math.random()<.15){e.st='back';e.t=0}}
     else if(e.hp<=12&&!e.fled&&aw.length>1){e.fled=1;e.st='flee';e.t=0}
-    else if(e.cool<=0&&atk<1){e.st='go';e.t=0;atk++}
+    else if(e.cool<=0&&atk<1&&ds<7&&los(e)){e.st='go';e.t=0;atk++}
+    else if(ds>7||!los(e)){const T=fmSlot(e),d=navToward(e,T[0],T[1]);if(d){vx=d[0]*3.8;vz=d[1]*3.8;e.mv=1;e.dir=vx>0?1:-1}}
     else{if(!e.cw)e.cw=Math.random()<.5?1:-1;e.ang+=e.cw*DT*.35;
       for(const o of aw)if(o!==e&&o.ang!==undefined){let d=e.ang-o.ang;d=Math.atan2(Math.sin(d),Math.cos(d));if(Math.abs(d)<1.1)e.ang+=(d>=0?1:-1)*DT*1.4}
       const tx=H.x+Math.cos(e.ang)*4.6,tz=H.z+Math.sin(e.ang)*2.9,ax=tx-e.x,az=tz-e.z,al=Math.hypot(ax,az);if(al>.4){const sp=al>4?3.8:2.0;vx=ax/al*sp;vz=az/al*sp;e.mv=1}}}
@@ -353,7 +359,7 @@ function enemies(){let atk=0;for(const e of E)if(e.st==='go'||e.st==='wind'||e.s
   else if(e.st==='back'){const l=ds||1;vx=-dx/l*3.4;vz=-dz/l*3.4;e.mv=1;e.dir=dx>0?1:-1;if(e.t>.55){e.st='chase';e.t=0;e.cool=1.6+Math.random()*1.6;e.ang=Math.atan2(e.z-H.z,e.x-H.x)}}
   else if(e.st==='flee'){const l=ds||1;vx=-dx/l*4.5;vz=-dz/l*4.5;e.mv=1;e.dir=dx>0?-1:1;if(e.t>2.2){e.st='chase';e.t=0;e.cool=.8}}
   for(const o of E)if(o!==e&&o.st!=='dead'){const sx=e.x-o.x,sz=e.z-o.z,sl=Math.hypot(sx,sz);if(sl<1.3&&sl>.01){vx+=sx/sl*(1.3-sl)*4;vz+=sz/sl*(1.3-sl)*4}}
-  [vx,vz]=steer(e,vx,vz);vx+=kx;
+  [vx,vz]=steer(e,vx,vz);if(e.st!=='dead'&&e.st!=='stag')navStuck(e,e.ty==='shield'?'goblin con scudo':'goblin',vx,vz);vx+=kx;
   const nx=e.x+vx*DT,nz=e.z+vz*DT;if(efree(e,nx,e.z))e.x=nx;if(efree(e,e.x,nz))e.z=nz}}
 const bXel=document.getElementById('bX'),bAel2=document.getElementById('bA');let hidF=false,ctxL='';
 function hiddenNow(){return !!H.sn&&props.some(p=>p.k==='bush'&&!p.broken&&Math.hypot(p.x-H.x,p.z-H.z)<1.3)}
@@ -650,9 +656,59 @@ function draw(){
   gl.depthMask(false);gl.blendFunc(gl.ONE,gl.ONE_MINUS_SRC_ALPHA);gl.useProgram(PP.p);gl.uniformMatrix4fv(PP.u.uVP,false,VP);gl.uniform1f(PP.u.uK,cv.height*1.6);gl.uniform1f(PP.u.uRound,0);
   gl.bindBuffer(gl.ARRAY_BUFFER,pb);gl.bufferSubData(gl.ARRAY_BUFFER,0,PD2.subarray(0,n*8));attr(PP,'aP',3,32,0);attr(PP,'aC',4,32,12);attr(PP,'aS',1,32,28);gl.drawArrays(gl.POINTS,0,n);gl.depthMask(true)}
 
+// ===== MOVIMENTO NPC: griglia, percorsi A*, formazioni, sblocco (usato da paesani, nemici e futuri personaggi) =====
+const NAV={C:.5,log:[],pb:null};NAV.W=Math.ceil(WX/NAV.C);NAV.H=Math.ceil(WZ/NAV.C);NAV.N=NAV.W*NAV.H;NAV.st=new Uint8Array(NAV.N);NAV.hc=new Float32Array(NAV.N).fill(NaN);
+NAV.g=new Float32Array(NAV.N);NAV.from=new Int32Array(NAV.N);NAV.seen=new Uint32Array(NAV.N);NAV.done=new Uint32Array(NAV.N);NAV.stamp=0;
+function navStaticWhy(x,z,r){if(x<3||z<3||x>WX-3||z>WZ-3)return'bordo mappa';if(height(x,z)<-.3)return'acqua';
+  if(Math.hypot(height(x+.6,z)-height(x-.6,z),height(x,z+.6)-height(x,z-.6))/1.2>.72)return'pendenza';
+  for(const s of solids)if(x>s[0]-.7-r&&x<s[2]+.7+r&&z>s[1]-.5-r&&z<s[3]+.7+r)return'muro di una casa';
+  for(const c of circles){const dx=x-c[0],dz=z-c[1];if(dx>-4&&dx<4&&dz>-4&&dz<4&&Math.hypot(dx,dz)<c[2]+.3+r)return'albero o roccia'}return''}
+function navPB(){if(NAV.pb)return NAV.pb;const m=new Map();for(const p of props){if(!(p.r>.08)||p.int||p.npc)continue;const k=Math.floor(p.x/4)*4096+Math.floor(p.z/4);if(!m.has(k))m.set(k,[]);m.get(k).push(p)}return NAV.pb=m}
+function navProp(x,z,r){const m=navPB(),bx=Math.floor(x/4),bz=Math.floor(z/4);for(let a=-1;a<=1;a++)for(let b=-1;b<=1;b++){const L=m.get((bx+a)*4096+bz+b);if(L)for(const p of L)if(!p.broken&&p.k!=='campfire'&&Math.hypot(p.x-x,p.z-z)<p.r+r)return p}return null}
+function navWhy(x,z,r=0){const w=navStaticWhy(x,z,r);if(w)return w;const p=navProp(x,z,r);return p?'oggetto ('+p.k+')':''}
+function navCell(i,j){if(i<0||j<0||i>=NAV.W||j>=NAV.H)return false;const k=j*NAV.W+i;let v=NAV.st[k];if(!v)v=NAV.st[k]=navStaticWhy((i+.5)*NAV.C,(j+.5)*NAV.C,.05)?2:1;return v===1&&!navProp((i+.5)*NAV.C,(j+.5)*NAV.C,.05)}
+function navH(k){let h=NAV.hc[k];if(h!==h)h=NAV.hc[k]=height((k%NAV.W+.5)*NAV.C,((k/NAV.W|0)+.5)*NAV.C);return h}
+function navFree(x,z,r=0){return !navStaticWhy(x,z,r)&&!navProp(x,z,r)}
+function navNear(x,z,R=10){const C=NAV.C,i0=x/C|0,j0=z/C|0;for(let r=0;r<=R/C;r++)for(let a=-r;a<=r;a++)for(const[i,j]of[[i0+a,j0-r],[i0+a,j0+r],[i0-r,j0+a],[i0+r,j0+a]])if(navCell(i,j))return[(i+.5)*C,(j+.5)*C];return null}
+function navLine(ax,az,bx,bz){const d=Math.hypot(bx-ax,bz-az),n=Math.ceil(d/.3);for(let k=1;k<n;k++){const t=k/n;if(!navFree(ax+(bx-ax)*t,az+(bz-az)*t))return false}return true}
+function navPath(sx,sz,tx,tz,maxN=7000){const C=NAV.C,W=NAV.W;
+  let s=navCell(sx/C|0,sz/C|0)?[sx,sz]:navNear(sx,sz,4),t=navCell(tx/C|0,tz/C|0)?[tx,tz]:navNear(tx,tz,5);if(!s||!t)return null;
+  const si=(s[1]/C|0)*W+(s[0]/C|0),ti=(t[1]/C|0)*W+(t[0]/C|0),tI=ti%W,tJ=ti/W|0;
+  if(navLine(sx,sz,t[0],t[1]))return[[t[0],t[1]]];
+  const st=++NAV.stamp,g=NAV.g,fr=NAV.from,seen=NAV.seen,done=NAV.done,hk=[],hf=[];
+  const push=(k,f)=>{hk.push(k);hf.push(f);let i=hk.length-1;while(i>0){const p=(i-1)>>1;if(hf[p]<=hf[i])break;[hk[p],hk[i]]=[hk[i],hk[p]];[hf[p],hf[i]]=[hf[i],hf[p]];i=p}};
+  const pop=()=>{const k=hk[0],lk=hk.pop(),lf=hf.pop();if(hk.length){hk[0]=lk;hf[0]=lf;let i=0;for(;;){const l=2*i+1,r=l+1;let m=i;if(l<hk.length&&hf[l]<hf[m])m=l;if(r<hk.length&&hf[r]<hf[m])m=r;if(m===i)break;[hk[m],hk[i]]=[hk[i],hk[m]];[hf[m],hf[i]]=[hf[i],hf[m]];i=m}}return k};
+  const hh=k=>{const dx=Math.abs(k%W-tI),dz=Math.abs((k/W|0)-tJ);return Math.max(dx,dz)+.414*Math.min(dx,dz)};
+  g[si]=0;seen[si]=st;fr[si]=-1;push(si,hh(si));let n=0,best=si,bh=1e9;
+  while(hk.length&&n++<maxN){const k=pop();if(done[k]===st)continue;done[k]=st;if(k===ti){best=k;break}const kh=hh(k);if(kh<bh){bh=kh;best=k}
+    const i=k%W,j=k/W|0,h0=navH(k);
+    for(let a=-1;a<=1;a++)for(let b=-1;b<=1;b++){if(!a&&!b)continue;const ni=i+a,nj=j+b;if(!navCell(ni,nj))continue;if(a&&b&&(!navCell(i+a,j)||!navCell(i,j+b)))continue;
+      const nk=nj*W+ni;if(done[nk]===st||Math.abs(navH(nk)-h0)>.45)continue;const ng=g[k]+(a&&b?1.414:1);if(seen[nk]!==st||ng<g[nk]){seen[nk]=st;g[nk]=ng;fr[nk]=k;push(nk,ng+hh(nk))}}}
+  const cells=[];for(let k=best;k!==-1;k=fr[k])cells.push([(k%W+.5)*C,((k/W|0)+.5)*C]);cells.reverse();if(best===ti)cells[cells.length-1]=[t[0],t[1]];
+  // percorso semplificato: salta i punti intermedi quando la linea è libera
+  const out=[];let cx=sx,cz=sz,i=0;while(i<cells.length){let j=Math.min(cells.length-1,i+40);while(j>i&&!navLine(cx,cz,cells[j][0],cells[j][1]))j--;out.push(cells[j]);cx=cells[j][0];cz=cells[j][1];i=j+1}
+  return out}
+// un "agente" è qualsiasi personaggio che si muove: {x,z,path,pi,goal}
+function navGo(a,tx,tz){a.goal=[tx,tz];a.path=navPath(a.x,a.z,tx,tz)||[];a.pi=0;a.plan=time}
+function navDir(a){if(!a.path||a.pi>=a.path.length)return null;let p=a.path[a.pi];while(Math.hypot(p[0]-a.x,p[1]-a.z)<.35){a.pi++;if(a.pi>=a.path.length)return null;p=a.path[a.pi]}const dx=p[0]-a.x,dz=p[1]-a.z,d=Math.hypot(dx,dz);return[dx/d,dz/d,d]}
+function navSep(a,list,R=1){let sx=0,sz=0;for(const o of list)if(o!==a&&!o.hid){const dx=a.x-o.x,dz=a.z-o.z,l=Math.hypot(dx,dz);if(l<R&&l>.01){sx+=dx/l*(R-l);sz+=dz/l*(R-l)}}return[sx,sz]}
+// muove l'agente lungo il percorso; ritorna true quando è arrivato
+function navMove(a,sp,who,list){const d=navDir(a);if(!d){a.mv=0;navStuck(a,who,0,0);return true}
+  let vx=d[0]*sp,vz=d[1]*sp;if(list){const s=navSep(a,list);vx+=s[0]*2.5;vz+=s[1]*2.5}
+  const nx=a.x+vx*DT,nz=a.z+vz*DT;if(navFree(nx,nz)){a.x=nx;a.z=nz}else if(navFree(nx,a.z))a.x=nx;else if(navFree(a.x,nz))a.z=nz;
+  a.mv=1;if(Math.abs(vx)>.05)a.f=vx<0;navStuck(a,who,vx,vz);return false}
+// sblocco: se vuole muoversi ma resta fermo per 1,5 secondi, scrive il perché, ricalcola il percorso; alla terza volta lo sposta nel punto libero più vicino
+function navStuck(a,who,vx,vz){if(!(Math.abs(vx)+Math.abs(vz)>.2)){a.chk=null;return}
+  if(!a.chk){a.chk=[a.x,a.z,0];return}a.chk[2]+=DT;if(a.chk[2]<1.5)return;const m=Math.hypot(a.x-a.chk[0],a.z-a.chk[1]);a.chk=[a.x,a.z,0];if(m>.45){a.repl=0;return}
+  const l=Math.hypot(vx,vz),inside=navWhy(a.x,a.z,-.15),why=inside?'incastrato dentro: '+inside:(navWhy(a.x+vx/l*.5,a.z+vz/l*.5)||'spinto da altri personaggi');
+  NAV.log.push({t:+time.toFixed(1),chi:who,x:+a.x.toFixed(1),z:+a.z.toFixed(1),perche:why});if(NAV.log.length>80)NAV.log.shift();console.log('[NAV] '+who+' bloccato a '+a.x.toFixed(1)+','+a.z.toFixed(1)+' → '+why);
+  a.repl=(a.repl||0)+1;if(a.repl>=3||inside){const c=navNear(a.x,a.z);if(c){a.x=c[0];a.z=c[1]}a.repl=0}
+  if(a.goal)navGo(a,a.goal[0],a.goal[1])}
+// direzione per i nemici: segue il percorso verso (tx,tz), ricalcola se il bersaglio si sposta
+function navToward(e,tx,tz){if(!e.goal||!e.path||time-(e.plan||0)>1.2||Math.hypot(e.goal[0]-tx,e.goal[1]-tz)>2)navGo(e,tx,tz);return navDir(e)}
 // ===== STRADA E VILLAGGIO DELL'ORCO =====
 if(sv.op&&!Array.isArray(sv.op)){sv.opt=sv.op;sv.op=[]}
-let orcSet=0,orcE=null;const CAGE=[124,41];const CROW={x:0,z:0,y:0,on:0};
+window.__NAV=NAV;window.__NAVwhy=(x,z)=>navWhy(x,z,-.2);window.__navPath=navPath;window.__navWhy=navWhy;let orcSet=0,orcE=null;const CAGE=[124,41];const CROW={x:0,z:0,y:0,on:0};
 function placeE(e){for(let k=1;k<80&&!efree(e,e.x,e.z);k++){e.x=e.hx+Math.cos(k*2.4)*k*.25;e.z=e.hz+Math.sin(k*2.4)*k*.25}e.hx=e.wx=e.x;e.hz=e.wz=e.z;return e}
 function spawnE(x,z,ty,o){const e=Object.assign({x,z,hx:x,hz:z,hp:40,hm:40,st:'idle',t:Math.random()*2,dir:-1,poise:20,aware:false,wx:x,wz:z,fl:0,kv:0,mv:0,ty},o||{});E.push(placeE(e));return e}
 function orcSetup(){orcSet=1;
@@ -684,7 +740,7 @@ function orcAI(e,dx,dz,ds,y){const rage=e.hp<e.hm/2;let vx=0,vz=0;
   if(e.st==='idle'){if(e.aware){e.st='chase';e.t=0}}
   else if(e.st==='chase'){e.dir=dx>0?1:-1;e.fz=dz>0&&Math.abs(dz)>Math.abs(dx)*1.2;
     if(e.cool<=0&&ds<4.4){e.st='owind';e.t=0}else if(e.cool<=0&&ds>6){e.st='oprep';e.t=0;e.cvx=dx/ds;e.cvz=dz/ds;e.dir=dx>0?1:-1}
-    else if(ds>2.6){const sp=rage?3:2.3;vx=dx/ds*sp;vz=dz/ds*sp;e.mv=1}}
+    else if(ds>2.6){const sp=rage?3:2.3,d=(ds>6||!los(e))?navToward(e,H.x,H.z):[dx/ds,dz/ds];if(d){vx=d[0]*sp;vz=d[1]*sp;e.mv=1}}}
   else if(e.st==='owind'){if(e.t>(rage?.6:.9)){e.st='osmash';e.t=0;e.did=0}}
   else if(e.st==='osmash'){if(!e.did){e.did=1;shake=.7;hitstop=.06;const ix=e.x+e.dir*2.6;e.wave={x:ix,z:e.z,r:.3};num(ix,y+1.6,e.z,'BUUM!','#ffd28a',1);burst(ix,y+.2,e.z,[.75,.6,.4,1],18);try{navigator.vibrate&&navigator.vibrate(60)}catch(_){}}
     if(e.t>(rage?.9:1.4)){e.st='chase';e.t=0;e.cool=rage?1.1:2.2}}
@@ -697,6 +753,7 @@ function orcAI(e,dx,dz,ds,y){const rage=e.hp<e.hm/2;let vx=0,vz=0;
     if(e.st==='ocharge'&&e.t>1.4){e.st='chase';e.t=0;e.cool=1.6}}
   else if(e.st==='ostun'){if(e.t>2.6){e.st='chase';e.t=0;e.cool=1}}
   else{e.st='chase'}
+  navStuck(e,'orco',vx,vz);
   if(vx||vz){[vx,vz]=steer(e,vx,vz);const nx=e.x+vx*DT,nz=e.z+vz*DT;if(efree(e,nx,e.z))e.x=nx;if(efree(e,e.x,nz))e.z=nz}}
 function shamanAI(e,dx,dz,ds,y){let vx=0,vz=0;e.dir=dx>0?1:-1;
   if(e.st==='dead')return;
@@ -707,7 +764,7 @@ function shamanAI(e,dx,dz,ds,y){let vx=0,vz=0;e.dir=dx>0?1:-1;
   const want=ds<6?-1:ds>9.5?1:0;if(want){vx=dx/ds*2.7*want;vz=dz/ds*2.7*want;e.mv=1}
   if(e.cool<=0){const o=E.find(o=>o!==e&&o.st!=='dead'&&o.ty!=='shaman'&&o.hp<(o.hm||40)-4&&Math.hypot(o.x-e.x,o.z-e.z)<13);if(o){e.st='cast';e.t=0;e.tg=o}else e.cool=1}
   for(const o of E)if(o!==e&&o.st!=='dead'){const sx=e.x-o.x,sz=e.z-o.z,sl=Math.hypot(sx,sz);if(sl<1.3&&sl>.01){vx+=sx/sl*(1.3-sl)*4;vz+=sz/sl*(1.3-sl)*4}}
-  if(vx||vz){[vx,vz]=steer(e,vx,vz);const nx=e.x+vx*DT,nz=e.z+vz*DT;if(efree(e,nx,e.z))e.x=nx;if(efree(e,e.x,nz))e.z=nz}}
+  navStuck(e,'sciamano',vx,vz);if(vx||vz){[vx,vz]=steer(e,vx,vz);const nx=e.x+vx*DT,nz=e.z+vz*DT;if(efree(e,nx,e.z))e.x=nx;if(efree(e,e.x,nz))e.z=nz}}
 function drawE(e){const y=height(e.x,e.z)-.05;
   if(e.ty==='orc'){let f='oI'+(((time*2.5)|0)%2),o={tint:1.08},fl=e.dir<0;
     if(e.st==='dead'){f='oDead'}else if(e.st==='owind'){f='oWd';o.xo=Math.sin(time*50)*.03}else if(e.st==='osmash'){f=e.t<.5?'oSm':'oI0';}else if(e.st==='oprep'){f='oPr';o.xo=Math.sin(time*60)*.025}
@@ -720,17 +777,18 @@ function drawE(e){const y=height(e.x,e.z)-.05;
   bill(f,e.x,y,e.z,e.dir<0,o)}
 // ===== ASSALTO AL BORGO (dopo la runa) =====
 function mkG(x,z){const e={x,z,hx:x,hz:z,hp:40,st:'chase',t:0,dir:-1,poise:20,aware:true,wx:x,wz:z,fl:0,kv:0,mv:0,raid:1};E.push(e);return e}
-let raidW=0;
+let raidW=0;const RAIDIN=[[222,60],[240,106],[136,104]];
+function raidWave(n,w){const p=navNear(RAIDIN[w][0],RAIDIN[w][1],8)||RAIDIN[w],S=[[0,0],[-1,1],[1,1],[0,2],[-1,2]];for(let i=0;i<n;i++){const e=mkG(p[0]+(i%2?-1:1)*i*.6,p[1]+i*.5);e.fm={g:'w'+w,side:S[i][0],back:S[i][1]};placeE(e)}}
 function raidStory(){
   if(sv.eq&&!sv.raid&&!sv.amq&&!IN&&!cine&&!fading){sv.raid=1;save();const fd=doors.find(d=>d[2]==='fucina'),FX=FOLK.find(f=>f.k==='v_oldw'),BY=FOLK.find(f=>f.k==='v_boy');
     startCine([{say:'«UUUUOOOOH!»',d:2.2},{say:'Fabbro: «Il corno! Sono tornati!»',d:3,pos:()=>[fd[0],height(fd[0],fd[1])+2.6,fd[1]]},
-      {fn:()=>{for(const f of FOLK){f.st='run';f.tx=f.B[0];f.tz=f.B[1];f.door=1;f.hid=0;f.raid=1}}},
+      {fn:()=>{for(const f of FOLK)folkHome(f)}},
       {say:'Vecchia: «In casa, tutti in casa!»',d:3,pos:()=>[FX.x,height(FX.x,FX.z)+2.1,FX.z]},
       {say:'"Ok… vediamo se quella sfera funziona davvero."',d:3},
-      {fn:()=>{raidW=1;mkG(214,77);mkG(216,80);later.push([time+.4,()=>say('Premi MAGIA per lanciare la Sfera arcana.',4)])}}])}
-  if(sv.raid===1&&raidW===0&&!cine){raidW=1;mkG(214,77);mkG(216,80)}
-  if(sv.raid===1&&raidW===1&&!E.some(e=>e.raid&&e.st!=='dead')){raidW=2;mkG(215,74);mkG(217,78);mkG(213,81);sayQ({t:'«Ne arrivano altri!»',auto:1,d:2.5})}
-  if(sv.raid===1&&raidW===2&&!E.some(e=>e.raid&&e.st!=='dead')){sv.raid=2;save();raidW=3;for(const f of FOLK){f.raid=0;f.hid=.4+Math.random()*1.5}
+      {fn:()=>{raidW=1;raidWave(2,0);later.push([time+.4,()=>say('Premi MAGIA per lanciare la Sfera arcana.',4)])}}])}
+  if(sv.raid===1&&raidW===0&&!cine){raidW=1;raidWave(2,0)}
+  if(sv.raid===1&&raidW===1&&!E.some(e=>e.raid&&e.st!=='dead')){raidW=2;raidWave(3,1);sayQ({t:'«Ne arrivano altri! Dalla strada a sud-est!»',auto:1,d:3})}
+  if(sv.raid===1&&raidW===2&&!E.some(e=>e.raid&&e.st!=='dead')){sv.raid=2;save();raidW=3;for(const f of FOLK)if(f.st==='in')f.w=.4+Math.random()*1.5
     const BY=FOLK.find(f=>f.k==='v_boy');later.push([time+2.6,()=>sayQ({t:'Bambino: «L\'ha fatto davvero! Con la spada e la luce blu!»',auto:1,d:3.5,fn:()=>{if(dlg)dlg.pos=()=>[BY.x,height(BY.x,BY.z)+1.7,BY.z]}})])}}
 // ===== BUILD: rune, mana, dardo arcano =====
 const BOLTS=[];
@@ -755,23 +813,34 @@ setTimeout(()=>{applyCls();updMp()},0);
 const FOLK=[];{const R=[];let z=99;for(let x=146;x<=200;x+=3){let bz=z,bd=1e9;for(let zz=z-4;zz<=z+4;zz+=.25){const d=dPath(x,zz);if(d<bd){bd=d;bz=zz}}z=bz;R.push([x,bz])}
  const DR=doors.filter(d=>d[0]>140&&d[0]<220&&d[1]>60&&d[1]<115).map(d=>[d[0],d[1]+.9]);
  const FL={v_cook:['Cuoco','Il pane brucia, ma chi se ne importa! I goblin sono vicini!'],v_gard:['Contadina','Ho chiuso le galline… ora chiudo anche me!'],v_oldm:['Vecchio','Ai miei tempi i mostri non arrivavano fin qui…'],v_oldw:['Vecchia','Non stare in strada, ragazzo, entra da qualche parte!'],v_girl:['Bambina','La mamma dice di non parlare con gli stranieri!'],v_boy:['Bambino','Hai una spada? L\'hai mai usata?'],v_minst:['Menestrella','Sto scrivendo una ballata sulla nostra fine… speriamo di no.']};let folkCD=0;
- // ognuno ha il suo posto (A) e la sua porta (B): fa avanti e indietro di corsa, impaurito
- const DP=n=>{const d=doors.find(d=>d[2]===n&&true);return d};const DN=(x,z)=>{let b=null,bd=1e9;for(const d of doors){const q=Math.hypot(d[0]-x,d[1]-z);if(q<bd){bd=q;b=d}}return[b[0],b[1]+.9]};
- const T=[['v_cook',3.4,[170,100.8],DN(171,108)],['v_gard',3.2,[194,84],DN(184,84)],['v_oldm',1.6,[158.5,84],DN(166,90)],['v_oldw',1.5,[212,97],DN(213,94)],['v_girl',4,[206,100],DN(213,94)],['v_boy',4.2,[218,99],DN(213,94)],['v_minst',3.3,[178,90.5],DN(208,68)]];
- T.forEach((t,i)=>FOLK.push({k:t[0],sp:t[1],A:t[2],B:t[3],x:t[2][0],z:t[2][1],tx:0,tz:0,w:1+Math.random()*3,st:'wait',f:false,ph:Math.random()*6,hid:0,at:'A'}));
- function pick(f,flee){const g=flee||f.at==='A'?f.B:f.A;f.tx=g[0];f.tz=g[1];f.door=(g===f.B);f.st='run'}
- window.folkStep=function(){if(IN)return;folkCD-=DT;for(const f of FOLK){if(!f.hid&&!f.raid&&folkCD<=0&&!f.said&&!cine&&!dlg&&Math.hypot(H.x-f.x,H.z-f.z)<2.6){f.said=1;folkCD=6;const L=FL[f.k];sayQ({t:L[0]+': «'+L[1]+'»',auto:1,d:3.2,fn:()=>{if(dlg)dlg.pos=()=>[f.x,height(f.x,f.z)+2.2,f.z]}})}
-  if(f.hid>0){if(f.raid)continue;f.hid-=DT;if(f.hid<=0){f.at='B';pick(f)}continue}
-  const hd=Math.hypot(H.x-f.x,H.z-f.z);
-  if(f.st==='wait'){f.w-=DT;if(hd<2.2&&f.at==='A'&&f.said){pick(f,true)}else if(f.w<=0)pick(f);continue}
-  const dx=f.tx-f.x,dz=f.tz-f.z,d=Math.hypot(dx,dz),sp=f.sp*(hd<4?1.25:1);
-  if(d<.3){f.x=f.tx;f.z=f.tz;if(f.door){f.hid=2.5+Math.random()*4;f.at='B'}else{f.st='wait';f.at='A';f.w=2.5+Math.random()*4}continue}
-  f.x+=dx/d*sp*DT;f.z+=dz/d*sp*DT;if(Math.abs(dx)>.05)f.f=dx<0;f.ph+=DT*sp*3.2}};
- window.folkDraw=function(tx,tz){if(IN)return;for(const f of FOLK){if(f.hid>0||Math.abs(f.x-tx)>60||Math.abs(f.z-tz)>50)continue;const y=height(f.x,f.z)-.05,run=f.st==='run',
+ // ognuno ha la sua casa: esce dalla porta, fa un giro (sempre diverso) passando per 2-3 posti del borgo, torna ed entra dalla porta
+ const inB=(x,z)=>x>140&&x<226&&z>60&&z<116;
+ const DN=(x,z)=>{let b=null,bd=1e9;for(const d of doors){const q=Math.hypot(d[0]-x,d[1]-z);if(q<bd){bd=q;b=d}}return[b[0],b[1]]};
+ const POI=[];for(const d of doors)if(inB(d[0],d[1]))POI.push([d[0]+1.4,d[1]+.8],[d[0]-1.4,d[1]+.8]);
+ for(const p of props)if(inB(p.x,p.z)&&['hay','barrel','crate','torch','stall','pot','anvil'].includes(p.k))POI.push([p.x+.4,p.z+p.r+1.1]);
+ for(let k=0;k<R.length;k+=2)POI.push([R[k][0],R[k][1]+.6]);
+ for(let k=POI.length-1;k>=0;k--){const c=navFree(POI[k][0],POI[k][1],.2)?POI[k]:navNear(POI[k][0],POI[k][1],2);if(c)POI[k]=c;else POI.splice(k,1)}
+ const T=[['v_cook',3.4,DN(171,108)],['v_gard',3.2,DN(184,84)],['v_oldm',1.6,DN(166,90)],['v_oldw',1.5,DN(213,94)],['v_girl',4,DN(213,94)],['v_boy',4.2,DN(213,94)],['v_minst',3.3,DN(184,84)]];
+ T.forEach((t,i)=>{const f={k:t[0],sp:t[1],home:t[2],x:t[2][0],z:t[2][1],st:'in',w:.5+i*1.3,f:false,ph:Math.random()*6,route:[],last:[]};FOLK.push(f)});
+ const nm=f=>'paesano ('+FL[f.k][0]+')';window.__FOLK=FOLK;
+ function plan(f){let c=POI.filter(p=>Math.hypot(p[0]-f.home[0],p[1]-f.home[1])<34&&!f.last.some(q=>q===p));if(c.length<3)c=POI.slice();const r=[];for(let n=2+(Math.random()<.5?1:0);n>0&&c.length;n--)r.push(c.splice(Math.random()*c.length|0,1)[0]);f.route=r;f.last=r.slice()}
+ function goNext(f){const p=f.route.shift();if(p){f.going='giro';navGo(f,p[0],p[1])}else{f.going='casa';navGo(f,f.home[0],f.home[1])}f.st='walk'}
+ window.folkHome=function(f){if(f.st==='in'||f.st==='enter')return;f.route=[];f.panic=4;f.going='casa';navGo(f,f.home[0],f.home[1]);f.st='walk'};
+ window.folkStep=function(){if(IN)return;folkCD-=DT;const raid=sv.raid===1;for(const f of FOLK){
+  if(f.st!=='in'&&!raid&&folkCD<=0&&!f.said&&!cine&&!dlg&&Math.hypot(H.x-f.x,H.z-f.z)<2.6){f.said=1;folkCD=6;const L=FL[f.k];sayQ({t:L[0]+': «'+L[1]+'»',auto:1,d:3.2,fn:()=>{if(dlg)dlg.pos=()=>[f.x,height(f.x,f.z)+2.2,f.z]}})}
+  const hd=Math.hypot(H.x-f.x,H.z-f.z);f.panic=Math.max(0,(f.panic||0)-DT);
+  if((raid||(f.said&&hd<2.2))&&(f.st==='walk'&&f.going!=='casa'||f.st==='look'))folkHome(f);
+  if(f.st==='in'){if(raid)continue;f.w-=DT;if(f.w<=0){f.st='exit';f.t=0;f.x=f.home[0];f.z=f.home[1]-.7}continue}
+  if(f.st==='exit'){f.t+=DT;f.z=Math.min(f.home[1],f.z+DT*1.8);f.ph+=DT*f.sp*3.2;if(f.t>.4){plan(f);goNext(f)}continue}
+  if(f.st==='enter'){f.t+=DT;f.x+=(f.home[0]-f.x)*Math.min(1,DT*8);f.z-=DT*1.8;f.ph+=DT*f.sp*3.2;if(f.t>.4){f.st='in';f.w=4+Math.random()*7;f.x=f.home[0];f.z=f.home[1]}continue}
+  if(f.st==='look'){f.w-=DT;if(f.w<=0)goNext(f);continue}
+  const sp=f.sp*(f.panic>0||hd<4?1.35:1),arr=navMove(f,sp,nm(f),FOLK.concat([H]));f.ph+=DT*sp*3.2;
+  if(arr){if(f.going==='casa'){if(Math.hypot(f.x-f.home[0],f.z-f.home[1])<1.1){f.st='enter';f.t=0;f.f=false}else navGo(f,f.home[0],f.home[1])}else{f.st='look';f.w=1.4+Math.random()*2.6}}}};
+ window.folkDraw=function(tx,tz){if(IN)return;for(const f of FOLK){if(f.st==='in'||Math.abs(f.x-tx)>60||Math.abs(f.z-tz)>50)continue;const y=height(f.x,f.z)-.05,run=f.st!=='look',
   flip=run?f.f:(Math.sin(time*2.3+f.ph)>0);bill(f.k+(run?((f.ph/(Math.PI*2)*6)|0)%6:6+((time*2.5+f.ph)|0)%2),f.x,y,f.z+FOLK.indexOf(f)*.035,flip,{tint:1.1,xo:run?0:Math.sin(time*38+f.ph)*.012})}};
- window.folkShadow=function(sh,tx,tz){if(IN)return;for(const f of FOLK)if(!f.hid&&Math.abs(f.x-tx)<45&&Math.abs(f.z-tz)<40)sh(f.x+.12,height(f.x,f.z),f.z+.05,.46,1.3)}}
+ window.folkShadow=function(sh,tx,tz){if(IN)return;for(const f of FOLK)if(f.st!=='in'&&Math.abs(f.x-tx)<45&&Math.abs(f.z-tz)<40)sh(f.x+.12,height(f.x,f.z),f.z+.05,.46,1.3)}}
 // ===== SCHERMO INTERO =====
-{const bf=document.getElementById('bFull'),de=document.documentElement,can=!!(de.requestFullscreen||de.webkitRequestFullscreen),inFS=()=>!!(document.fullscreenElement||document.webkitFullscreenElement)||matchMedia('(display-mode: standalone)').matches||navigator.standalone;
+{const bf=document.getElementById('bFull'),de=document.documentElement,can=!!(de.requestFullscreen||de.webkitRequestFullscreen)&&window.top===window,inFS=()=>!!(document.fullscreenElement||document.webkitFullscreenElement)||matchMedia('(display-mode: standalone)').matches||navigator.standalone;
  const upd=()=>bf.classList.toggle('on',can&&!inFS());upd();document.addEventListener('fullscreenchange',upd);document.addEventListener('webkitfullscreenchange',upd);
  bf.addEventListener('pointerdown',e=>{e.stopPropagation();e.preventDefault();const r=de.requestFullscreen?de.requestFullscreen({navigationUI:'hide'}):de.webkitRequestFullscreen();Promise.resolve(r).then(()=>{try{screen.orientation&&screen.orientation.lock&&screen.orientation.lock('landscape').catch(()=>{})}catch(_){}}).catch(()=>{})})}
 // ===== MENÙ: mappa con nebbia, eroe, zaino, opzioni =====
