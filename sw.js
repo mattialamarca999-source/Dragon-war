@@ -29,6 +29,7 @@ self.addEventListener('fetch', e => {
   const font = /fonts\.(googleapis|gstatic)\.com/.test(r.url);
   if (font) { e.respondWith(caches.match(r).then(hit => hit || fetch(r).then(res => { const cp = res.clone(); caches.open(CACHE).then(c => c.put(r, cp)); return res; }))); return; }
   const u = new URL(r.url); if (u.origin !== location.origin) return;
+  if (u.pathname.includes('/rpg/')) return;             // la cartella /rpg/ è un altro gioco col suo service worker
   if (/\/audio\/[^/]+\.mp3$/.test(u.pathname)) { e.respondWith(audio(r).catch(() => fetch(r))); return; }
   e.respondWith(fetch(r, {cache: 'no-cache'}).then(res => { if (res.status === 200) { const cp = res.clone(); caches.open(CACHE).then(c => c.put(r, cp)); } return res; }).catch(() => caches.match(r).then(hit => hit || caches.match('./index.html'))));
 });
