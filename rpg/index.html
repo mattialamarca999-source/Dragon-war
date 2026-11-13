@@ -849,6 +849,8 @@ const FOLK=[];{const R=[];let z=99;for(let x=146;x<=200;x+=3){let bz=z,bd=1e9;fo
  document.getElementById('rot').addEventListener('click',()=>{if(de.requestFullscreen||de.webkitRequestFullscreen)go();else{try{screen.orientation.lock('landscape').catch(()=>{})}catch(_){}}document.getElementById('rotT').textContent=window.top!==window?'Gira il telefono. Se non gira, togli il blocco rotazione dal menu rapido.':'Se non gira ancora, togli il blocco rotazione dal menu rapido del telefono.'});
  // al primo tocco va da solo a schermo intero (sul telefono, fuori dalla chat)
  if(can&&touch&&!inFS())addEventListener('pointerdown',function f1(){removeEventListener('pointerdown',f1,true);if(!inFS())go()},true)}
+// ===== SALVATAGGIO AUTOMATICO: quando esci, chiudi o metti in pausa il telefono, e ogni 15 secondi =====
+addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden')save()});addEventListener('pagehide',save);addEventListener('beforeunload',save);setInterval(()=>{if(!cine&&H.hp>0)save()},15000);
 // ===== MENÙ: mappa con nebbia, eroe, zaino, opzioni =====
 const FW=70,FH=55,FC=4;if(!sv.fog||sv.fog.length!==FW*FH)sv.fog='0'.repeat(FW*FH);let mapPan=null,MENU=false,mTab='hero',fogDirty=true;
 function revealFog(){if(IN)return;const cx=H.x/FC,cz=H.z/FC,r=16/FC;let f=null;for(let z=Math.max(0,cz-r|0);z<=Math.min(FH-1,cz+r+1|0);z++)for(let x=Math.max(0,cx-r|0);x<=Math.min(FW-1,cx+r+1|0);x++){const i=z*FW+x;if(sv.fog[i]==='0'&&Math.hypot(x+.5-cx,z+.5-cz)<r){if(!f)f=sv.fog.split('');f[i]='1'}}if(f){sv.fog=f.join('');fogDirty=true}}
@@ -888,14 +890,14 @@ function renderTab(){document.getElementById('mFoot').innerHTML='● <b>'+(sv.go
   for(let n=0;n<12;n++){const k=list[n],d=document.createElement('div');d.className='islot';if(k){d.appendChild(icon(k));const s=document.createElement('span');s.textContent=ITEMS[k][0]+' ×'+i[k];d.appendChild(s);d.onclick=()=>useItem(k)}G.appendChild(d)}
   if(sv.sword){const d=G.children[list.length];if(d){d.appendChild(icon('sword'));const s=document.createElement('span');s.textContent='Spada';d.appendChild(s);d.onclick=()=>mInfo('La spada trovata piantata nella sabbia.')}}return}
  if(mTab==='skill'){let h='<div class="mgold">Tre rami: i punti li metti tu salendo di livello.</div><div class="tal">';for(const[n,c]of[['Lama','#c0391b'],['Arcano','#2d6fd0'],['Ombra','#6a4aa8']]){h+='<div class="tcol"><b style="color:'+c+'">'+n+'</b>';for(let k=0;k<4;k++)h+='<div class="islot lockd"><span class="lk">🔒</span></div>';h+='</div>'}B.innerHTML=h+'</div><div id="mInfo">'+(sv.cls?'Incantesimo imparato: Sfera arcana.':'')+'</div>';return}
- if(mTab==='opt'){B.innerHTML='<div class="mopt"><label><input type="checkbox" id="oVib" '+(sv.opt&&sv.opt.novib?'':'checked')+'> Vibrazione</label><label><input type="checkbox" id="oMM" '+(sv.opt&&sv.opt.nomm?'':'checked')+'> Minimappa</label><button id="oNew">Ricomincia da capo</button><div id="mInfo"></div></div>';
+ if(mTab==='opt'){B.innerHTML='<div class="mopt"><label><input type="checkbox" id="oVib" '+(sv.opt&&sv.opt.novib?'':'checked')+'> Vibrazione</label><label><input type="checkbox" id="oMM" '+(sv.opt&&sv.opt.nomm?'':'checked')+'> Minimappa</label><div id="mInfo"></div></div>';
   document.getElementById('oVib').onchange=e=>{sv.opt=sv.opt||{};sv.opt.novib=!e.target.checked;save()};document.getElementById('oMM').onchange=e=>{sv.opt=sv.opt||{};sv.opt.nomm=!e.target.checked;document.getElementById('mm').style.visibility=sv.opt.nomm?'hidden':'';save()};
-  let ask=0;document.getElementById('oNew').onclick=e=>{if(!ask){ask=1;e.target.textContent='Sicuro? Tocca ancora per cancellare tutto';return}localStorage.removeItem(KEY);location.reload()}}}
+}}
 function openMenu(t){if(!MENU){try{history.pushState({menu:1},'')}catch(_){}}MENU=true;mTab=t||mTab;H.vx=H.vz=0;document.getElementById('pMenu').classList.add('on');renderTab()}
 addEventListener('popstate',()=>{if(MENU)closeMenu(true)});
 function closeMenu(fromBack){if(!fromBack){try{if(history.state&&history.state.menu)history.back()}catch(_){}}MENU=false;document.getElementById('pMenu').classList.remove('on');save()}
 document.getElementById('bMenu').addEventListener('pointerdown',e=>{e.stopPropagation();openMenu()});document.getElementById('mm').addEventListener('pointerdown',e=>{e.stopPropagation();openMenu('map')});
-document.getElementById('mClose').onclick=closeMenu;for(const b of document.querySelectorAll('#mTabs button'))b.onclick=()=>{mTab=b.dataset.t;renderTab()};
+document.getElementById('mClose').onclick=()=>closeMenu();for(const b of document.querySelectorAll('#mTabs button[data-t]'))b.onclick=()=>{mTab=b.dataset.t;renderTab()};
 if(sv.opt&&sv.opt.nomm)document.getElementById('mm').style.visibility='hidden';
 let acc=0,last=performance.now();
 function loop(now){requestAnimationFrame(loop);acc+=Math.min(.1,(now-last)/1000);last=now;let n=0;if(MENU)acc=0;while(acc>=DT&&n++<5){step();acc-=DT}if(ready)draw()}
