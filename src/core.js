@@ -650,9 +650,9 @@ const DW = (() => {
     } else if (d.leap && d.elite) {                                // Re Ranocchio: salta corto, atterra davanti al nemico e combatte
       const e = foes.filter(e => (e.x - u.x) * dir > d.range + 20 && (e.x - u.x) * dir <= 140).sort((a, b) => (a.x - b.x) * dir)[0];
       if (e) { const ox = u.x; u.x = e.x - dir * (d.range + 4); s.ev.push({type:'leap', x1:ox, x2:u.x, y:u.y}); u.abT = 15; } else u.abT = 1;
-    } else if (d.leap) {                                           // Ranocchio: salta oltre il primo nemico
+    } else if (d.leap && !u.leapt) {                               // Ranocchio e Coniglio: saltano oltre il primo nemico, una volta sola
       const e = foes.find(e => (e.x - u.x) * dir > 0 && (e.x - u.x) * dir <= d.range + 6);
-      if (e) { const ox = u.x; u.x = Math.max(s.base.x + 40, Math.min(s.castle.x - 40, u.x + dir * d.leap.d)); s.ev.push({type:'leap', x1:ox, x2:u.x, y:u.y}); u.abT = d.leap.every; }
+      if (e) { const ox = u.x; u.leapt = 1; u.x = Math.max(s.base.x + 40, Math.min(s.castle.x - 40, u.x + dir * d.leap.d)); s.ev.push({type:'leap', x1:ox, x2:u.x, y:u.y}); u.abT = d.leap.every; }
     }
   }
 
