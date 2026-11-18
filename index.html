@@ -1546,8 +1546,10 @@ const DW = (() => {
       if (I.special === 'boss2') for (const b of [B[Math.max(0, bi) % B.length], B[(Math.max(0, bi) + 1) % B.length]]) { addUnit(s, b); s.ev.push({type:'boss', k:b}); }
     }
     I.qt += dt;
-    while (I.q.length && I.q[0][0] <= I.qt && s.units.filter(u => u.side === 1 && !u.dead).length < 18) {   // al massimo 18 buoni in campo: si capisce cosa succede
-      const [, k, fl] = I.q.shift(), got = addGroup(s, k);
+    const chg = () => s.units.filter(u => u.side === 1 && !u.dead && U[u.k] && U[u.k].charge).length;   // al massimo 2 che caricano (Carrozze, Renne) in campo
+    while (s.units.filter(u => u.side === 1 && !u.dead).length < 18) {   // al massimo 18 buoni in campo: si capisce cosa succede
+      const i = I.q.findIndex(e => e[0] <= I.qt && !(U[e[1]] && U[e[1]].charge && chg() >= 2)); if (i < 0) break;
+      const [, k, fl] = I.q.splice(i, 1)[0], got = addGroup(s, k);
       for (const u of got) { if (fl === 'flash') { u.spdMul *= 1.7; u.hp = u.max = Math.round(u.max * .6); } if (fl === 'night') { u.hp = u.max = Math.round(u.max * 1.2); } }
     }
   }
