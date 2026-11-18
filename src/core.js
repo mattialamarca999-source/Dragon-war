@@ -27,7 +27,7 @@ const DW = (() => {
     sorella:    {side:0, sub:1, hp:69,  dmg:7, rate:.9,  range:20, spd:50, slowHit:{t:1.8}},
     retopi:     {side:0, cost:170, cd:8, hp:280, dmg:16, rate:1,   range:22,  spd:45, summon:{k:'topo', every:5, max:6}, ratAura:{r:160, m:1.8}},
     omino:      {side:0, cost:150, cd:9, hp:210, dmg:13, rate:1.2, range:24,  spd:40, donkey:{every:12, r:140, maxHp:160}},
-    babajaga:   {side:0, cost:300, cd:12, hp:1050, dmg:30, rate:1.6, range:30, spd:26, splash:55, siege:1.5},
+    babajaga:   {side:0, cost:300, cd:12, hp:840, dmg:30, rate:1.6, range:30, spd:26, splash:55, siege:1.5},
     stregamare: {side:0, cost:150, cd:9, hp:116, dmg:13, rate:1.5, range:140, spd:40, ranged:1, mute:{every:10, r:170, t:5}},
     reginacattiva:{side:0, cost:320, cd:12, hp:420, dmg:26, rate:1.3, range:130, spd:38, ranged:1, splash:30, mirror:{every:11, r:220}},
     reginanevi: {side:0, cost:340, cd:12, hp:340, dmg:22, rate:1.5, range:140, spd:38, ranged:1, splash:50, freeze:{every:13, t:2.5}},
