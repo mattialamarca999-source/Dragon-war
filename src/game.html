@@ -2553,6 +2553,19 @@ const HEIGHT = {goblin:92, fionda:92, orco:112, soldatino:112, arciere:96, princ
 /* ================= il drago ================= */
 const dragon = {phase:'idle', pt:0, fireT:0, glasses:1, sad:0, rear:0};
 function drawDragon() {
+  if (NG.dragon) {                                                         // il draghetto nuovo del prototipo
+    const d = dragon, t = time; let rear = 0, inflate = 0, open = 0;
+    if (d.phase === 'antic') { const e = ease(Math.min(1, d.pt / .18)); rear = -.35 * e; inflate = .1 * e; }
+    if (d.phase === 'fire') { rear = .25 - Math.min(.25, d.pt * .4); open = 1; }
+    rear += d.rear;
+    ctx.save(); ctx.translate(92, 228);
+    const dlk = !NET.g && save.look && LOOKS[save.look.drago]; if (dlk && dlk.filter) ctx.filter = dlk.filter;   // Drago Dorato / Drago Nero
+    const bt = t % 4.2, blink = bt < .14 ? Math.abs(Math.cos(bt / .14 * Math.PI)) : 1;
+    const m = NG.dragon(ctx, {t, rear, inflate, open, glasses:d.glasses, sad:d.sad, blink}); ctx.filter = 'none';
+    if (inStory && story.i === 3 && story.t > 1.75 && story.t < 2.5) star(m[2] + 6, m[3], 12 * Math.sin((story.t - 1.75) / .75 * Math.PI), '#fffbe0');
+    ctx.restore(); dragonHead = {x:92 + m[2], y:228 + m[3]};
+    return {x:92 + m[0], y:228 + m[1]};
+  }
   const d = dragon, t = time;
   let rear = 0, inflate = 0, open = 0;
   if (d.phase === 'antic') { const e = ease(Math.min(1, d.pt / .18)); rear = -.35 * e; inflate = .1 * e; }
@@ -3067,23 +3080,30 @@ function drawObstacle() {
 }
 
 /* ================= mondi nuovi in battaglia (disegni del prototipo, vedi NG.nw) ================= */
-let NWON = false;
+let NWON = false, nwHeadW = null, nwDS = 1, dragonHead = {x:110, y:172};
 function nwOn() {                                                          // in battaglia: sfondo, tana e castello nuovi
-  if (GALLERY || inStory || !s || !s.base || !s.castle || !NG.nw || !(P34 ? s.lv : inMenu)) return false;   // anche nel menu, dietro i pulsanti
+  if (GALLERY || !s || !s.base || !s.castle || !NG.nw || !(P34 ? s.lv : inMenu || inStory)) return false;   // anche nel menu, dietro i pulsanti
   return NG.nw.ensure({th:TH, ob:P34 ? obstKind() : null, l:cam.x - 30, r:cam.x + W / k + 30, t:-groundY / k - 30, b:(H - groundY) / k + 2, dy:DY, px:k * dpr, p:lightP, spr:Math.max(1, BS / .78)});
 }
-const nwFit = need => Math.min(Math.max(1, BS / .78), (24.6 + groundY / k - 34) / need);   // tana e castello devono stare nello schermo (sopra ci sono le barre)
+function nwPlace(xs, floor, need) {                                       // la soglia della grotta / del portone dove nascono i personaggi; e tutto dentro lo schermo
+  const sp = dyAt(xs, .5), s = Math.min(Math.max(1, BS / .78), Math.max(.3, (sp + groundY / k - 34) / need));
+  return {s, dy:sp - (24.6 + s * floor * .8776)};
+}
+const NW_SEEN = new WeakMap();                                              // quando è comparso ogni personaggio: esce dal buio della tana
+function nwAppear(u) { if (!NWON || !P34) return 1; let t0 = NW_SEEN.get(u); if (t0 == null) NW_SEEN.set(u, t0 = time); return Math.min(1, (time - t0) / .4); }
 function nwTana(b, mirror) {
   const sh = shakeB[mirror ? 1 : 0] > 0 ? Math.sin(time * 80) * 3 : 0, lost = b.hp <= 0, dy = lost ? Math.min(1, endT / 1.2) * 60 : 0;
-  NG.nw.owned(ctx, 'L', L.p, time, {dx:sh, dy, s:nwFit(330), flip:mirror, at:mirror ? 'C' : 'L'});
+  const pl = nwPlace(mirror ? s.castle.x - 30 : s.base.x + 30, 40, 365);
+  NG.nw.owned(ctx, 'L', L.p, time, {dx:sh, dy:dy + pl.dy, s:pl.s, flip:mirror, at:mirror ? 'C' : 'L'});
   const pt = NG.nw.pt('L', -8, -206), ds = pt.s * 1.75;                    // il drago in cima alla roccia
   ctx.save(); ctx.translate(pt.x, pt.y); ctx.scale(mirror ? -ds : ds, ds); ctx.translate(-92, -228);
   CHAR = true; const m = drawDragon(); CHAR = false; ctx.restore();
-  if (!mirror) mouthW = {x:pt.x + (m.x - 92) * ds, y:pt.y + (m.y - 228) * ds};
+  if (!mirror) { mouthW = {x:pt.x + (m.x - 92) * ds, y:pt.y + (m.y - 228) * ds}; nwHeadW = {x:pt.x + (dragonHead.x - 92) * ds, y:pt.y + (dragonHead.y - 228) * ds}; nwDS = ds; }
 }
 function nwCastle() {
   const c = s.castle, f = c.hp / c.max, sink = c.hp <= 0 ? Math.min(1, endT / 1.2) * 150 : 0, sh = shakeB[1] > 0 ? Math.sin(time * 90) * 2.5 : 0;
-  NG.nw.owned(ctx, 'C', L.p, time, {dx:sh, dy:sink, s:nwFit(372), cracks:f < .33 ? 2 : f < .66 ? 1 : 0, crackC:L.shadow});
+  const pl = nwPlace(c.x - 30, 34, 402);
+  NG.nw.owned(ctx, 'C', L.p, time, {dx:sh, dy:sink + pl.dy, s:pl.s, cracks:f < .33 ? 2 : f < .66 ? 1 : 0, crackC:L.shadow});
   if (f < .33 || sink > 0) for (let i = 0; i < 4; i++) {                   // fumo dal castello in fiamme
     const pr = (time * .4 + i / 4) % 1, b = NG.nw.pt('C', -10 + i * 16 + pr * 20, -150 - pr * 130);
     ctx.fillStyle = `rgba(40,30,50,${.45 * (1 - pr)})`; ctx.beginPath(); ctx.arc(b.x, b.y, (10 + pr * 20) * b.s / .88, 0, 7); ctx.fill();
@@ -4129,7 +4149,15 @@ const LOOKS = {                                                            // sk
   vichingo:{k:'orco', name:'Orco Vichingo', from:'album'}, goblinoro:{k:'goblin', name:'Goblin d’Oro', from:'album', tint:{c:'255,205,60', a:.55}}, dragooro:{k:'drago', name:'Drago Dorato', from:'album', filter:'sepia(1) saturate(3.5) hue-rotate(-12deg) brightness(1.1)'},
   ninja:{k:'topi', name:'Topi Ninja', from:'shop', ru:80}, cowboy:{k:'fionda', name:'Fionda Cowboy', from:'shop', ru:80}, natale:{k:'orco', name:'Orco Babbo Natale', from:'shop', ru:120},
   draganero:{k:'drago', name:'Drago Nero', from:'shop', ru:150, filter:'grayscale(1) brightness(.5) contrast(1.4)'},
-  cavaliere:{k:'goblin', name:'Goblin Cavaliere', from:'pass', lv:15}, stellata:{k:'strega', name:'Strega Stellata', from:'pass', lv:25}};
+  cavaliere:{k:'goblin', name:'Goblin Cavaliere', from:'pass', lv:15}, stellata:{k:'strega', name:'Strega Stellata', from:'pass', lv:25},
+  carnevale:{k:'goblin', name:'Goblin di Carnevale', from:'shop', ru:100, fest:[1, 25, 3, 10]}, sanvalentino:{k:'strega', name:'Strega di San Valentino', from:'shop', ru:100, fest:[2, 5, 2, 21]},
+  pasqua:{k:'lupo', name:'Lupo Coniglio di Pasqua', from:'shop', ru:100, fest:[3, 15, 4, 30]}, capodanno:{k:'orco', name:'Orco di Capodanno', from:'shop', ru:100, fest:[12, 20, 1, 10]},
+  cuoco:{k:'orco', name:'Orco Cuoco', from:'shop', ru:90}, pompiere:{k:'goblin', name:'Goblin Pompiere', from:'shop', ru:90}, astronauta:{k:'strega', name:'Strega Astronauta', from:'shop', ru:120}, dj:{k:'lupo', name:'Lupo DJ Rockstar', from:'shop', ru:120},
+  zombi:{k:'goblin', name:'Goblin Zombi', from:'shop', ru:90}, mummia:{k:'orco', name:'Orco Mummia', from:'shop', ru:110}, vampira:{k:'strega', name:'Strega Vampira', from:'shop', ru:110}};
+function festOn(L) {                                                       // le skin delle feste si comprano solo nel loro periodo (mese, giorno → mese, giorno)
+  if (!L.fest) return true; const n = new Date(), v = (n.getMonth() + 1) * 100 + n.getDate(), [m1, d1, m2, d2] = L.fest, a = m1 * 100 + d1, b = m2 * 100 + d2;
+  return a <= b ? v >= a && v <= b : v >= a || v <= b;
+}
 const LOOK_NM = {ghiaccio:'Ghiaccio', inferno:'Infernale', spettro:'Spettrale', oro:'Dorato'};
 const lookTint = lk => LOOK_ST[lk] || (LOOKS[lk] && LOOKS[lk].tint) || null;
 save.looks = save.looks || []; save.look = save.look || {}; save.album = save.album || [];
@@ -4161,7 +4189,7 @@ function drawUnits(dt) {
   for (const u of list) {
     const sc = SC[vis(u.k)] * eScale(u.k) * CS * (u.big > 0 ? 1.6 : 1) * pz(u.x, u.y), dy = dyAt(u.x, u.y), dir = u.side ? -1 : 1, o = unitParams(u), el = DW.U[u.k].elite;
     u.flash = Math.max(0, (u.flash || 0) - dt * 7);
-    ctx.save(); ctx.translate(u.x, dy);
+    ctx.save(); ctx.translate(u.x, dy); const ap = nwAppear(u); if (ap < 1) { ctx.globalAlpha *= .25 + .75 * ap; ctx.scale(.86 + .14 * ap, .86 + .14 * ap); }
     if (u.dead) { const a = Math.min(1, (s.t - u.deadAt) / .45); ctx.globalAlpha = 1 - a; ctx.translate(0, -a * 16); ctx.rotate(a * -dir * .9); }
     ctx.scale(sc * dir, sc);
     if (DW.LEG.has(u.k) && !u.dead && u.side === 0) { ctx.globalCompositeOperation = 'lighter'; glow(ctx, 0, -50, 70, '255,210,90', .22 + .1 * Math.sin(time * 3)); ctx.globalCompositeOperation = 'source-over'; }   // alone d'oro dei leggendari
@@ -4172,7 +4200,8 @@ function drawUnits(dt) {
     if (u.stone > 0) { MODE = 'flash'; FLASHC = '150,150,160'; FLASH = .75; DRAW[vis(u.k)](o); FLASHC = '255,255,255'; MODE = 'normal'; }   // pietrificato
     if (u.mirror) { MODE = 'flash'; FLASHC = '200,190,255'; FLASH = .35; DRAW[vis(u.k)](o); FLASHC = '255,255,255'; MODE = 'normal'; }   // la copia dello specchio luccica d'argento
     if (u.stun > 0 && frostT > 0 && u.side === 1) { MODE = 'flash'; FLASHC = '190,235,255'; FLASH = .45; DRAW[vis(u.k)](o); FLASHC = '255,255,255'; MODE = 'normal'; }   // gelati
-    if (u.cookie > 0 && !u.dead) { MODE = 'flash'; FLASHC = '200,140,80'; FLASH = .6; DRAW[vis(u.k)](o); FLASHC = '255,255,255'; MODE = 'normal'; }   // trasformato in biscotto
+    if (u.cookie > 0 && !u.dead) { MODE = 'flash'; FLASHC = '200,140,80'; FLASH = .6; DRAW[vis(u.k)](o); FLASHC = '255,255,255'; MODE = 'normal'; }
+    if (ap < 1 && !u.dead) { MODE = 'flash'; FLASHC = '14,8,26'; FLASH = (1 - ap) * .9; DRAW[vis(u.k)](o); FLASHC = '255,255,255'; MODE = 'normal'; }   // escono dal buio   // trasformato in biscotto
     if (u.goldT > 0 && !u.dead) { MODE = 'flash'; FLASHC = '255,205,60'; FLASH = .7; DRAW[vis(u.k)](o); FLASHC = '255,255,255'; MODE = 'normal'; }   // toccato da Re Mida
     if (u.burnT > 0 && !u.dead) { MODE = 'flash'; FLASHC = u.psn ? '130,230,80' : '255,130,40'; FLASH = .35 + .15 * Math.sin(time * 12); DRAW[vis(u.k)](o); FLASHC = '255,255,255'; MODE = 'normal'; }   // brucia col fuoco del Diavolo
     if (u.kid) { MODE = 'flash'; FLASHC = '255,205,80'; FLASH = .3; DRAW[vis(u.k)](o); FLASHC = '255,255,255'; MODE = 'normal'; }   // il buono rapito luccica d'oro
@@ -5153,7 +5182,7 @@ const DRAW = {
   }
 };
 DRAW.orco = function (o) {                                    // l'Orco delle fiabe, più mostruoso: omone grigiastro, pancione, un occhio enorme e uno piccolo, denti storti
-  const sk = '#a9a592', sk2 = dk(sk, .28), hair = '#2c2620', pant = '#5c4a38', lea = '#6e4a2c', u = o.u, w = o.walking ? 1 : 0, b = bobOf(o, 4), sw = Math.sin(o.ph);
+  const SKn = skn(o), PP = skPal(o, { sk: '#a9a592', hair: '#2c2620', pant: '#5c4a38', lea: '#6e4a2c' }), sk = PP.sk, sk2 = dk(sk, .28), hair = PP.hair, pant = PP.pant, lea = PP.lea, u = o.u, w = o.walking ? 1 : 0, b = bobOf(o, 4), sw = Math.sin(o.ph);
   g.save(); g.translate(0, b); const hb = arm(-14, -82, 17, 16, 10, 1.75 + sw * .5 * w + u * .35, -.45, sk2); V(E(hb[0], hb[1], 7, 7), sk2, hb[0], hb[1], 7, 2); g.restore();
   leg(-9, -42, 20, 20, 10.5, o, Math.PI, dk(pant, .25), '#2a2018', .55); leg(9, -42, 20, 20, 10.5, o, 0, pant, '#3a2a20', .55);
   g.save(); g.translate(0, b); g.rotate(.05 + w * .07 + sw * .03 * w);
@@ -5165,10 +5194,11 @@ DRAW.orco = function (o) {                                    // l'Orco delle fi
   V(SP('M-24,-92 Q-14,-98 -6,-96 L-10,-58 Q-20,-46 -27,-56 Q-31,-76 -24,-92Z'), lea, -16, -76, 22); L(SP('M-8,-92 L-11,-60'), dk(lea, .4), 1.2);
   V(SP('M-26,-54 Q0,-44 30,-52 L30,-45 Q0,-37 -26,-47Z'), '#4a3424', 2, -49, 28, 2);
   V(SP('M2,-53 L12,-53 L12,-43 L2,-43Z'), '#8a8e9a', 7, -48, 7, 1.6); F(SP('M5,-50 L9,-50 L9,-46 L5,-46Z'), '#4a3424');
+  if (SKn && SKn.body) SKn.body(o);
   V(SP('M-4,-104 L16,-104 L18,-92 L-6,-92Z'), sk2, 6, -98, 12, 2);
   g.save(); g.translate(9, -117); g.rotate(Math.sin(o.t * 1.9) * .05 - sw * .05 * w + (o.mood === 3 ? .14 : o.mood === 4 ? -.2 : 0)); g.scale(1.2, 1.2);
   V(SP('M-12,-4 Q-20,-10 -21,0 Q-20,7 -12,6Z'), sk2, -16, 0, 8, 2); L(SP('M-17,-3 Q-14,0 -17,3'), dk(sk, .5), 1.2);
-  for (const [x, y, a] of [[-12, -16, -.9], [-6, -20, -.5], [1, -21, -.15], [8, -20, .2], [-15, -10, -1.3]]) { g.save(); g.translate(x, y); g.rotate(a + Math.sin(o.t * 3 + x) * .06); V(SP('M-4,2 Q-2,-9 1,-12 Q3,-6 4,2Z'), hair, 0, -4, 6, 1.6); g.restore(); }
+  if (!(SKn && SKn.noHair)) for (const [x, y, a] of [[-12, -16, -.9], [-6, -20, -.5], [1, -21, -.15], [8, -20, .2], [-15, -10, -1.3]]) { g.save(); g.translate(x, y); g.rotate(a + Math.sin(o.t * 3 + x) * .06); V(SP('M-4,2 Q-2,-9 1,-12 Q3,-6 4,2Z'), hair, 0, -4, 6, 1.6); g.restore(); }
   const head = SP('M-14,-8 Q-13,-20 1,-21 Q15,-20 17,-6 Q20,8 15,15 Q4,21 -8,16 Q-15,8 -14,-8Z'); V(head, sk, 2, -2, 20);
   g.save(); g.clip(head); for (let i = 0; i < 14; i++) { const a = .2 + i * .19; F(E(4 + Math.cos(a) * 13, 6 + Math.sin(a) * 9, .8, .8), dk(sk, .45)); } g.restore();
   eyes(o, sk, [[2, -7, 5.6, 1], [13, -6, 2.8, -1]], '#d8b83a');
@@ -5178,9 +5208,10 @@ DRAW.orco = function (o) {                                    // l'Orco delle fi
   mouthX(o, 7, 10, 16, 'frown');
   for (const [x, h, a] of [[1, 5, -.25], [6.5, 3.6, .2], [12, 5.6, -.1]]) { g.save(); g.translate(x, 12.4); g.rotate(a); V(SP(`M-1.8,0 L-1.4,${-h} L1.4,${-h + 1} L1.8,0Z`), '#e6dbb0', 0, -h / 2, 3, 1.2); g.restore(); }
   if (o.mood === 0 || o.mood === 1) V(SP('M9,7.4 L11.6,7.4 L11,11 L9.6,11Z'), '#e6dbb0', 10, 9, 2, 1);
+  if (SKn && SKn.head) SKn.head(o);
   g.restore();
   const h = arm(17, -80, 17, 16, 10.5, .95 - 1.9 * u, -.4, sk);
-  atHand(h, -1.05, () => { V(SP('M-4,6 L-3.6,-20 Q-12,-28 -11,-46 Q-2,-58 9,-48 Q12,-30 3.6,-20 L4,6Z'), '#8a5a30', 0, -28, 26);
+  atHand(h, -1.05, SKn && SKn.hand ? () => SKn.hand(o) : () => { V(SP('M-4,6 L-3.6,-20 Q-12,-28 -11,-46 Q-2,-58 9,-48 Q12,-30 3.6,-20 L4,6Z'), '#8a5a30', 0, -28, 26);
     L(SP('M-6,-28 Q0,-34 6,-30 M-7,-40 Q-1,-45 7,-42'), dk('#8a5a30', .45), 1.4);
     for (const [x, y, a] of [[-10, -34, -1.5], [9, -38, 1.5], [-6, -48, -.7], [5, -50, .6], [10, -28, 1.6]]) { g.save(); g.translate(x, y); g.rotate(a); V(PL([-1.6, 0, 0, -6, 1.6, 0]), '#c9ccd6', 0, -3, 4, 1.2); g.restore(); } });
   V(E(h[0], h[1], 7.4, 7.4), sk, h[0], h[1], 8, 2);
@@ -5188,7 +5219,7 @@ DRAW.orco = function (o) {                                    // l'Orco delle fi
 };
 // ---------- gruppo 1: i comuni ----------
 function topo1(o, ph0) {                                       // un topolino che corre a quattro zampe
-  const fur = '#8f88a0', u = o.u, run = o.walking, p = o.ph * 1.8 + ph0;
+  const SKn = skn(o), fur = skPal(o, { fur: '#8f88a0' }).fur, u = o.u, run = o.walking, p = o.ph * 1.8 + ph0;
   const hop = run ? -Math.abs(Math.sin(p)) * 4 : Math.sin(o.t * 5 + ph0) * .6, lunge = u < 0 ? -u * 12 : -u * 4;
   g.save(); g.translate(lunge, hop); g.rotate(run ? Math.sin(p) * .07 : u > 0 ? -.1 * u : .12 * -u);
   const tw = Math.sin(o.t * 7 + ph0) * 5, tail = SP(`M-14,-9 Q-28,${-4 + tw} -36,${-12 - tw * .6} Q-42,-18 -38,-23`);
@@ -5206,6 +5237,7 @@ function topo1(o, ph0) {                                       // un topolino ch
   eyes(o, fur, [[4, -5, 3.4, 1], [9.6, -5.4, 2.5, -1]], '#2a1a3a'); brows(o, [[4, -9.8, 5, 1], [9.6, -9.6, 3.6, -1]], dk(fur, .6), 1.4);
   if (o.mood === 3) mouth(o, 11, 3, 5.4); else { F(SP('M10.5,3 L13.5,3 L13.3,6.6 L10.7,6.6Z'), '#fffdf4'); L(SP('M10.5,3 L13.5,3 L13.3,6.6 L10.7,6.6Z M12,3 L12,6.6'), '#1b1238', .9); }
   V(E(1, -12, 6.2, 7.4), fur, 1, -12, 7, 1.8); F(E(1.6, -11.4, 3.4, 4.6), '#f2a4b8');
+  if (SKn && SKn.head) SKn.head(o);
   g.restore(); g.restore();
 }
 function lupoD(o) {                                             // il Lupo di Cappuccetto, con la cuffietta della nonna
@@ -6355,7 +6387,7 @@ function limb(sx, sy, a, l1, b, l2, w1, w2, w3, col) { const ex = sx + Math.cos(
 function legB(hx, hy, l1, l2, w1, w2, w3, o, off, col, amp = .6, lift = 1) { const p = o.ph + off, a = o.walking ? Math.sin(p) * amp : 0, bend = o.walking ? Math.max(0, Math.cos(p)) * .9 * lift : .05;
   const kx = hx + Math.sin(a) * l1, ky = hy + Math.cos(a) * l1, fx = kx + Math.sin(a - bend) * l2, fy = ky + Math.cos(a - bend) * l2; taper(hx, hy, kx, ky, w1, w2, col); taper(kx, ky, fx, fy, w2, w3, col); return [fx, fy, a - bend]; }
 function goblinB(o, v = 0) {                                    // Goblin: piccolo e gobbo, testa enorme con orecchie a vela, pancetta, piedi nudi lunghi
-  const sk = v ? '#7ab84a' : '#8cc94f', skd = dk(sk, .26), cl = v ? '#6a5a3a' : '#7c4a2a', sc = v ? '#3f7fd0' : '#d8443a', u = o.u, w = o.walking ? 1 : 0, b = bobOf(o, 2.6), sw = Math.sin(o.ph);
+  const SKn = skn(o), PP = skPal(o, { sk: v ? '#7ab84a' : '#8cc94f', cl: v ? '#6a5a3a' : '#7c4a2a', sc: v ? '#3f7fd0' : '#d8443a' }), sk = PP.sk, skd = dk(sk, .26), cl = PP.cl, sc = PP.sc, u = o.u, w = o.walking ? 1 : 0, b = bobOf(o, 2.6), sw = Math.sin(o.ph);
   const tall = v ? 1.12 : 1, foot = (f, col) => { V(SP(`M${f[0] - 3},${f[1] - 2} Q${f[0] + 4},${f[1] - 4} ${f[0] + 10},${f[1] - 1} Q${f[0] + 12},${f[1] + 1} ${f[0] + 8},${f[1] + 1} L${f[0] - 3},${f[1] + 1}Z`), col, f[0] + 3, f[1], 7, 1.6); for (const t of [6, 9]) F(E(f[0] + t, f[1] - .4, 1.2, 1), '#e8f0c8'); };
   g.save(); g.translate(0, b); const hb = limb(-5, -34 * tall, 1.9 + sw * .8 * w + u * .5, 9, -.7, 9, 3.6, 2.6, 2.2, skd); V(E(hb[0], hb[1], 3.2, 3.2), skd, hb[0], hb[1], 3, 1.4); g.restore();
   foot(legB(-3, -18 * tall, 9 * tall, 9 * tall, 3.4, 2.6, 2.2, o, Math.PI, skd, .8), skd); foot(legB(4, -18 * tall, 9 * tall, 9 * tall, 3.6, 2.8, 2.4, o, 0, sk, .8), sk);
@@ -6363,6 +6395,7 @@ function goblinB(o, v = 0) {                                    // Goblin: picco
   const tor = SP(`M-7,${-36 * tall} Q4,${-40 * tall} 9,${-32 * tall} Q14,${-22 * tall} 10,-16 Q2,-12 -6,-16 Q-12,${-24 * tall} -7,${-36 * tall}Z`); V(tor, sk, 2, -26 * tall, 14);
   g.save(); g.clip(tor); F(E(6, -22 * tall, 7, 7), lt(sk, .25)); g.restore();
   V(SP(`M-9,-20 L11,-20 L10,-12 L6,-15 L2,-10 L-2,-14 L-6,-10 L-9,-14Z`), cl, 1, -15, 10, 1.6);
+  if (SKn && SKn.body) SKn.body(o, tall);
   if (v) { V(SP(`M-10,${-34 * tall} Q-18,${-26 * tall} -14,-18 L-8,-20 Q-10,${-26 * tall} -6,${-32 * tall}Z`), '#8a6a3a', -11, -26, 8, 1.6); for (const y of [-26, -21]) V(E(-12, y, 2, 2), '#b8b4c4', -12, y, 2, 1); }
   else { const fl = Math.sin(o.t * 6 + o.ph) * 3; V(SP(`M-6,${-35 * tall} Q-16,${-36 * tall + fl} -24,${-29 * tall + fl} Q-15,${-30 * tall + fl * .6} -6,${-31 * tall}Z`), sc, -14, -32, 9, 1.6); }
   V(SP(`M-8,${-36 * tall} Q2,${-41 * tall} 10,${-34 * tall} L9,${-31 * tall} Q2,${-36 * tall} -7,${-32 * tall}Z`), sc, 1, -35 * tall, 9, 1.6);
@@ -6370,20 +6403,21 @@ function goblinB(o, v = 0) {                                    // Goblin: picco
   g.save(); g.translate(-12, -4); g.rotate(-.15 + Math.sin(o.t * 3.1) * .12 - (o.mood === 4 ? .5 : 0)); V(SP('M4,2 Q-14,-10 -30,-16 Q-20,-2 2,8Z'), sk, -10, -3, 14); F(SP('M0,1 Q-12,-7 -24,-12 Q-14,-3 0,5Z'), 'rgba(240,120,110,.45)'); g.restore();
   const head = SP('M-14,0 Q-16,-14 -2,-17 Q14,-18 18,-6 Q20,6 12,12 Q2,16 -8,12 Q-14,8 -14,0Z'); V(head, sk, 2, -2, 19);
   g.save(); g.translate(14, -6); g.rotate(.4 + Math.sin(o.t * 3.1 + 1) * .1); V(SP('M-2,2 Q8,-12 20,-18 Q12,-2 0,8Z'), sk, 7, -4, 10, 1.6); g.restore();
-  if (v) { V(SP('M-15,-4 Q-14,-20 2,-20 Q16,-19 19,-8 Q4,-13 -15,-4Z'), '#8a5a34', 2, -12, 16); V(SP('M-6,-17 Q-18,-30 -22,-22 Q-14,-20 -7,-14Z'), '#e0483a', -13, -21, 8, 1.6); }
-  else for (const [x, a] of [[-6, -1.9], [-1, -1.6], [4, -1.3]]) L(SP(`M${x},-16 l${Math.cos(a) * 6},${Math.sin(a) * 6}`), '#33261f', 2);
+  if (v) { if (!(SKn && SKn.noCap)) V(SP('M-15,-4 Q-14,-20 2,-20 Q16,-19 19,-8 Q4,-13 -15,-4Z'), '#8a5a34', 2, -12, 16); if (!(SKn && SKn.noCap)) V(SP('M-6,-17 Q-18,-30 -22,-22 Q-14,-20 -7,-14Z'), '#e0483a', -13, -21, 8, 1.6); }
+  else if (!(SKn && SKn.noHair)) for (const [x, a] of [[-6, -1.9], [-1, -1.6], [4, -1.3]]) L(SP(`M${x},-16 l${Math.cos(a) * 6},${Math.sin(a) * 6}`), '#33261f', 2);
   eyesX(o, sk, [[1, -4, 5.4, 1], [12, -4.6, 4, -1]], v ? 'lidded' : 'wide', '#ffcf2a'); browsX(o, [[1, -11.5, 10, 1], [12, -11, 7.6, -1]], '#2a3a1a', 2.4, 'thick');
   V(SP('M8,-1 Q20,-6 25,2 Q22,7 12,5Z'), lt(sk, .1), 16, 1, 9, 1.8); F(E(21, 2, 1.3, 1), dk(sk, .5)); V(E(14, -3, 1.6, 1.6), dk(sk, .12), 14, -3, 1.6, .8);
   F(E(-7, 5, 3.6, 2.2), 'rgba(240,110,80,.35)'); mouthX(o, 6, 8, 14, v ? 'smirk' : 'grin');
+  if (SKn && SKn.head) SKn.head(o);
   g.restore();
   if (v) { const dr = o.atk < 0 ? 0 : o.atk < .5 ? o.atk / .5 : 0, h = limb(5, -34 * tall, -.25, 9, .1, 9, 3.4, 2.6, 2.2, sk), px = h[0] - 6 - dr * 14, py = h[1] - 7;
     g.save(); g.translate(h[0], h[1]); seg(0, 3, 0, 12, 3, '#7a4a2a'); seg(0, 3, -5, -11, 2.6, '#7a4a2a'); seg(0, 3, 6, -11, 2.6, '#7a4a2a'); g.restore();
     L(SP(`M${h[0] - 5},${h[1] - 11} L${px},${py} L${h[0] + 6},${h[1] - 11}`), '#c08a5a', 1.6); if (dr > 0) V(E(px, py, 2.6, 2.6), '#b8b4c4', px, py, 3, 1.2); V(E(px - 2, py + 1, 3.2, 3.2), sk, px, py, 3, 1.2); }
-  else { const h = limb(5, -34, 1.0 - 1.9 * u, 9, -.45, 9, 3.6, 2.8, 2.3, sk); atHand(h, -.8, () => { F(SP('M-4.5,-3 L4.5,-3 L4.5,-.5 L-4.5,-.5Z'), '#6a4a22'); V(SP('M-2.6,-3 Q-5,-15 1,-26 Q6,-14 2.6,-3Z'), '#e3e9f4', 0, -13, 12, 2); V(E(0, 1.5, 3, 3.4), '#5a3a20', 0, 1, 3, 1.6); }); V(E(h[0], h[1], 3.2, 3.2), sk, h[0], h[1], 3, 1.2); }
+  else { const h = limb(5, -34, 1.0 - 1.9 * u, 9, -.45, 9, 3.6, 2.8, 2.3, sk); atHand(h, -.8, SKn && SKn.hand ? () => SKn.hand(o) : () => { F(SP('M-4.5,-3 L4.5,-3 L4.5,-.5 L-4.5,-.5Z'), '#6a4a22'); V(SP('M-2.6,-3 Q-5,-15 1,-26 Q6,-14 2.6,-3Z'), '#e3e9f4', 0, -13, 12, 2); V(E(0, 1.5, 3, 3.4), '#5a3a20', 0, 1, 3, 1.6); }); V(E(h[0], h[1], 3.2, 3.2), sk, h[0], h[1], 3, 1.2); }
   g.restore();
 }
 function lupoB(o) {                                             // il Lupo: alto e allampanato, spalle curve, braccia lunghissime con artigli, coda folta, cuffietta della nonna
-  const fur = '#7d7a8a', fd = dk(fur, .28), bel = '#cfc6ba', u = o.u, w = o.walking ? 1 : 0, b = bobOf(o, 3.4), sw = Math.sin(o.ph);
+  const SKn = skn(o), PP = skPal(o, { fur: '#7d7a8a', bel: '#cfc6ba' }), fur = PP.fur, fd = dk(fur, .28), bel = PP.bel, u = o.u, w = o.walking ? 1 : 0, b = bobOf(o, 3.4), sw = Math.sin(o.ph);
   g.save(); g.translate(-8, -46 + b); g.rotate(-.7 + (w ? Math.sin(o.ph - .7) * .4 : Math.sin(o.t * 3) * .25));
   const tl = SP('M0,-5 Q-14,-16 -32,-12 Q-42,-6 -36,2 Q-28,6 -16,4 Q-6,4 0,4Z'); V(tl, fur, -18, -4, 18); g.save(); g.clip(tl); F(E(-34, -4, 8, 6), bel); L(SP('M-8,-2 L-30,-6 M-10,1 L-28,0'), fd, 1); g.restore(); g.restore();
   const claws = h => { for (const a of [-.5, 0, .5]) { g.save(); g.translate(h[0], h[1]); g.rotate(h[2] + a); const c = PL([2, -1.8, 10, 0, 2, 1.8]); F(c, '#fffdf4'); L(c, INK, .8); g.restore(); } V(E(h[0], h[1], 4.6, 4.2), h.col, h[0], h[1], 4.6, 1.6); };
@@ -6395,6 +6429,7 @@ function lupoB(o) {                                             // il Lupo: alto
   const tor = SP('M-14,-84 Q4,-94 18,-80 Q20,-66 12,-54 Q6,-44 2,-40 Q-6,-38 -8,-44 Q-12,-58 -16,-70 Q-18,-80 -14,-84Z'); V(tor, fur, 2, -64, 26);
   g.save(); g.clip(tor); F(SP('M4,-84 Q18,-72 12,-50 Q6,-40 0,-44 Q8,-60 4,-84Z'), bel); for (let i = 0; i < 4; i++) L(SP(`M${6 + i * 2},${-78 + i * 8} l3,2 l-3,2`), dk(bel, .25), 1); g.restore();
   for (const [x, y] of [[-14, -82], [-16, -76], [-10, -86]]) L(SP(`M${x},${y} l-4,-3`), fur, 3);
+  if (SKn && SKn.body) SKn.body(o);
   g.save(); g.translate(16, -90); g.rotate(.1 + Math.sin(o.t * 2.2) * .05 + (o.mood === 3 ? -.15 : o.mood === 4 ? .22 : 0) + (w ? sw * .04 : 0));
   V(PL([-8, -6, -7, -22, 0, -10]), dk(fur, .2), -5, -12, 8, 2);
   V(SP('M-10,2 Q-12,-10 0,-12 Q10,-12 12,-4 Q12,6 4,9 Q-6,10 -10,2Z'), fur, 0, -2, 12);
@@ -6405,12 +6440,15 @@ function lupoB(o) {                                             // il Lupo: alto
   for (const x of [12, 17, 22]) F(PL([x, 5, x + 1.6, 9.4, x + 3.2, 5]), '#fffdf4');
   V(E(31, -.6, 3.2, 2.6), '#1c1a24', 31, 0, 3, 1.2);
   eyesX(o, fur, [[3, -4, 3.4, 1], [10, -4.6, 2.6, -1]], 'almond', '#ffc42a'); browsX(o, [[3, -9, 7, 1], [10, -8.8, 5.4, -1]], '#3a3644', 2.4, 'thick');
+  if (!(SKn && SKn.noCap)) {
   const cap = SP('M-13,0 Q-17,-16 -3,-19 Q10,-19 13,-10 Q2,-13 -6,-7 Q-10,0 -13,0Z'); V(cap, '#f4eef6', -2, -10, 14, 2);
   for (let i = 0; i < 7; i++) F(E(-12 + i * 3.8, 0 - i * 1.5 + (i > 3 ? (i - 3) * 1.6 : 0), 1.6, 1.6), '#e2d8ea');
   V(PL([0, -14, 7, -30, 10, -12]), fur, 6, -19, 8, 2); F(PL([3, -15, 7, -25, 8.4, -14]), '#d8a0b0');
   V(E(-14, -1, 3.4, 2.8), '#ff8ab0', -14, -1, 3, 1.4);
+  } else V(PL([0, -14, 7, -30, 10, -12]), fur, 6, -19, 8, 2);
+  if (SKn && SKn.head) SKn.head(o);
   g.restore();
-  const h = limb(12, -80, .5 - 1.9 * u, 18, -.45 - u * .3, 17, 5.6, 3.8, 3.2, fur); h.col = fur; claws(h);
+  const h = limb(12, -80, .5 - 1.9 * u, 18, -.45 - u * .3, 17, 5.6, 3.8, 3.2, fur); h.col = fur; claws(h); if (SKn && SKn.hand) SKn.hand(o, h);
   g.restore();
 }
 function zombieB(o) {                                           // lo Zombie: storto, una spalla più bassa, braccia magre, una scarpa sola, trascina la gamba
@@ -6546,7 +6584,7 @@ function barbabluB(o) {                                         // Barbablù: to
 Object.assign(DRAW, { goblin: goblinB, fionda: o => goblinB(o, 1), lupo: lupoB, zombie: zombieB, trollponte: trollB, diavoletto: diavB, gnomo: gnomoB, barbablu: barbabluB });
 // ---------- corpi rifatti, lotto B ----------
 function stregaB(o) {                                           // la Strega: vecchia, magrissima e gobba, naso e mento a uncino, dita lunghe, veste a brandelli, stivaletti a punta
-  const dr = '#5b2f92', dr2 = '#7a45b8', sk = '#b8d49a', skd = dk(sk, .25), hair = '#2a1c3a', u = o.u, w = o.walking ? 1 : 0, b = bobOf(o, 2.4), sw = Math.sin(o.ph) * (w ? 4 : 0) + Math.sin(o.t * 2.4) * 2;
+  const SKn = skn(o), PP = skPal(o, { dr: '#5b2f92', dr2: '#7a45b8', sk: '#b8d49a', hair: '#2a1c3a' }), dr = PP.dr, dr2 = PP.dr2, sk = PP.sk, skd = dk(sk, .25), hair = PP.hair, u = o.u, w = o.walking ? 1 : 0, b = bobOf(o, 2.4), sw = Math.sin(o.ph) * (w ? 4 : 0) + Math.sin(o.t * 2.4) * 2;
   const boot = (x, off) => { const a = w ? Math.sin(o.ph + off) * 5 : 0; V(SP(`M${x - 4 + a},-4 L${x + 6 + a},-4 Q${x + 12 + a},-4 ${x + 13 + a},-9 Q${x + 12 + a},-1 ${x + 8 + a},0 L${x - 4 + a},0Z`), '#2a1a2a', x + 3 + a, -2, 7, 1.4); taper(x + a * .6, -18, x + a, -4, 2, 1.6, '#3a2a3a', 1.2); };
   boot(-4, Math.PI); boot(4, 0);
   g.save(); g.translate(0, b); g.rotate(.26 + (w ? .06 : 0) + (u > 0 ? -.08 * u : .12 * -u));
@@ -6554,6 +6592,7 @@ function stregaB(o) {                                           // la Strega: ve
   const robe = SP(`M-6,-74 Q4,-80 10,-70 Q12,-50 14,-34 Q18,-20 ${20 + sw},-14 L${16 + sw},-10 L${12 + sw},-16 L${8 + sw},-8 L${2 + sw},-15 L${-4 + sw},-8 L${-8 + sw},-15 L${-14 + sw},-10 Q-14,-30 -12,-44 Q-10,-62 -6,-74Z`); V(robe, dr, 2, -42, 34);
   g.save(); g.clip(robe); F(SP(`M4,-60 Q12,-34 ${16 + sw},-14 L${8 + sw},-12 Q6,-34 0,-56Z`), dr2); V(SP('M-4,-60 L4,-60 L4,-52 L-4,-52Z'), '#8a5a8a', 0, -56, 4, 1); for (const [x, y] of [[-6, -30], [10, -26], [2, -44]]) F(SP(`M${x},${y - 3} L${x + 1},${y - 1} L${x + 3},${y} L${x + 1},${y + 1} L${x},${y + 3} L${x - 1},${y + 1} L${x - 3},${y} L${x - 1},${y - 1}Z`), '#f2d27a'); g.restore();
   F(SP('M-12,-46 Q2,-41 14,-46 L14,-42 Q2,-37 -12,-42Z'), '#f2b84a'); F(E(2, -42, 2.6, 3), '#7af0c0', '#7af0c0');
+  if (SKn && SKn.body) SKn.body(o);
   limb(-4, -66, 2.1 - u * .4, 11, -.9 - u * .5, 10, 2.6, 2, 1.6, dk(dr, .2));
   g.save(); g.translate(10, -84); g.rotate(-.18 + Math.sin(o.t * 1.5) * .05 + (o.mood === 3 ? -.12 : o.mood === 4 ? .2 : 0)); g.scale(1.18, 1.18);
   const face = SP('M-7,-6 Q-7,-13 1,-13 Q8,-13 9,-6 Q10,0 9,4 Q12,8 13,12 Q8,11 5,9 Q0,10 -3,7 Q-7,2 -7,-6Z'); V(face, sk, 1, -1, 11);
@@ -6561,15 +6600,20 @@ function stregaB(o) {                                           // la Strega: ve
   eyesX(o, sk, [[0, -4, 2.8, 1], [6, -4.4, 2.2, -1]], 'wide', '#c9f060'); browsX(o, [[0, -8.4, 5.4, 1], [6, -8.2, 4, -1]], hair, 1.8, 'arch');
   mouthX(o, 3, 6.4, 6, 'gap', { lips: '#5a1a3a' });
   V(SP('M-9,-4 Q-12,6 -8,14 Q-5,4 -6,-4Z'), hair, -8, 4, 7, 1.6);
+  if (!(SKn && SKn.noHat)) {
   V(SP('M-22,-5 Q0,-13 22,-6 Q24,-2 20,0 Q0,-6 -20,1 Q-25,-1 -22,-5Z'), dk(dr, .25), 0, -5, 22);
   const tw = Math.sin(o.t * 2.2) * 3; V(SP(`M-10,-7 Q-6,-26 2,-36 Q${8 + tw},-44 ${-4 + tw * 1.6},-50 Q${12 + tw},-50 12,-38 Q13,-22 11,-8 Q0,-11 -10,-7Z`), dr, 1, -24, 24);
   F(SP('M-10,-9 Q0,-13 11,-10 L11.4,-15 Q0,-18 -8.6,-14Z'), '#f2b84a'); F(SP('M-1,-17.4 L4,-17.4 L4,-11.8 L-1,-11.8Z'), '#fff3d0');
+  }
+  if (SKn && SKn.head) SKn.head(o);
   g.restore();
   const h = limb(8, -66, .45 - 1.4 * u, 11, -.4, 10, 2.6, 2, 1.6, dr);
   g.save(); g.translate(h[0], h[1]); g.rotate(.14 + u * .55 + Math.sin(o.t * 2) * .04);
+  if (SKn && SKn.staff) SKn.staff(o); else {
   const st = SP('M-1.4,36 Q1,10 -1,-10 Q-3,-24 1,-34 L2.6,-34 Q-.4,-22 1.4,-10 Q3,10 1.4,36Z'); V(st, '#6a4426', 0, 0, 20, 1.6);
   const pulse = 1 + Math.sin(o.t * 5) * .12 + Math.max(0, u) * .7; glowB(1, -40, 18 * pulse, 'rgba(190,120,255,.75)'); V(E(1, -40, 5.4, 5.4), '#d9a8ff', 1, -40, 6, 1.4); F(E(-.6, -42, 1.6, 1.6), '#fff');
   for (const a of [-1, 1]) L(SP(`M1,-35 Q${1 + a * 6},-38 ${1 + a * 5},-45`), '#6a4426', 1.6);
+  }
   g.restore();
   for (const a of [-.5, -.1, .3]) { g.save(); g.translate(h[0], h[1]); g.rotate(h[2] + a); taper(0, 0, 6, 0, 1.2, .8, sk, 1); g.restore(); } V(E(h[0], h[1], 2.6, 2.6), sk, h[0], h[1], 3, 1.2);
   g.restore();
@@ -9295,6 +9339,137 @@ function pollicinoD(o) {                                        // Pollicino: pi
   g.restore();
 }
 Object.assign(DRAW, { renna: rennaD, fiammiferaia: fiammiferaiaD, pupazzoneve: pupazzonevD, cavcristallo: cavcristalloD, gemello: o => gemelloD(o, 0), gemelli: gemelliD, pisello: piselloD, tappeto: tappetoD, aladino: aladinoD, kai: kaiD, gerda: gerdaD, pollicino: pollicinoD });
+// ---------- skin: costumi sui cattivi (colori dei vestiti, testa, corpo, oggetto in mano) ----------
+// ogni skin: k = personaggio, pal = colori, head(o) nel riquadro della testa, body(o, tall) sul busto, hand(o) nella mano davanti,
+// noHair / noHat / noCap = toglie capelli, cappello o cuffietta del disegno base
+const skn = o => (o && o.look && SKINS[o.look]) || null;
+const skPal = (o, base) => { const s = skn(o); return s && s.pal ? Object.assign({}, base, s.pal) : base; };
+const star5 = (x, y, r, rot = 0) => { let d = ''; for (let i = 0; i < 10; i++) { const a = rot - Math.PI / 2 + i * Math.PI / 5, rr2 = i % 2 ? r * .45 : r; d += (i ? 'L' : 'M') + (x + Math.cos(a) * rr2) + ',' + (y + Math.sin(a) * rr2); } return SP(d + 'Z'); };
+const heart = (x, y, r) => SP(`M${x},${y + r * .9} C${x - r * 1.4},${y - r * .1} ${x - r * .7},${y - r * 1.2} ${x},${y - r * .45} C${x + r * .7},${y - r * 1.2} ${x + r * 1.4},${y - r * .1} ${x},${y + r * .9}Z`);
+const SKINS = {
+  // ---- goblin ----
+  pirata: { k: 'goblin', pal: { cl: '#2a2440', sc: '#c8283a' }, noHair: 1,
+    body(o, t) { const v = SP(`M-7,${-35 * t} Q2,${-39 * t} 9,${-32 * t} Q13,${-24 * t} 10,-18 L-6,-18 Q-11,${-26 * t} -7,${-35 * t}Z`); g.save(); g.clip(v); for (let i = 0; i < 6; i++) F(SP(`M-12,${-38 * t + i * 4.4} L14,${-40 * t + i * 4.4} L14,${-38 * t + i * 4.4} L-12,${-36 * t + i * 4.4}Z`), i % 2 ? '#f4f0e8' : '#2a4a8a'); g.restore(); L(v, INK, 1.4); V(SP('M-9,-21 L11,-21 L11,-17 L-9,-17Z'), '#c8283a', 1, -19, 10, 1.4); F(E(9, -16, 2.4, 3.6), '#c8283a'); },
+    head(o) { V(SP('M-18,-11 Q-8,-14 2,-16 Q12,-14 22,-9 Q20,-4 14,-6 Q2,-10 -12,-4 Q-18,-6 -18,-11Z'), '#22202a', 2, -10, 20, 2); V(SP('M-10,-12 Q-6,-28 4,-29 Q16,-28 16,-12 Q2,-15 -10,-12Z'), '#2a2832', 3, -20, 14, 2);
+      V(E(3, -19, 3.4, 3), '#f4eee0', 3, -19, 3.4, 1); F(E(2, -19.4, .9, 1), '#1b1238'); F(E(4.2, -19.4, .9, 1), '#1b1238'); L(SP('M-1,-15 L7,-23 M7,-15 L-1,-23'), '#f4eee0', 1.2);
+      L(SP('M-14,-9 L18,-8'), '#1c1a24', 1.4); V(E(12.4, -4.6, 4.4, 3.8), '#1c1a24', 12.4, -4.6, 4, 1); F(E(-4, 5, 1.4, 1.4), '#ffd35a'); },
+    hand(o) { V(SP('M-3,-1 L3,-1 L3,2 L-3,2Z'), '#c8a040', 0, 0, 4, 1.2); V(SP('M-1.6,-1 Q-6,-14 -2,-30 Q4,-22 4.4,-12 Q4,-4 1.6,-1Z'), '#e3e9f4', 0, -14, 14, 1.6); L(SP('M-.4,-4 Q-3,-14 -1,-26'), 'rgba(120,140,180,.6)', 1); V(SP('M-5,-1 Q0,4 5,-1'), '#c8a040', 0, 1, 5, 1.2); } },
+  cavaliere: { k: 'goblin', pal: { cl: '#5a6a8a', sc: '#2f6fd6' }, noHair: 1,
+    body(o, t) { const p = SP(`M-6,${-35 * t} Q3,${-39 * t} 9,${-32 * t} Q12,${-24 * t} 9,-19 L-5,-19 Q-10,${-27 * t} -6,${-35 * t}Z`); V(p, '#b8c0d0', 2, -27 * t, 12, 1.6); g.save(); g.clip(p); F(E(5, -30 * t, 4, 6), 'rgba(255,255,255,.5)'); g.restore(); F(SP(`M1,${-34 * t} L3,${-34 * t} L3,-21 L1,-21Z`), '#f2c14e'); F(SP(`M-3,${-29 * t} L7,${-29 * t} L7,${-27 * t} L-3,${-27 * t}Z`), '#f2c14e'); },
+    head(o) { const hm = SP('M-15,-2 Q-16,-19 2,-20 Q18,-19 19,-4 L19,2 L-15,2Z'); V(hm, '#aab4c6', 2, -9, 19, 2); g.save(); g.clip(hm); F(E(-4, -14, 7, 4), 'rgba(255,255,255,.45)'); g.restore();
+      V(SP('M-1,-3 L22,-4 Q23,2 19,3 L-1,3Z'), '#8a94a8', 10, 0, 12, 1.6); for (const x of [4, 9, 14]) L(SP(`M${x},-2 L${x},2`), '#2a2a3a', 1.2);
+      const pl = Math.sin(o.t * 3) * 2; V(SP(`M0,-19 Q-6,${-32 + pl} -20,${-30 + pl} Q-10,-26 -4,-17Z`), '#d8283a', -8, -24, 10, 1.6); V(E(1, -19, 2.4, 2.4), '#f2c14e', 1, -19, 2.4, 1); },
+    hand(o) { V(SP('M-6,-1 L6,-1 L6,2 L-6,2Z'), '#f2c14e', 0, 0, 6, 1.4); V(SP('M-2,-1 L-2,-32 L0,-36 L2,-32 L2,-1Z'), '#e3e9f4', 0, -18, 16, 1.6); L(SP('M0,-3 L0,-32'), 'rgba(120,140,180,.6)', 1); V(E(0, 4.4, 2.2, 2.6), '#7a4a2a', 0, 4, 2.4, 1); } },
+  carnevale: { k: 'goblin', pal: { cl: '#d8283a', sc: '#ffd35a' }, noHair: 1,
+    body(o, t) { const p = SP(`M-7,${-35 * t} Q3,${-39 * t} 9,${-32 * t} Q13,${-24 * t} 10,-18 L-6,-18 Q-11,${-26 * t} -7,${-35 * t}Z`); g.save(); g.clip(p); const cs = ['#d8283a', '#2a9a4a', '#2f6fd6', '#ffd35a'];
+      for (let r = 0; r < 6; r++) for (let c = 0; c < 6; c++) F(SP(`M${-10 + c * 5 + (r % 2) * 2.5},${-40 * t + r * 4.4} l2.5,2.2 l-2.5,2.2 l-2.5,-2.2Z`), cs[(r + c) % 4]); g.restore(); L(p, INK, 1.4);
+      V(SP(`M-6,${-35 * t} Q2,${-30 * t} 10,${-34 * t} Q8,${-37 * t} 2,${-36 * t} Q-4,${-37 * t} -6,${-35 * t}Z`), '#fffdf4', 2, -35 * t, 8, 1.2); },
+    head(o) { V(SP('M-12,-6 Q-8,-11 -2,-8 Q4,-11 8,-9 Q14,-11 18,-7 Q16,0 12,-1 Q7,0 5,-3 Q1,-1 -3,0 Q-9,1 -12,-6Z'), '#d8283a', 3, -5, 15, 1.2); L(SP('M-11,-6 Q-8,-10 -2,-7.6 Q4,-10 8,-8.4 Q14,-10 17,-7'), '#f2c14e', 1.2); eyesX(o, '#8cc94f', [[1, -4, 4.6, 1], [12, -4.6, 3.4, -1]], 'wide', '#ffcf2a');
+      const bl = Math.sin(o.t * 4); V(SP('M-13,-13 Q-4,-22 4,-18 Q12,-22 20,-12 Q4,-16 -13,-13Z'), '#d8283a', 3, -15, 16, 1.6);
+      V(SP(`M-10,-15 Q-22,-28 ${-30 + bl},-22 Q-20,-20 -4,-16Z`), '#2a9a4a', -17, -20, 12, 1.6); V(SP(`M10,-16 Q20,-32 ${30 - bl},-26 Q22,-22 14,-13Z`), '#ffd35a', 20, -22, 12, 1.6);
+      V(E(-30 + bl, -22, 2.8, 2.8), '#f2c14e', -30, -22, 3, 1); V(E(30 - bl, -26, 2.8, 2.8), '#f2c14e', 30, -26, 3, 1); },
+    hand(o) { V(SP('M-1.4,4 L-1.4,-18 L1.4,-18 L1.4,4Z'), '#7a4a2a', 0, -7, 10, 1.2); V(SP('M-9,-22 Q-4,-28 0,-24 Q4,-28 9,-22 Q8,-16 4,-17 Q0,-15 -4,-17 Q-8,-16 -9,-22Z'), '#ffd35a', 0, -21, 10, 1.4); F(E(-4, -21, 1.8, 1.3), '#1c1a24'); F(E(4, -21, 1.8, 1.3), '#1c1a24'); F(SP('M-9,-22 Q-12,-30 -7,-31 Q-6,-26 -5,-25Z'), '#d8283a'); } },
+  pompiere: { k: 'goblin', pal: { cl: '#2a2a3a', sc: '#2a2a3a' }, noHair: 1,
+    body(o, t) { const p = SP(`M-8,${-36 * t} Q3,${-40 * t} 10,${-33 * t} Q14,${-23 * t} 11,-17 L-7,-17 Q-12,${-26 * t} -8,${-36 * t}Z`); V(p, '#e8c030', 2, -27 * t, 13, 1.6);
+      for (const y of [-26, -21]) F(SP(`M-10,${y * t} L13,${y * t - 1} L13,${y * t + 1.6} L-10,${y * t + 2.6}Z`), '#d8dce4'); L(SP(`M2,${-38 * t} L1,-17`), '#a88a20', 1.2); },
+    head(o) { V(SP('M-19,-6 Q-12,-10 2,-10 Q16,-10 24,-5 Q24,-2 18,-2 L-15,-2 Q-20,-3 -19,-6Z'), '#c8202a', 2, -5, 20, 1.8); const hm = SP('M-12,-8 Q-12,-24 2,-25 Q16,-24 16,-8Z'); V(hm, '#d8283a', 2, -16, 16, 2);
+      g.save(); g.clip(hm); F(E(-4, -18, 6, 3.4), 'rgba(255,255,255,.4)'); L(SP('M2,-25 L2,-8'), '#a81820', 1.4); g.restore(); V(SP('M-3,-17 L7,-17 L8,-11 L2,-8 L-4,-11Z'), '#f2c14e', 2, -13, 6, 1.2); },
+    hand(o) { V(SP('M-1.6,6 L-1.6,-26 L1.6,-26 L1.6,6Z'), '#8a5a30', 0, -10, 16, 1.2); V(SP('M0,-24 L12,-30 Q14,-22 12,-16 L0,-20Z'), '#c8d0dc', 6, -22, 8, 1.4); V(SP('M0,-24 L-7,-28 L-6,-20 L0,-20Z'), '#d8283a', -3, -23, 5, 1.2); } },
+  zombi: { k: 'goblin', pal: { sk: '#9ab08a', cl: '#5a5a4a', sc: '#6a5a4a' },
+    body(o, t) { F(SP(`M-4,${-34 * t} L1,${-28 * t} L-3,${-24 * t} L2,-20`), 'rgba(0,0,0,0)'); L(SP(`M-2,${-33 * t} L2,${-30 * t} L-1,${-27 * t} L3,${-24 * t}`), '#5a3a4a', 1.4); for (const y of [-31, -28, -25]) L(SP(`M-1,${y * t} l3,-1`), '#5a3a4a', 1);
+      V(SP('M-9,-21 L11,-21 L9,-13 L6,-16 L3,-11 L-1,-15 L-5,-11 L-9,-15Z'), '#6a6a52', 1, -16, 10, 1.4); },
+    head(o) { L(SP('M-8,-14 Q0,-10 6,-15'), '#3a2a3a', 1.4); for (const x of [-6, -3, 0, 3]) L(SP(`M${x},-15 l1,3.4`), '#3a2a3a', 1); V(SP('M-14,-6 Q-10,-2 -12,4 Q-15,0 -14,-6Z'), '#7a8a6a', -13, -1, 3, 1);
+      F(E(6, 8, 2, 1.4), 'rgba(110,40,60,.5)'); F(E(-9, -8, 2.6, 2), 'rgba(90,120,70,.6)'); },
+    hand(o) { V(SP('M-2,6 L-1,-14 Q-5,-17 -3,-20 Q0,-19 0,-16 Q1,-19 4,-19 Q5,-16 1,-14 L2,6Z'), '#efe6d2', 0, -6, 12, 1.4); F(E(1.4, -4, 2.2, 3), 'rgba(160,60,60,.4)'); } },
+  // ---- fionda (goblin col capello) ----
+  cowboy: { k: 'fionda', pal: { cl: '#3a5a8a' }, noCap: 1,
+    body(o, t) { V(SP(`M-7,${-35 * t} Q-1,${-30 * t} 2,${-24 * t} L-8,${-24 * t} Q-11,${-30 * t} -7,${-35 * t}Z M9,${-33 * t} Q5,${-28 * t} 4,${-23 * t} L11,${-23 * t} Q12,${-28 * t} 9,${-33 * t}Z`), '#8a5a30', 1, -28 * t, 10, 1.4);
+      V(SP(`M-6,${-37 * t} Q2,${-33 * t} 10,${-36 * t} L6,${-30 * t} L2,${-33 * t} L-2,${-30 * t}Z`), '#d8283a', 2, -34 * t, 7, 1.2); },
+    head(o) { V(SP('M-22,-8 Q-10,-14 2,-14 Q16,-14 26,-9 Q30,-12 30,-7 Q22,-2 2,-6 Q-18,-2 -26,-8 Q-26,-12 -22,-8Z'), '#a87038', 2, -8, 24, 1.8);
+      V(SP('M-10,-11 Q-12,-28 -2,-29 Q2,-25 6,-29 Q16,-28 14,-11 Q2,-14 -10,-11Z'), '#b8803e', 2, -20, 13, 1.8); F(SP('M-10,-14 Q2,-17 14,-14 L14,-11 Q2,-14 -10,-11Z'), '#5a3a20'); } },
+  // ---- orco ----
+  vichingo: { k: 'orco', pal: { pant: '#4a5a6a', lea: '#7a5a3a' }, noHair: 1,
+    body(o) { const fc = SP('M-28,-92 Q-8,-104 12,-98 Q14,-92 8,-90 Q-4,-92 -14,-86 Q-22,-74 -30,-70 Q-36,-82 -28,-92Z'); V(fc, '#7a5a3a', -10, -88, 18, 1.8); g.save(); g.clip(fc); for (let i = 0; i < 9; i++) L(SP(`M${-30 + i * 5},-98 q-2,4 1,8`), '#a8845a', 1.3); g.restore(); V(E(-4, -92, 3, 3), '#c8a050', -4, -92, 3, 1); },
+    head(o) { const hm = SP('M-15,-8 Q-15,-25 1,-26 Q17,-25 18,-8 Q2,-12 -15,-8Z'); V(hm, '#aab4c6', 1, -16, 18, 2); g.save(); g.clip(hm); F(E(-4, -20, 7, 3.4), 'rgba(255,255,255,.4)'); g.restore();
+      V(SP('M-16,-10 Q1,-14 19,-9 L19,-6 Q1,-11 -16,-7Z'), '#c8a050', 1, -9, 18, 1.4); for (const x of [-10, -2, 6, 13]) V(E(x, -8.4, 1.2, 1.2), '#f2e0a0', x, -8, 1.2, .8);
+      V(SP('M-14,-18 Q-26,-22 -28,-38 Q-20,-30 -12,-24Z'), '#efe6d2', -20, -26, 10, 1.6); V(SP('M16,-18 Q28,-22 30,-38 Q22,-30 14,-24Z'), '#efe6d2', 22, -26, 10, 1.6);
+      V(SP('M-6,14 Q-4,22 2,24 Q4,32 8,34 Q10,30 10,24 Q16,22 18,14 Q12,19 6,18 Q0,19 -6,14Z'), '#a8582a', 6, 22, 10, 1.4); L(SP('M2,22 Q4,26 6,30 M10,20 Q10,24 8,28'), '#7a3a1a', 1); V(E(8, 33, 2.2, 2.2), '#c8a050', 8, 33, 2, .8); },
+    hand(o) { V(SP('M-2.4,8 L-2.4,-44 L2.4,-44 L2.4,8Z'), '#7a4a2a', 0, -18, 26, 1.6); V(SP('M2,-50 Q20,-56 22,-36 Q16,-38 2,-30Z'), '#c8d0dc', 12, -42, 12, 1.6); V(SP('M-2,-50 Q-14,-52 -14,-40 Q-8,-40 -2,-34Z'), '#aab4c6', -8, -44, 8, 1.4); } },
+  natale: { k: 'orco', pal: { pant: '#c8202a', lea: '#c8202a', hair: '#f4f0f0' }, noHair: 1,
+    body(o) { V(SP('M-24,-92 Q0,-100 24,-92 L26,-86 Q0,-94 -24,-86Z'), '#f4f2f0', 0, -90, 24, 1.6); V(SP('M-5,-92 L5,-92 L5,-48 L-5,-48Z'), '#f4f2f0', 0, -70, 6, 1.4); V(SP('M-26,-54 Q0,-44 30,-52 L30,-45 Q0,-37 -26,-47Z'), '#1c1a24', 2, -49, 28, 1.6); V(SP('M-1,-55 L11,-55 L11,-42 L-1,-42Z'), '#f2c14e', 5, -48, 7, 1.4); F(SP('M2,-52 L8,-52 L8,-45 L2,-45Z'), '#1c1a24'); },
+    head(o) { const wb = Math.sin(o.t * 2.6) * 2; V(SP(`M-14,-10 Q-6,-30 10,-28 Q22,-26 ${30 + wb},-14 Q20,-20 16,-12Z`), '#d8283a', 6, -18, 18, 2); V(E(31 + wb, -12, 4.6, 4.6), '#f4f2f0', 31, -12, 5, 1.4);
+      V(SP('M-16,-12 Q2,-18 20,-11 Q21,-6 18,-5 Q2,-11 -15,-6 Q-18,-8 -16,-12Z'), '#f4f2f0', 2, -9, 18, 1.6);
+      V(SP('M-6,8 Q-6,26 6,30 Q18,26 18,8 Q14,14 6,14 Q-2,14 -6,8Z'), '#f4f2f0', 6, 18, 12, 1.6); V(E(6, 6, 6, 2.6), '#f4f2f0', 6, 6, 6, 1); },
+    hand(o) { const p = SP('M-3,8 L-3,-40 Q-3,-52 6,-52 Q15,-52 15,-42 L9,-42 Q9,-46 6,-46 Q3,-46 3,-40 L3,8Z'); V(p, '#fff4f4', 0, -20, 26, 1.6); g.save(); g.clip(p); for (let i = 0; i < 10; i++) F(SP(`M-10,${4 - i * 6.4} L20,${-8 - i * 6.4} L20,${-5 - i * 6.4} L-10,${7 - i * 6.4}Z`), '#d8283a'); g.restore(); } },
+  capodanno: { k: 'orco', pal: { lea: '#2a2a3a', pant: '#2a2a3a' },
+    body(o) { V(SP('M-6,-94 L6,-94 L4,-86 L0,-90 L-4,-86Z'), '#1c1a24', 0, -90, 6, 1.2); for (const [x, y, c] of [[-14, -80, '#ff5d8a'], [12, -74, '#4ab8e8'], [-6, -64, '#ffd35a'], [18, -60, '#7aff9a'], [-18, -66, '#c87aff']]) F(SP(`M${x},${y} l3,1 l-1,3 l-3,-1Z`), c); },
+    head(o) { const hat = SP('M-10,-17 L4,-48 L16,-16 Q3,-20 -10,-17Z'); V(hat, '#7a3ac8', 3, -28, 16, 1.8); g.save(); g.clip(hat); for (let i = 0; i < 4; i++) F(SP(`M-14,${-22 - i * 8} L20,${-26 - i * 8} L20,${-22 - i * 8} L-14,${-18 - i * 8}Z`), '#ffd35a'); g.restore();
+      L(SP('M-10,-17 Q-16,-4 -14,6'), '#e8e0f0', .8); V(E(4, -49, 4, 4), '#ff5d8a', 4, -49, 4, 1.2);
+      const bl = .5 + .5 * Math.sin(o.t * 6); g.save(); g.translate(14, 9); g.rotate(-.15); V(SP('M0,-2 L14,-3 L14,3 L0,2Z'), '#2f9ad6', 7, 0, 7, 1.2); V(SP(`M14,-3 L${20 + bl * 6},-6 L${20 + bl * 6},6 L14,3Z`), '#ffd35a', 18, 0, 6, 1.2); g.restore(); },
+    hand(o) { V(SP('M-5,8 L-5,-16 Q-5,-22 -2,-26 L-2,-36 L2,-36 L2,-26 Q5,-22 5,-16 L5,8Z'), '#2a5a3a', 0, -12, 18, 1.6); V(SP('M-5,-10 L5,-10 L5,0 L-5,0Z'), '#f4eee0', 0, -5, 5, 1); V(SP('M-3,-36 L3,-36 L3,-40 L-3,-40Z'), '#f2c14e', 0, -38, 3, 1);
+      for (let i = 0; i < 5; i++) { const k2 = (o.t * 1.5 + i / 5) % 1; F(E(Math.sin(i * 2 + o.t) * 5, -42 - k2 * 18, 1.4 * (1 - k2) + .4, 1.4 * (1 - k2) + .4), 'rgba(255,240,180,.9)'); } } },
+  cuoco: { k: 'orco', pal: { lea: '#f4f2f0', pant: '#3a3a4a' },
+    body(o) { const ap = SP('M-18,-82 Q0,-86 20,-82 L24,-40 Q0,-30 -22,-40Z'); V(ap, '#f8f6f2', 1, -60, 24, 1.8); g.save(); g.clip(ap); L(SP('M-18,-70 L22,-70'), '#d8d4cc', 1.2); F(E(-4, -60, 3, 2.4), 'rgba(200,80,60,.35)'); F(E(10, -50, 2.4, 2), 'rgba(150,100,40,.3)'); g.restore();
+      V(SP('M-6,-94 L10,-94 L12,-86 L2,-82 L-8,-86Z'), '#d8283a', 2, -89, 9, 1.4); },
+    head(o) { V(SP('M-13,-14 Q2,-18 17,-13 L16,-20 Q2,-23 -12,-20Z'), '#f8f6f2', 2, -17, 15, 1.6); V(SP('M-12,-19 Q-22,-26 -16,-36 Q-12,-46 -2,-42 Q4,-52 12,-44 Q22,-46 22,-34 Q26,-26 16,-19Z'), '#ffffff', 2, -32, 20, 2);
+      L(SP('M-6,-22 Q-4,-30 -6,-36 M4,-22 Q6,-32 4,-40 M12,-22 Q14,-30 12,-36'), '#d8d8e0', 1.1); L(SP('M2,8 Q-4,6 -8,9 M12,8 Q18,6 22,9'), '#2c2620', 2.2); },
+    hand(o) { V(SP('M-1.8,8 L-1.8,-34 L1.8,-34 L1.8,8Z'), '#c8ccd4', 0, -12, 20, 1.2); const sp = SP('M-9,-34 Q-10,-48 0,-48 Q10,-48 9,-34 Q0,-30 -9,-34Z'); V(sp, '#d8dce4', 0, -40, 10, 1.6); F(SP('M-7,-38 Q0,-34 7,-38 Q6,-44 0,-44 Q-6,-44 -7,-38Z'), '#c86a2a'); } },
+  mummia: { k: 'orco', pal: { sk: '#c8bfa0', pant: '#d8cfb4', lea: '#d8cfb4', hair: '#d8cfb4' }, noHair: 1,
+    body(o) { g.save(); g.clip(SP('M-26,-94 Q0,-104 26,-94 Q38,-70 32,-46 Q14,-34 -4,-36 Q-26,-38 -29,-58 Q-33,-78 -26,-94Z')); for (let i = 0; i < 11; i++) { const y = -96 + i * 5.6; V(SP(`M-34,${y} L36,${y - 4 + (i % 2) * 3} L36,${y + 1 + (i % 2) * 3} L-34,${y + 5}Z`), i % 2 ? '#e8e0c8' : '#d8cfb0', 0, y, 30, .8); } g.restore();
+      const tl = Math.sin(o.t * 3) * 3; V(SP(`M24,-60 Q34,${-56 + tl} 40,${-48 + tl} L37,${-46 + tl} Q31,${-53 + tl} 22,-56Z`), '#e8e0c8', 32, -52, 8, 1.2); },
+    head(o) { const hd = SP('M-14,-8 Q-13,-20 1,-21 Q15,-20 17,-6 Q20,8 15,15 Q4,21 -8,16 Q-15,8 -14,-8Z'); g.save(); g.clip(hd); for (let i = 0; i < 8; i++) { const y = -22 + i * 5; if (i === 2 || i === 3) continue; V(SP(`M-18,${y} L22,${y - 3 + (i % 2) * 2} L22,${y + 1 + (i % 2) * 2} L-18,${y + 4}Z`), i % 2 ? '#e8e0c8' : '#d8cfb0', 0, y, 20, .8); } g.restore(); } },
+  // ---- strega ----
+  halloween: { k: 'strega', pal: { dr: '#d8641a', dr2: '#f08a2a', hair: '#2a1a1a' }, noHat: 1,
+    body(o) { for (const [x, y] of [[-6, -30], [8, -24]]) { V(E(x, y, 3.4, 2.8), '#1c1a24', x, y, 3, .8); } },
+    head(o) { V(SP('M-22,-5 Q0,-13 22,-6 Q24,-2 20,0 Q0,-6 -20,1 Q-25,-1 -22,-5Z'), '#1c1a24', 0, -5, 22); const tw = Math.sin(o.t * 2.2) * 3; V(SP(`M-10,-7 Q-6,-26 2,-36 Q${8 + tw},-44 ${-4 + tw * 1.6},-50 Q${12 + tw},-50 12,-38 Q13,-22 11,-8 Q0,-11 -10,-7Z`), '#1c1a24', 1, -24, 24);
+      F(SP('M-10,-9 Q0,-13 11,-10 L11.4,-15 Q0,-18 -8.6,-14Z'), '#f08a2a'); V(E(0, -24, 5, 4.2), '#f08a2a', 0, -24, 5, 1.2); F(PL([-2.6, -25, -1.4, -23, -3.4, -23]), '#1c1a24'); F(PL([1.4, -25, 2.6, -23, .6, -23]), '#1c1a24'); L(SP('M-3,-21.6 L3,-21.6'), '#1c1a24', .9); V(SP('M-.6,-28 L.6,-28 L1,-31 L-1,-31Z'), '#3a7a2a', 0, -29, 2, .8); },
+    staff(o) { V(SP('M-1.4,36 Q1,10 -1,-10 Q-3,-24 1,-32 L2.6,-32 Q-.4,-22 1.4,-10 Q3,10 1.4,36Z'), '#3a2a20', 0, 0, 20, 1.6); const pu = 1 + Math.sin(o.t * 5) * .1; glowB(1, -40, 16 * pu, 'rgba(255,150,50,.7)');
+      V(E(1, -40, 8, 7), '#f08a2a', 1, -40, 8, 1.4); L(SP('M-2,-46 Q1,-40 -2,-34 M4,-46 Q1,-40 4,-34'), '#c8641a', 1); F(PL([-3, -42, -1, -39, -4, -39]), '#ffe070'); F(PL([3, -42, 5, -39, 2, -39]), '#ffe070'); F(SP('M-3,-36 L5,-36 L3,-34 L1,-36 L-1,-34Z'), '#ffe070'); V(SP('M0,-47 L2,-47 L2.4,-50 L.4,-50Z'), '#3a7a2a', 1, -48, 2, .8); } },
+  stellata: { k: 'strega', pal: { dr: '#1c2a6a', dr2: '#2c3e9a', hair: '#2a2a5a' }, noHat: 1,
+    body(o) { for (const [x, y, r] of [[-6, -54, 2.4], [8, -36, 2], [-2, -24, 2.6], [10, -58, 1.6]]) F(star5(x, y, r, o.t * .5), '#ffd35a', '#fff0a0'); },
+    head(o) { V(SP('M-22,-5 Q0,-13 22,-6 Q24,-2 20,0 Q0,-6 -20,1 Q-25,-1 -22,-5Z'), '#14205a', 0, -5, 22); const tw = Math.sin(o.t * 2.2) * 3, hat = SP(`M-10,-7 Q-6,-26 2,-36 Q${8 + tw},-44 ${-4 + tw * 1.6},-50 Q${12 + tw},-50 12,-38 Q13,-22 11,-8 Q0,-11 -10,-7Z`); V(hat, '#1c2a6a', 1, -24, 24);
+      g.save(); g.clip(hat); for (const [x, y, r] of [[-2, -14, 2.4], [6, -24, 2], [2, -34, 1.6]]) F(star5(x, y, r), '#ffd35a'); g.restore();
+      const mn = SP(`M${-6 + tw * 1.6},-54 A5,5 0 1 0 ${-1 + tw * 1.6},-46 A4,4 0 1 1 ${-6 + tw * 1.6},-54Z`); F(mn, '#ffe88a', '#fff0a0'); },
+    staff(o) { V(SP('M-1.4,36 Q1,10 -1,-10 Q-3,-24 1,-32 L2.6,-32 Q-.4,-22 1.4,-10 Q3,10 1.4,36Z'), '#c8c8d8', 0, 0, 20, 1.6); const pu = 1 + Math.sin(o.t * 5) * .14; glowB(1, -40, 18 * pu, 'rgba(255,230,120,.8)'); V(star5(1, -40, 8 * pu, o.t), '#ffd35a', 1, -40, 8, 1.4); F(star5(1, -40, 3.4), '#fffbe0'); } },
+  sanvalentino: { k: 'strega', pal: { dr: '#d8457a', dr2: '#f07aa8', hair: '#8a2a4a', sk: '#c8e0aa' }, noHat: 1,
+    body(o) { for (const [x, y, r] of [[-6, -54, 3], [8, -36, 2.6], [-2, -24, 3.2]]) F(heart(x, y, r), '#ffd0e0'); },
+    head(o) { V(SP('M-22,-5 Q0,-13 22,-6 Q24,-2 20,0 Q0,-6 -20,1 Q-25,-1 -22,-5Z'), '#b8285a', 0, -5, 22); const tw = Math.sin(o.t * 2.2) * 3; V(SP(`M-10,-7 Q-6,-26 2,-36 Q${8 + tw},-44 ${-4 + tw * 1.6},-50 Q${12 + tw},-50 12,-38 Q13,-22 11,-8 Q0,-11 -10,-7Z`), '#d8457a', 1, -24, 24);
+      F(SP('M-10,-9 Q0,-13 11,-10 L11.4,-15 Q0,-18 -8.6,-14Z'), '#fff0f4'); V(heart(1, -14, 4), '#e8283a', 1, -14, 4, 1); V(heart(-4 + Math.sin(o.t * 2.2) * 4.8, -50, 3.4), '#e8283a', -4, -50, 3.4, 1); },
+    staff(o) { V(SP('M-1.4,36 Q1,10 -1,-10 Q-3,-24 1,-32 L2.6,-32 Q-.4,-22 1.4,-10 Q3,10 1.4,36Z'), '#f4c8d8', 0, 0, 20, 1.6); V(SP('M-6,-30 Q1,-26 8,-30 Q6,-26 1,-25 Q-4,-26 -6,-30Z'), '#e8283a', 1, -28, 6, 1);
+      const pu = 1 + Math.sin(o.t * 4) * .14; glowB(1, -40, 16 * pu, 'rgba(255,100,150,.75)'); V(heart(1, -40, 7 * pu), '#ff4a7a', 1, -40, 7, 1.4); F(E(-1.4, -42, 1.6, 1.6), '#fff'); } },
+  astronauta: { k: 'strega', pal: { dr: '#e8eaf0', dr2: '#c8ccd8', hair: '#8a7aa8' }, noHat: 1,
+    body(o) { V(SP('M-6,-56 L6,-56 L6,-46 L-6,-46Z'), '#3a4a6a', 0, -51, 6, 1.2); for (const [x, c] of [[-3, '#e8283a'], [0, '#ffd35a'], [3, '#4ad84a']]) F(E(x, -51, 1.2, 1.2), c); F(SP('M-10,-40 L-6,-40 L-6,-36 L-10,-36Z'), '#2f6fd6'); },
+    head(o) { const hb = E(2, -2, 17, 17); g.save(); g.globalAlpha *= .3; F(hb, '#bfe8ff'); g.restore(); L(hb, '#e8f4ff', 2.6); L(hb, INK, 1); F(SP('M-9,-12 Q-4,-17 3,-17'), 'rgba(0,0,0,0)'); L(SP('M-8,-12 Q-3,-17 4,-17'), 'rgba(255,255,255,.85)', 2.2);
+      V(SP('M-12,10 Q2,18 16,10 L16,15 Q2,23 -12,15Z'), '#d8dce4', 2, 14, 14, 1.4); L(SP('M2,-19 L2,-28'), '#8a94a8', 1.4); const bl = Math.sin(o.t * 6) > 0; V(E(2, -29, 2, 2), bl ? '#ff4a4a' : '#8a2a2a', 2, -29, 2, .8); if (bl) glowB(2, -29, 6, 'rgba(255,80,80,.7)'); },
+    staff(o) { V(SP('M-3,26 L-3,-24 Q0,-36 3,-24 L3,26Z'), '#f4f4f8', 0, 0, 14, 1.4); V(SP('M-3,26 L-8,34 L-3,32Z M3,26 L8,34 L3,32Z'), '#d8283a', 0, 30, 6, 1.2); V(E(0, -14, 1.8, 2.4), '#4ab8e8', 0, -14, 2, .8); V(SP('M-3,-24 Q0,-36 3,-24Z'), '#d8283a', 0, -28, 4, 1);
+      const fl = 1 + Math.sin(o.t * 20) * .2; F(SP(`M-2.4,34 Q0,${42 + 6 * fl} 2.4,34Z`), '#ffb040', '#ffd070'); } },
+  vampira: { k: 'strega', pal: { dr: '#1a1420', dr2: '#8a1020', hair: '#14101a', sk: '#dfe2ea' }, noHat: 1,
+    body(o) { V(SP('M-12,-76 Q-20,-88 -16,-96 Q-8,-84 -2,-76Z'), '#8a1020', -12, -84, 8, 1.4); V(SP('M4,-76 Q14,-90 20,-94 Q20,-82 12,-74Z'), '#1a1420', 12, -84, 8, 1.4); V(E(-1, -62, 2.6, 2.6), '#e8283a', -1, -62, 2.6, 1); },
+    head(o) { V(SP('M-9,-6 Q-10,-16 0,-16 Q2,-12 4,-16 Q12,-16 11,-6 Q6,-11 4,-8 Q2,-11 -1,-8 Q-6,-12 -9,-6Z'), '#14101a', 1, -11, 11, 1.4); F(PL([4.6, 6.4, 5.4, 9.4, 6.2, 6.4]), '#fffdf4'); F(E(3, 5.4, 3, .9), 'rgba(180,20,40,.7)'); },
+    staff(o) { V(SP('M-1.4,36 Q1,10 -1,-10 Q-3,-24 1,-32 L2.6,-32 Q-.4,-22 1.4,-10 Q3,10 1.4,36Z'), '#1c1a24', 0, 0, 20, 1.6); const fl = Math.sin(o.t * 12) * .5; g.save(); g.translate(1, -42);
+      V(SP(`M0,0 Q-6,${-6 + fl * 4} -14,${-4 + fl * 6} Q-10,-1 -12,3 Q-6,1 -4,4 Q-2,1 0,3 Q2,1 4,4 Q6,1 12,3 Q10,-1 14,${-4 + fl * 6} Q6,${-6 + fl * 4} 0,0Z`), '#2a2030', 0, 0, 12, 1.4); F(E(-1.4, 0, .9, .9), '#ff3a3a'); F(E(1.4, 0, .9, .9), '#ff3a3a'); g.restore(); } },
+  // ---- lupo ----
+  nevi: { k: 'lupo', pal: { fur: '#e2e8f2', bel: '#ffffff' }, noCap: 1,
+    body(o) { V(SP('M-16,-86 Q2,-80 20,-86 L22,-80 Q2,-74 -16,-80Z'), '#4ab8e8', 2, -83, 18, 1.4); const tl = Math.sin(o.t * 3) * 3; V(SP(`M-14,-82 L${-24 + tl},-66 L${-18 + tl},-64 L-10,-80Z`), '#4ab8e8', -17, -72, 6, 1.2); },
+    head(o) { for (const [x, y] of [[-6, -10], [-2, -14], [3, -12]]) F(star5(x, y, 2, o.t * .4), '#bfe8ff', '#e8f8ff'); } },
+  pasqua: { k: 'lupo', noCap: 1,
+    head(o) { for (const [x, a, w2] of [[-4, -.35, 0], [4, .1, 1]]) { g.save(); g.translate(x, -10); g.rotate(a + Math.sin(o.t * 2 + w2) * .08); V(SP('M-4,0 Q-7,-18 -2,-30 Q4,-34 5,-22 Q5,-10 4,0Z'), '#f4f2f6', 0, -16, 16, 1.6); F(SP('M-1.6,-3 Q-4,-16 -1,-26 Q2,-28 2.4,-20 Q2.6,-10 1.6,-3Z'), '#f8b8cc'); g.restore(); }
+      V(SP('M-6,10 L-14,6 L-14,14Z M-6,10 L2,6 L2,14Z'), '#ffd35a', -6, 10, 6, 1.2); V(E(-6, 10, 2, 2), '#f2a040', -6, 10, 2, .8); },
+    hand(o, h) { g.save(); g.translate(h[0] + 2, h[1] + 8); const bk = SP('M-10,0 Q-10,10 0,11 Q10,10 10,0Z'); V(bk, '#c8904a', 0, 5, 10, 1.6); g.save(); g.clip(bk); for (let i = -10; i < 12; i += 4) L(SP(`M${i},0 L${i + 3},12`), '#a8743a', 1); g.restore();
+      L(SP('M-9,0 Q0,-14 9,0'), '#a8743a', 2); for (const [x, c] of [[-5, '#ff8ac0'], [0, '#7ad8ff'], [5, '#ffd35a']]) { V(E(x, -2, 3, 3.8), c, x, -2, 3, 1); L(SP(`M${x - 2.4},-2 L${x + 2.4},-2`), '#ffffff', .8); } g.restore(); } },
+  dj: { k: 'lupo', pal: { fur: '#6a6a7a' }, noCap: 1,
+    body(o) { const jk = SP('M-14,-84 Q4,-94 18,-80 Q20,-66 12,-54 L-8,-46 Q-12,-58 -16,-70 Q-18,-80 -14,-84Z'); V(jk, '#22202a', 2, -66, 22, 1.8); g.save(); g.clip(jk); F(SP('M6,-88 L14,-70 L8,-60 L2,-74Z'), '#3a3844'); g.restore();
+      for (const [x, y] of [[-10, -80], [-12, -72], [-10, -64], [-6, -56]]) V(E(x, y, 1.2, 1.2), '#d8dce4', x, y, 1.2, .6); F(SP('M2,-80 L10,-76 L8,-70 L0,-74Z'), '#d8283a'); },
+    head(o) { L(SP('M-8,-2 Q-10,-24 4,-22 Q16,-20 14,-4'), '#1c1a24', 3.4); L(SP('M-8,-2 Q-10,-24 4,-22 Q16,-20 14,-4'), '#8a8a9a', 1.4); V(E(-8, -1, 4, 5), '#d8283a', -8, -1, 4, 1.4); F(E(-8, -1, 2, 3), '#1c1a24');
+      for (const [x, r] of [[3, 4], [10, 3.4]]) { V(star5(x, -4, r, .2), '#ff4ad8', x, -4, r, 1.2); F(star5(x, -4, r * .5, .2), 'rgba(255,255,255,.5)'); } L(SP('M7,-4 L6,-4'), '#1c1a24', 1); },
+    hand(o, h) { g.save(); g.translate(h[0] + 4, h[1] - 2); g.rotate(-.6); V(SP('M-1.6,0 L-1.6,14 L1.6,14 L1.6,0Z'), '#1c1a24', 0, 7, 6, 1); V(E(0, -2, 4.4, 5), '#8a8a9a', 0, -2, 5, 1.2); for (const y of [-4, -2, 0]) L(SP(`M-3,${y} L3,${y}`), '#4a4a5a', .7); g.restore(); } },
+  // ---- topi ----
+  ninja: { k: 'topi', pal: { fur: '#5a5468' },
+    head(o) { const tl = Math.sin(o.t * 8) * 3; V(SP(`M-6,-7 Q-14,${-6 + tl} -20,${-2 + tl} L-18,${1 + tl} Q-12,${-2 + tl} -6,-4Z`), '#d8283a', -12, -4, 6, 1); V(SP(`M-6,-6 Q-14,${-1 + tl} -17,${4 + tl} L-15,${6 + tl} Q-11,${1 + tl} -6,-3Z`), '#d8283a', -11, 0, 5, 1);
+      V(SP('M-7,-13 Q3,-16 13,-11 L13,-8.6 Q3,-12 -7,-10Z'), '#1c1a24', 3, -11, 10, 1); F(SP('M3,-13 L6,-13 L6,-10.6 L3,-10.6Z'), '#d8283a');
+      V(SP('M-8,0 Q4,-1 16,0 Q18,3 14,5 Q4,7 -5,5 Q-9,3 -8,0Z'), '#1c1a24', 4, 3, 12, 1); } },
+};
+
 function bez(p0, p1, p2, p3, t) { const m = 1 - t; return [m * m * m * p0[0] + 3 * m * m * t * p1[0] + 3 * m * t * t * p2[0] + t * t * t * p3[0], m * m * m * p0[1] + 3 * m * m * t * p1[1] + 3 * m * t * t * p2[1] + t * t * t * p3[1]]; }
 function chain(P, n, r0, r1, col, belly) {
   const pts = []; for (let i = 0; i <= n; i++) { const t = i / n, q = bez(P[0], P[1], P[2], P[3], t); pts.push([q[0], q[1], r0 + (r1 - r0) * t]); }
@@ -10070,6 +10245,53 @@ function nwFront(c, p, t) {                                                  // 
     else { for (const [dx, r] of [[-26, 30], [22, 34], [0, 44]]) { const p = E(x + dx + sw * .3, H + 6 - r * .3, r, r * .9); F(p, dk(fg0, .1)); c.save(); c.clip(p); F(E(x + dx - r * .3, H - r * .9, r * .8, r * .5), 'rgba(120,180,90,.28)'); c.restore(); } } }
   c.restore(); g = null; RAW = 0;
 }
+// --- il draghetto comandante del prototipo, con le scene della storia: triste, occhiali che scendono, carica e fiammata ---
+function dwing(x, y, a, col) { g.save(); g.translate(x, y); g.rotate(a); const p = SP('M0,0 Q-27,-40 -9,-64 Q-2,-44 18,-44 Q13,-20 0,0Z'); V(p, col, 0, -34, 32); g.save(); g.clip(p); L(SP('M0,0 Q-10,-34 -9,-62 M0,0 Q6,-26 16,-43'), dk(col, .4), 1.6); g.restore(); g.restore(); }
+function ngDragon(c, o) {                                                    // o: t, rear, inflate, open, glasses (0-1), sad, blink; piedi in 0,0; restituisce la bocca
+  const m = NG_MODE(); if (m !== 'normal') { PCOL = m === 'shadow' ? 'rgba(20,12,36,.22)' : NG_FLASH(); g = proxyOf(c); } else g = c;
+  const t = o.t || 0, f = o.open || 0, gl = o.glasses == null ? 1 : o.glasses, sad = o.sad ? 1 : 0;
+  const gr = '#3fae5a', gd = '#2b7a40', bel = '#cbeea0', yl = '#f2b33d', br = Math.sin(t * 2.2), wa = br * .18 + f * .3, rear = (o.rear || 0) + Math.sin(t * 1.1) * .06 * (1 - f) * (1 - sad), bob = Math.sin(t * 2.2) * 1.5 * (1 - f) - sad * 2;
+  g.save();
+  F(E(0, 1, 30, 5), 'rgba(16,10,40,.4)');
+  const tl = chain([[-14, -12], [-38, -2], [-52, -20 + Math.sin(t * 2) * 4 * (1 - sad * .7)], [-72, -12 + Math.sin(t * 2 - 1) * 7 * (1 - sad * .7) + sad * 8]], 12, 11, 3.6, gr);
+  const te = tl[tl.length - 1]; V(SP(`M${te[0] + 3},${te[1] - 6} L${te[0] - 13},${te[1]} L${te[0] + 3},${te[1] + 6}Z`), yl, te[0] - 4, te[1], 8, 2);
+  dwing(-8, -40 + bob, -.5 + wa - sad * .35, gd);
+  V(E(-9, -3, 10, 5.5), gd, -9, -3, 10, 2);
+  g.save(); g.translate(0, -26 + bob); const inf = 1 + (o.inflate || 0) + f * .08; g.scale(inf, inf);
+  for (const [x, y, a] of [[-19, -14, -1.0], [-24, -2, -1.4], [-21, 10, -1.9]]) { g.save(); g.translate(x, y); g.rotate(a); V(PL([-4, 0, 0, -8, 4, 0]), yl, 0, -4, 6, 1.6); g.restore(); }
+  const body = E(0, 0, 25, 24); V(body, gr, 0, 0, 25); g.save(); g.clip(body); F(E(9, 6, 15, 17), bel); for (const y of [-2, 5, 12]) L(SP(`M-3,${y} Q9,${y + 4} 22,${y}`), dk(bel, .28), 1.4);
+  const sh = g.createLinearGradient(0, 0, 14, 26); sh.addColorStop(0, 'rgba(27,14,60,0)'); sh.addColorStop(1, 'rgba(27,14,60,.34)'); g.fillStyle = sh; g.fillRect(-26, -4, 54, 30); g.restore(); rim(body, 'rgba(255,214,150,.5)', 2.6);
+  g.restore();
+  V(E(9, -3, 11, 6), gr, 9, -3, 11, 2); for (const x of [13, 17, 21]) V(PL([x - 2, -2, x + 3.4, 1.4, x - 1, 2]), '#fff6e0', x, 0, 3, 1.2);
+  const ah = arm(12, -34 + bob, 8, 8, 5, f > 0 ? .1 : sad ? 1.2 : 1.9, f > 0 ? -.1 : sad ? -.6 : -1.9, gr); V(E(ah[0], ah[1], 3.6, 3.6), gr, ah[0], ah[1], 4, 1.6);
+  g.save(); g.translate(16, -58 + bob); g.rotate(rear);
+  V(PL([-12, -10, -7, -31, 0, -12]), yl, -6, -18, 9, 2); V(PL([0, -13, 8, -33, 11, -12]), yl, 6, -20, 9, 2);
+  V(E(0, 0, 22, 18), gr, 0, 0, 21);
+  if (f > .05) { V(SP(`M6,8 Q22,${10 + f * 3} 32,${8 + f * 2} Q30,${16 + f * 9} 18,${17 + f * 9} Q8,${16 + f * 6} 6,8Z`), dk(gr, .15), 19, 14, 14, 2); F(E(22, 12 + f * 4, 8, 3 + f * 4), '#6a1820'); F(E(24, 13 + f * 5, 7, 2 + f * 3), '#ffd35a', '#ff8a2a'); }
+  V(E(19, 5, 15, 10.5), '#47b863', 19, 4, 14);
+  F(E(29, 1, 1.5, 1.1), gd); F(E(24.6, .4, 1.5, 1.1), gd); F(E(-9, 8, 4.4, 2.6), sad ? 'rgba(150,170,255,.3)' : 'rgba(255,150,110,.35)');
+  if (f < .05) { if (sad) L(SP('M11,15 Q20,10 31,13'), '#1b4a2a', 2); else { L(SP('M9,12 Q20,17 32,10'), '#1b4a2a', 2); F(PL([13, 13.6, 16.6, 14.6, 14.4, 18.4]), '#fffdf4'); L(SP('M31,8.6 Q34,9 33,12'), '#1b4a2a', 1.6); } }
+  else for (const x of [12, 18, 24]) F(PL([x, 13.4, x + 2, 17.4, x + 4, 13.6]), '#fffdf4');
+  if (gl < 1) {                                                              // senza occhiali si vedono gli occhi (tristi all'inizio della storia)
+    const bl = Math.max(.12, o.blink == null ? 1 : o.blink) * (sad ? .62 : 1);
+    for (const [x, y, rx, ry] of [[2, -6, 5.2, 6], [17, -6.4, 4.4, 5.4]]) { const ey = E(x, y + (1 - bl) * ry * .5, rx, ry * bl); V(ey, '#fffdf4', x, y, rx, 1.4); g.save(); g.clip(ey); F(E(x + 1.6, y + 1 + sad * 1.6, rx * .52, ry * .58), '#1b1238'); F(E(x + 2.4, y - 1 + sad * 1.6, rx * .18, ry * .18), '#ffffff'); g.restore(); }
+    if (sad) { L(SP('M-4,-11 L7,-15.5'), gd, 2.4); L(SP('M13,-15.5 L23,-12'), gd, 2.4); if (Math.sin(t * .9) > .2) { const k = (t * .9 % (Math.PI * 2)) / 3; F(SP(`M-1,${1 + k * 14} q-2,4 0,5 q2,-1 0,-5Z`), 'rgba(150,200,255,.85)'); } }   // una lacrima
+    else { const ba = .08; L(SP(`M-6,${-13.5 - ba * 6} L7,${-12 + ba * 4}`), gd, 2.6); L(SP(`M12,${-12.5 + ba * 3} L22,${-13 - ba * 2}`), gd, 2.4); }
+  }
+  if (gl > 0) {                                                              // gli occhiali scendono dall'alto e si posano
+    const e = 1 - Math.pow(1 - gl, 3); g.save(); g.globalAlpha *= Math.min(1, gl * 3); g.translate(10, -(1 - e) * 70); g.rotate((1 - e) * -.7); g.translate(-10, 0);
+    const ba = f > 0 ? .34 : .08; if (gl >= 1) { L(SP(`M-6,${-13.5 - ba * 6} L7,${-12 + ba * 4}`), gd, 2.6); L(SP(`M12,${-12.5 + ba * 3} L22,${-13 - ba * 2}`), gd, 2.4); }
+    const gp = SP('M-8,-10 Q-8,-11.6 -6,-11.6 L24,-11.6 Q26,-11.6 26,-9.6 Q26,-2 19.6,-1.4 Q14,-1 12,-6 Q10,-6.8 8.6,-6 Q6,0 -1,-.4 Q-8,-1 -8,-10Z');
+    L(gp, '#000', 2.4); F(gp, '#17141e'); g.save(); g.clip(gp); const gx = (t * 14 % 70) - 22; F(PL([gx, -13, gx + 5, -13, gx - 1, 1, gx - 6, 1]), 'rgba(255,255,255,.55)'); F(PL([gx + 8, -13, gx + 10, -13, gx + 4, 1, gx + 2, 1]), 'rgba(255,255,255,.4)');
+    const lg = g.createLinearGradient(0, -12, 0, 0); lg.addColorStop(0, 'rgba(120,150,255,.28)'); lg.addColorStop(1, 'rgba(120,150,255,0)'); g.fillStyle = lg; g.fillRect(-9, -12, 36, 12); g.restore();
+    L(SP('M-8,-9 L-18,-7'), '#17141e', 2.4); g.restore();
+  }
+  g.restore();
+  dwing(-3, -44 + bob, -.25 - wa * 1.2 - sad * .3, '#37984f');
+  g.restore(); g = null;
+  const cr = Math.cos(rear), sr = Math.sin(rear);
+  return [16 + 30 * cr - 13 * sr, -58 + bob + 30 * sr + 13 * cr, 16 + 10 * cr + 6 * sr, -58 + bob - 6 * cr + 10 * sr];   // bocca e occhiali
+}
 
 // --- luce del gioco, ombre a terra e lampi di colore ---
 const _F = F, _L = L, _V = V, _glowB = glowB, _rim = rim;
@@ -10099,13 +10321,13 @@ function draw(k, c, o) {                                                    // o
   const m = NG_MODE(); if (m === 'normal') g = c; else { PCOL = m === 'shadow' ? 'rgba(20,12,36,.22)' : NG_FLASH(); g = proxyOf(c); }
   c.save(); c.rotate((o.lean || 0) * .5); const sq = o.sq || 0; c.scale(1 + sq, 1 - sq); fn(p); c.restore(); g = null; return true;
 }
-return { draw, has: k => !!(SUB[k] || DRAW[k]), nw: { ensure: nwEnsure, back: nwBack, owned: nwOwned, front: nwFront, pt: nwPt } };
+return { draw, has: k => !!(SUB[k] || DRAW[k]), nw: { ensure: nwEnsure, back: nwBack, owned: nwOwned, front: nwFront, pt: nwPt }, dragon: ngDragon, skin: id => !!SKINS[id] };
 })();
 const NG_H = {"goblin": 72, "orco": 158, "strega": 141, "cavaliere": 126, "arciere": 102, "fionda": 84, "topi": 48, "lupo": 113, "scheletri": 92, "trollponte": 112, "ragno": 50, "zombie": 101, "fuocofatuo": 79, "diavoletto": 82, "rospo": 36, "cornacchia": 77, "gargoyle": 86, "sciame": 90, "lupetti": 55, "scimmie": 115, "gattovolpe": 99, "gnomo": 86, "spaventapasseri": 122, "retopi": 112, "pandizenzero": 57, "mummia": 102, "pupazzo": 79, "matrigna": 138, "reginacuori": 122, "stregone": 147, "gothel": 122, "sirena": 94, "lumacone": 52, "fantasma": 97, "coccodrillo": 37, "ladroni": 105, "barbablu": 123, "omino": 80, "babajaga": 187, "stregamare": 106, "morgana": 109, "grifone": 107, "spirito": 177, "bestia": 86, "ciclope": 184, "senzatesta": 135, "dracula": 119, "medusa": 114, "pescecane": 73, "alberich": 71, "trollspecchio": 101, "mordred": 127, "lupomannaro": 115, "frankenstein": 133, "hyde": 126, "stregatto": 69, "stregaovest": 92, "sherekhan": 66, "krampus": 136, "jabberwocky": 127, "kraken": 141, "idra": 88, "bandersnatch": 83, "zucca": 116, "marzapane": 107, "gigantegh": 185, "uncino": 136, "mangiafuoco": 162, "tremotino": 82, "reginacattiva": 123, "reginanevi": 128, "basilisco": 120, "cavaliereverde": 162, "diavolo": 146, "dragonero": 120, "gigante": 185, "ecate": 120, "circe": 112, "minotauro": 196, "fenice": 119, "soldatino": 113, "principe": 109, "cacciatore": 128, "spiritista": 116, "porcellino": 88, "fata": 102, "re": 168, "bimbo": 55, "hanselgretel": 54, "nano": 69, "raperonzolo": 106, "pifferaio": 132, "musicanti": 127, "carrozza": 109, "ranocchio": 60, "peterpan": 123, "cappuccetto": 78, "robinhood": 122, "gattostivali": 78, "biancaneve": 104, "pinocchio": 100, "merlino": 146, "alice": 98, "wendy": 102, "giglio": 113, "cappellaio": 130, "brucaliffo": 115, "lepre": 99, "alibaba": 112, "sinbad": 135, "guardia": 139, "renna": 110, "fiammiferaia": 75, "pupazzoneve": 70, "cavcristallo": 124, "gemello": 102, "gemelli": 102, "pisello": 113, "tappeto": 94, "aladino": 113, "kai": 101, "gerda": 104, "pollicino": 57, "topo": 38, "scheletro": 92, "pipsciame": 67, "pipistrello": 67, "lupetto": 46, "scimmia": 115, "capoladroni": 105, "ladrone": 71, "matrigna_m": 138, "sorella": 81, "reginacuori_q": 122, "carta": 95, "burattino": 40, "corvo": 77};
 const NG_OLD = Object.assign({}, DRAW), NG_SKIN = new Set(Object.keys(LOOKS).filter(id => !LOOKS[id].tint && !LOOKS[id].filter));   // le skin con gli accessori restano col disegno di prima
 for (const k of Object.keys(DRAW)) { if (!NG.has(k) || !NG_H[k] || k === 'drago') continue;
   const old = DRAW[k], hk = k;
-  DRAW[k] = o => { if (o && o.look && NG_SKIN.has(o.look)) return old(o); const s2 = (HEIGHT[hk] || NG_H[hk]) / NG_H[hk]; ctx.save(); ctx.scale(s2, s2); NG.draw(hk, ctx, o || {}); ctx.restore(); }; }
+  DRAW[k] = o => { if (o && o.look && NG_SKIN.has(o.look) && !NG.skin(o.look)) return old(o); const s2 = (HEIGHT[hk] || NG_H[hk]) / NG_H[hk]; ctx.save(); ctx.scale(s2, s2); NG.draw(hk, ctx, o || {}); ctx.restore(); }; }
 function drawIcon(cvs, key, look) {                                         // icona di un personaggio, sempre alla luce del giorno (con il suo aspetto)
   const ic = cvs.getContext('2d'), real = ctx, was = L.p;
   ic.setTransform(1, 0, 0, 1, 0, 0); ic.clearRect(0, 0, cvs.width, cvs.height);
@@ -10837,8 +11059,8 @@ function renderShop() {
     const r = item('<canvas width="112" height="104" style="width:46px"></canvas>', `10 frammenti di ${SHORT[k]}`, got ? 'Presi! Domani altri.' : isUnlocked(k) ? 'Per potenziarlo o evolverlo.' : 'Per sbloccarlo.', got ? 'Preso' : price(pr, 0), !got && save.gold >= pr, () => { if (pay(pr, 0)) { save.shards[k] = (save.shards[k] || 0) + 10; save.shop.fr.push(k); persist(); checkUnlocks(); toast(`+10 frammenti di ${SHORT[k]}`); renderShop(); } });
     drawIcon(r.querySelector('canvas'), k); }
   head('Aspetti', '<small>Cambiano solo il look</small>');
-  for (const [id, L] of Object.entries(LOOKS).filter(([, L]) => L.from === 'shop')) { const own = save.looks.includes(id);
-    const r = item(L.k === 'drago' ? '<span class="bIco">🐉</span>' : '<canvas width="112" height="104" style="width:46px"></canvas>', L.name, own ? 'Ce l’hai! Lo scegli nella Fucina.' : L.k === 'drago' ? 'Il tuo drago cambia colore.' : `Aspetto per ${SHORT[L.k]}.`, own ? 'Preso' : price(0, L.ru), !own && save.ru >= L.ru, () => { if (pay(0, L.ru)) { lookGive(id); persist(); toast(`${L.name}!`); renderShop(); } });
+  for (const [id, L] of Object.entries(LOOKS).filter(([id, L]) => L.from === 'shop' && (festOn(L) || save.looks.includes(id)))) { const own = save.looks.includes(id);
+    const r = item(L.k === 'drago' ? '<span class="bIco">🐉</span>' : '<canvas width="112" height="104" style="width:46px"></canvas>', L.name, own ? 'Ce l’hai! Lo scegli nella Fucina.' : L.k === 'drago' ? 'Il tuo drago cambia colore.' : L.fest ? 'Solo in questo periodo!' : `Aspetto per ${SHORT[L.k]}.`, own ? 'Preso' : price(0, L.ru), !own && save.ru >= L.ru, () => { if (pay(0, L.ru)) { lookGive(id); persist(); toast(`${L.name}!`); renderShop(); } });
     if (L.k !== 'drago') drawIcon(r.querySelector('canvas'), L.k, id); }
   const o = offerOfDay(), oDone = save.shop.offer === d;
   head('Offerta <span class="tag">-40%</span>', '<small id="offerT">Scade tra ' + untilMidnight() + '</small>');
@@ -11654,7 +11876,7 @@ function storyTick(dt) {
     dragon.sad = t < 1.7 ? 1 : 0;
     dragon.glasses = t < 1 ? 0 : Math.min(1, (t - 1) / .7);
     dragon.rear = t < 1.7 ? .14 : lerp(.14, -.16, ease(Math.min(1, (t - 1.7) / .5)));
-    if (t >= 1.7 && !story.snap) { story.snap = 1; story.flash = 1; shake = 9; vibrate(45); const g = tanaPt(120, 171); burst(g.x, g.y, 16, 170, .5, 'spark'); particles.push({x:g.x, y:g.y, vx:0, vy:0, life:.35, max:.35, kind:'ring', r:6}); }
+    if (t >= 1.7 && !story.snap) { story.snap = 1; story.flash = 1; shake = 9; vibrate(45); const g = NWON && nwHeadW ? nwHeadW : tanaPt(120, 171); burst(g.x, g.y, 16, 170, .5, 'spark'); particles.push({x:g.x, y:g.y, vx:0, vy:0, life:.35, max:.35, kind:'ring', r:6}); }
     if (story.snap) story.boost = Math.min(1, story.boost + dt * 3);
   } else { dragon.glasses = 1; dragon.sad = 0; dragon.rear = lerp(dragon.rear, 0, Math.min(1, dt * 3)); }
   for (const u of s.units) {
@@ -11673,7 +11895,7 @@ function drawInset() {                                                     // ri
   const t = story.t, pop = t < .4 ? outBack(Math.min(1, t / .4)) : 1, b = story.boost;
   const R = Math.min(W * .36, H * .22) * pop, cx = W / 2, cy = H * .27;
   if (R < 4) return;
-  const head = tanaPt(128, 176), kk = R * 2 / 165, lava = tanaPt(110, 330);
+  const head = NWON && nwHeadW ? nwHeadW : tanaPt(128, 176), kk = R * 2 / 165 / (NWON ? nwDS : 1), lava = tanaPt(110, 330);
   ctx.save(); ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
   ctx.globalCompositeOperation = 'lighter';
   glow(ctx, (lava.x - cam.x) * k, groundY + lava.y * k, Math.max(W, H) * .8, '255,110,40', .14 * b);
