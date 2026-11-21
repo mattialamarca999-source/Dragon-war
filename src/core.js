@@ -77,6 +77,7 @@ const DW = (() => {
     ladrone:    {side:0, sub:1, hp:38,  dmg:6,  rate:.8, range:18, spd:70, steal:1},
     gigantegh:  {side:0, cost:320, cd:13, hp:860, dmg:31, rate:2.1, range:32, spd:20, splash:45, stomp:{every:9, r:120, t:2.2}},
     trollspecchio:{side:0, cost:230, cd:9, hp:200, dmg:16, rate:1.3, range:140, spd:42, ranged:1, fly:1, bounce:{n:2, k:.6, r:110}},
+    dragotempesta:{side:0, cost:260, cd:10, hp:300, dmg:20, rate:1.5, range:150, spd:34, ranged:1, fly:1, beast:1, bounce:{n:3, k:.55, r:120}},   // Mondo 16: vola e sputa fulmini che saltano su altri tre buoni
     dragonero:  {side:0, cost:340, cd:12, hp:460, dmg:24, rate:1.4, range:120, spd:42, fly:1, beast:1, ranged:1, splash:40, burn:{t:3, k:.4}},   // il Drago Nero: solo dal Pass del Drago
     gigante:    {side:0, cost:350, cd:14, hp:560, dmg:30, rate:2.4, range:30,  spd:22, siege:3},
     // ---- nuovi comuni e rari (8 nov 2026) ----
@@ -149,7 +150,13 @@ const DW = (() => {
     aladino:    {side:1, hp:160, dmg:16, rate:1,   range:24,  spd:60, bounty:60, dodge:.25},
     kai:        {side:1, hp:150, dmg:15, rate:1.1, range:24,  spd:50, bounty:55},
     gerda:      {side:1, hp:120, dmg:6,  rate:2,   range:110, spd:45, bounty:55, heal:35},
-    pollicino:  {side:1, hp:60,  dmg:8,  rate:1,   range:120, spd:110, bounty:25, ranged:1}
+    pollicino:  {side:1, hp:60,  dmg:8,  rate:1,   range:120, spd:110, bounty:25, ranged:1},
+    jack:       {side:1, hp:85,  dmg:10, rate:1.1, range:120, spd:60,  bounty:40, ranged:1, dodge:.15},          // Mondo 16: lancia i fagioli magici e schiva
+    arpa:       {side:1, hp:60,  dmg:11, rate:1.5, range:150, spd:34,  bounty:45, ranged:1, splash:25},          // suona: le note colpiscono da lontano
+    gallina:    {side:1, hp:110, dmg:13, rate:1.6, range:110, spd:40,  bounty:50, ranged:1, splash:30},          // lancia uova d'oro
+    cavnuvole:  {side:1, hp:250, dmg:17, rate:1.3, range:28,  spd:46,  bounty:70, charge:{dmg:24, r:50, kb:50}},  // carica con la lancia dalla nuvola
+    arpaincantata:{side:1, hp:90, dmg:14, rate:1.5, range:160, spd:30, bounty:60, ranged:1, splash:35},         // (solo per il semi-boss)
+    jackre:     {side:1, hp:300, dmg:22, rate:1.2, range:30,  spd:40,  bounty:80, splash:40}                     // (solo per il boss)
   };
   const ABIL = ['hook', 'fear', 'summon', 'charm', 'stunAura', 'leap', 'kidnap', 'donkey', 'mute', 'mirror', 'freeze', 'mirage', 'petrify', 'dive', 'grow', 'gaze', 'behead', 'genie', 'swallow', 'healAura', 'midas', 'inspire', 'smoke', 'chain', 'tentacle', 'betray', 'spring', 'roll', 'cookie', 'song', 'dash', 'stomp', 'vanish', 'pig'];
   const PARENT = {topo:'topi', corvo:'spaventapasseri', burattino:'mangiafuoco', matrigna_m:'matrigna', sorella:'matrigna', miraggio:'morgana', pipistrello:'dracula', reginacuori_q:'reginacuori', carta:'reginacuori', scheletro:'scheletri', capoladroni:'ladroni', ladrone:'ladroni', pipsciame:'sciame', lupetto:'lupetti', scimmia:'scimmie'};
@@ -204,7 +211,9 @@ const DW = (() => {
     kai_ghiaccio:     {base:'kai',          name:'Kai',                      semi:1, hp:1100, dmg:28, scale:1.8, tint:'#bfe8ff'},
     gerda_regina:     {base:'gerda',        name:'Gerda',                    boss:1, hp:2200, heal:60, scale:2, tint:'#ffe0f0'},
     riflesso:         {base:'principe',     name:'Riflesso del Principe',    semi:1, hp:1150, dmg:30, scale:1.6, tint:'#d8e8ff'},
-    re_specchi:       {base:'re',           name:'Re degli Specchi',         boss:1, hp:2400, dmg:40, scale:1.3, tint:'#cfe8ff'}
+    re_specchi:       {base:'re',           name:'Re degli Specchi',         boss:1, hp:2400, dmg:40, scale:1.3, tint:'#cfe8ff'},
+    arpa_inc:         {base:'arpaincantata', name:'Arpa Incantata',          semi:1, hp:1250, dmg:30, scale:1.4, tint:'#e8d0ff'},
+    jack_re:          {base:'jackre',       name:'Jack il Re delle Nuvole',  boss:1, hp:2600, dmg:42, scale:1.3, tint:'#fff2b8'}
   };
   ELITE.dracula_boss = {base:'dracula', name:'Conte Dracula', boss:1, hp:1500, dmg:30, scale:1.4, tint:'#ff4a6a', side:1};   // il boss segreto del Trono del Drago
   const BOSS_DMG = .5, BOSS_HEAL = .4;                       // regolazione generale di semiboss e boss
@@ -247,14 +256,16 @@ const DW = (() => {
     {name:'Palazzo di Ghiaccio Eterno', theme:'ghiaccioeterno', n:8, pool:['soldatineve', 'renna', 'fiammiferaia', 'arciere', 'cavcristallo', 'fata', 'porcellino', 'principe'], semi:'kai_ghiaccio', boss:'gerda_regina',
      names:['Lago gelato', 'Bosco di brina', 'Slitta abbandonata', 'Ponte di stalattiti', 'Sala delle bufere', 'Labirinto di cristallo', 'Trono di neve', 'Il cuore del ghiaccio']},
     {name:'Regno degli Specchi', theme:'specchi', n:10, pool:['gemelli', 'cavcristallo', 'pisello', 'soldatino', 'arciere', 'merlino', 'principe', 'raperonzolo', 'fata', 'carrozza'], semi:'riflesso', boss:'re_specchi',
-     names:['Galleria riflessa', 'Stanza dei doppi', 'Lago d’argento', 'Scala che non finisce', 'Sala dei ritratti', 'Labirinto di vetro', 'Specchio parlante', 'Corte capovolta', 'Torre del riflesso', 'Il Trono del Drago']}
+     names:['Galleria riflessa', 'Stanza dei doppi', 'Lago d’argento', 'Scala che non finisce', 'Sala dei ritratti', 'Labirinto di vetro', 'Specchio parlante', 'Corte capovolta', 'Torre del riflesso', 'Il Trono del Drago']},
+    {name:'Regno delle Nuvole', theme:'nuvole', n:12, pool:['jack', 'arpa', 'gallina', 'cavnuvole', 'pollicino', 'cavcristallo', 'gemelli', 'merlino', 'principe', 'fata', 'renna', 'carrozza'], semi:'arpa_inc', boss:'jack_re',
+     names:['Il fagiolo magico', 'Prima nuvola', 'Scala di foglie', 'Ponte d’arcobaleno', 'Isola volante', 'Sala dell’Arpa', 'Nido d’oro', 'Buco tra le nuvole', 'Cucina del Gigante', 'Forziere del Gigante', 'Torre del vento', 'Il Trono delle Nuvole']}
   ];
   // il sole cala: dal tramonto alla notte i buoni arrivano più spesso e più robusti
   const NIGHT = Object.assign({pace:.12, hp:.06, w3:0, from:2}, typeof process !== 'undefined' && process.env && process.env.DW_NIGHT ? JSON.parse(process.env.DW_NIGHT) : {});
   const nightP = t => t < 25 ? 0 : t < 55 ? (t - 25) / 30 * .5 : Math.min(1, .5 + (t - 55) / 25 * .5);   // 0 giorno · 0,5 tramonto · 1 notte
   const wmulB = w => w <= 4 ? 1.1 + .05 * (w - 1) : 1.25 + .02 * (w - 4);   // mondi 2-5: +10/15/20/25%, poi +2% a mondo (mondo 10: +35%)
   const wmul = w => (w <= 9 ? wmulB(w) : wmulB(9) + .015 * (w - 9)) * (w >= 2 ? 1 + NIGHT.w3 : 1);               // dal mondo 3 un filo in più (w3)
-  const WMOD = Object.fromEntries(Array.from({length:14}, (_, i) => [i + 1, {hp:wmul(i + 1), qty:wmul(i + 1)}]));
+  const WMOD = Object.fromEntries(Array.from({length:15}, (_, i) => [i + 1, {hp:wmul(i + 1), qty:wmul(i + 1)}]));
   // dal mondo 6 la storia è più gentile: i buoni crescono meno e all'inizio arrivano un tipo alla volta (l'Eroica resta com'era)
   const EASE = Object.assign({from:5, s:.10, q:.45, gap:16, late:1.09}, typeof process !== 'undefined' && process.env && process.env.DW_EASE ? JSON.parse(process.env.DW_EASE) : {});
   const COMP_EXTRA = +((typeof process !== 'undefined' && process.env && process.env.COMP) || 1.05);
@@ -469,7 +480,7 @@ const DW = (() => {
 
   // ---- Modalità Infinita: ondate numerate senza fine ogni 20 secondi, un boss ogni 3 ondate ----
   const INF_POOL = [[1, ['soldatino', 'arciere', 'cacciatore', 'nani', 'porcellino']], [5, ['ranocchio', 'raperonzolo', 'fata', 'pollicino', 'hanselgretel', 'principe']],
-    [10, ['carrozza', 'musicanti', 'pifferaio', 'merlino', 'peterpan', 'gattostivali', 'robinhood', 'cappuccetto', 'spiritista']], [15, ['biancaneve', 'alice', 'wendy', 'cappellaio', 'sinbad', 'renna', 'cavcristallo', 'gemelli']]];
+    [10, ['carrozza', 'musicanti', 'pifferaio', 'merlino', 'peterpan', 'gattostivali', 'robinhood', 'cappuccetto', 'spiritista']], [15, ['biancaneve', 'alice', 'wendy', 'cappellaio', 'sinbad', 'renna', 'cavcristallo', 'gemelli']], [20, ['jack', 'arpa', 'gallina', 'cavnuvole']]];
   const INF_WAVE = 20;
   const infBosses = () => Object.keys(ELITE).filter(k => U[k] && !/dracula/.test(k)).sort((a, b) => ELITE[a].hp - ELITE[b].hp);
   const infLevel = () => ({world:5, castle:0, g:40, name:'Modalità Infinita', hp:1e9, gold:0, eMul:1, waves:[], rush:[], shard:null, shardN:0, boss:null, bossAt:1e9, semi:false, inf:true});
@@ -767,7 +778,7 @@ const DW = (() => {
   const reward = s => s.inf ? 0 : Math.round(.5 * (s.hard ? 2 : 1) * (s.over > 0 ? s.lv.gold + 50 * stars(s) + s.stats.stolen * 2 : 20 + Math.round((30 + 3 * (s.lv.g || 0)) * (1 - s.castle.hp / s.castle.max))));
 
   // I Capricci del Drago: battaglie con una regola storta. Se ne apre uno per ogni mappa completata
-  const BCOST = {soldatino:40, arciere:60, pollicino:55, hanselgretel:60, ranocchio:70, raperonzolo:80, peterpan:80, cacciatore:90, fata:100, pifferaio:100, nani:110, porcellino:120, carrozza:130, musicanti:140, principe:180, bimbi:70, wendy:90, giglio:70, cappellaio:100, brucaliffo:100, lepre:70, alibaba:90, sinbad:150, guardie:120, renna:130, fiammiferaia:100, soldatineve:110, cavcristallo:170, gemelli:120, pisello:120, cappuccetto:55, pinocchio:70, robinhood:90, gattostivali:90, alice:90, biancaneve:100, merlino:120};   // i buoni costano Bontà
+  const BCOST = {jack:70, arpa:90, gallina:90, cavnuvole:150, soldatino:40, arciere:60, pollicino:55, hanselgretel:60, ranocchio:70, raperonzolo:80, peterpan:80, cacciatore:90, fata:100, pifferaio:100, nani:110, porcellino:120, carrozza:130, musicanti:140, principe:180, bimbi:70, wendy:90, giglio:70, cappellaio:100, brucaliffo:100, lepre:70, alibaba:90, sinbad:150, guardie:120, renna:130, fiammiferaia:100, soldatineve:110, cavcristallo:170, gemelli:120, pisello:120, cappuccetto:55, pinocchio:70, robinhood:90, gattostivali:90, alice:90, biancaneve:100, merlino:120};   // i buoni costano Bontà
   const ALT_BMUL = 1.7, ALT_CASTLE = 1600, OVERTIME = 150, DUEL_MAX = 300;                       // duello alternativo: buoni un po' più forti, castello dei buoni
   const CK = [1.42, 1.5, .97, 1, 1.14];                           // ritocchi provati con le simulazioni a due
   const COOP = [                                                   // i castelli speciali per giocare in due
