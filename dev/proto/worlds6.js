@@ -1,0 +1,55 @@
+// ---------- ostacoli: gruppo 6 (Regno delle Nuvole) ----------
+function cloudPuff(x, y, s, c = '#ffffff', sh = '#d4def4') { for (const [dx, dy, r] of [[-12, 0, 10], [0, -6, 13], [13, -1, 10], [5, 3, 9], [-6, 4, 8]]) { const p = E(x + dx * s, y + dy * s, r * s, r * s * .78); F(p, c); g.save(); g.clip(p); F(E(x + dx * s, y + (dy + r * .7) * s, r * s, r * s * .45), sh); g.restore(); } }
+function beanLeaf(x, y, s, a, c = '#4aa83a') { g.save(); g.translate(x, y); g.rotate(a); g.scale(s, s); V(SP('M0,0 Q8,-10 22,-8 Q16,4 0,0Z'), c, 11, -4, 11, 1.2); L(SP('M2,-1 Q10,-6 20,-7'), dk(c, .3), .9); g.restore(); }
+OBS.fagiolo = { draw(k, W) {                                                // la pianta del fagiolo magico: esce da un buco nelle nuvole, fusto enorme attorcigliato con le foglie, viticci; si vede la terra lontana sotto
+  const hole = k.shape(.5, .7, 6); F(k.shape(.56, .7, 6), '#b8c8e8'); F(hole, '#7aa860'); g.save(); g.clip(hole); for (let i = 0; i < 14; i++) { const x = k.cx - 160 + i * 26, y = k.cy - 10 + (i % 3) * 10; F(SP(`M${x},${y} l22,-4 l4,10 l-22,4Z`), ['#8ac060', '#a8c870', '#6a9a4a', '#c8b860'][i % 4]); } g.globalAlpha = .45; F(hole, '#e8f2ff'); g.restore();
+  for (const [i, p] of k.pts(36, 1.04, .62).entries()) cloudPuff(p.x, p.y, k.ps(p.y) * (.6 + p.r * .5));
+  const x = k.cx + 10, y = k.cy + 14, top = k.yT - 300;
+  for (const [o2, c] of [[-1, '#3a8a2a'], [1, '#5ab84a']]) { const p = new Path2D(); p.moveTo(x - 18 * o2, y); for (let t = 0; t <= 1; t += .025) { const yy = y - t * (y - top), xx = x + Math.sin(t * 11 + o2) * (26 - t * 14) * o2; p.lineTo(xx, yy); } L(p, dk(c, .4), 26 - (o2 > 0) * 6 - 0); L(p, c, 20 - (o2 > 0) * 6); }
+  for (let i = 0; i < 16; i++) { const t = .05 + i * .06, yy = y - t * (y - top), xx = x + Math.sin(t * 11) * (26 - t * 14); beanLeaf(xx + (i % 2 ? 10 : -10), yy, 2 - t * 1.1, i % 2 ? -.4 : Math.PI + .4, i % 3 ? '#4aa83a' : '#6ac84a'); }
+  for (const [dx, dy, a] of [[-30, -60, 1], [34, -130, -1], [-20, -200, 1], [24, -260, -1]]) L(SP(`M${x + dx * .4},${y + dy} q${a * 22},-14 ${a * 16},-34 q${-a * 9},-9 ${-a * 3},-16`), '#5ab84a', 2.6);
+  OBA = () => { g.save(); g.clip(k.shape(.5, .7, 6)); for (let i = 0; i < 4; i++) { const xx = k.cx - 200 + ((T * 14 + i * 110) % 400); g.globalAlpha = .5; F(E(xx, k.cy + (i % 2) * 14, 40, 9), '#ffffff'); } g.restore(); }; } };
+OBS.voragine = { draw(k, W) {                                               // un buco tra le nuvole: sotto si vedono campi, fiumi e paesini lontani; il vento ci fa girare le nuvolette attorno
+  F(k.shape(1.04, .9), '#c8d4ee'); const hole = k.shape(.86, .9, 4); F(hole, '#6a9a50');
+  g.save(); g.clip(hole); seed += 3; for (let i = 0; i < 60; i++) { const x = k.x0 + rr(0, k.x1 - k.x0), y = k.yT + rr(0, k.bot(k.cx) - k.yT + 20); F(SP(`M${x},${y} l${rr(18, 30)},${rr(-4, 2)} l${rr(2, 6)},${rr(8, 12)} l${-rr(18, 30)},${rr(-2, 4)}Z`), ['#8ac060', '#a8c870', '#6a9a4a', '#c8b860', '#7ab050'][i % 5]); }
+  L(SP(`M${k.x0},${k.cy} Q${k.cx - 100},${k.cy - 30} ${k.cx},${k.cy + 6} T${k.x1},${k.cy - 10}`), '#5aa8e0', 5); for (let i = 0; i < 5; i++) { const x = k.cx - 180 + i * 90, y = k.cy + 18 - (i % 2) * 22; F(E(x, y, 3, 2), '#f4eee0'); F(PL([x - 3, y - 1, x, y - 4, x + 3, y - 1]), '#c8503a'); }
+  const sh = g.createLinearGradient(0, k.yT, 0, k.bot(k.cx)); sh.addColorStop(0, 'rgba(70,90,150,.55)'); sh.addColorStop(.35, 'rgba(200,220,255,.25)'); sh.addColorStop(1, 'rgba(255,255,255,.1)'); g.fillStyle = sh; g.fillRect(k.x0 - 20, k.yT - 20, k.x1 - k.x0 + 40, 300); g.restore();
+  for (const [i, p] of k.pts(50, 1.06, .88).entries()) cloudPuff(p.x, p.y, k.ps(p.y) * (.7 + p.r * .5));
+  OBA = () => { g.save(); g.clip(k.shape(.86, .9, 4)); for (let i = 0; i < 6; i++) { const a = T * .3 + i, xx = k.cx + Math.cos(a) * (k.x1 - k.x0) * .32, yy = k.cy + Math.sin(a) * 26; g.globalAlpha = .55; F(E(xx, yy, 34, 8), '#ffffff'); } g.restore(); }; } };
+OBS.nido = { draw(k, W) {                                                   // il nido d'oro della gallina: nuvola soffice, rametti intrecciati d'oro, uova d'oro che luccicano, piume
+  F(k.shape(1.02, .8), '#dfe8fa'); for (const [i, p] of k.pts(40, 1.04, .7).entries()) cloudPuff(p.x, p.y, k.ps(p.y) * (.6 + p.r * .4));
+  const x = k.cx, y = k.cy + 8, rx = Math.min(150, (k.x1 - k.x0) * .28), ry = 34;
+  V(E(x, y + 6, rx, ry), '#a8782a', x, y + 6, rx, 2); g.save(); g.clip(E(x, y + 6, rx, ry)); for (let i = 0; i < 70; i++) { const a = i * .9, rr2 = (i % 9) / 9; L(SP(`M${x + Math.cos(a) * rx * rr2},${y + 6 + Math.sin(a) * ry * rr2} l${18 * Math.cos(a + 1.2)},${6 * Math.sin(a + 1.2)}`), i % 3 ? '#d8a840' : '#7a5020', 2); } g.restore();
+  V(E(x, y - 2, rx * .78, ry * .55), '#7a5020', x, y - 2, rx * .7, 1.4);
+  const eggs = [[-60, -10], [-26, -16], [10, -12], [44, -16], [-40, 2], [26, 2], [-6, 0], [62, -2]].filter(([dx]) => Math.abs(dx) < rx * .7);
+  for (const [dx, dy] of eggs) { const ex = x + dx, ey = y + dy, eg = SP(`M${ex},${ey - 14} Q${ex + 10},${ey - 12} ${ex + 10},${ey} Q${ex + 8},${ey + 10} ${ex},${ey + 10} Q${ex - 8},${ey + 10} ${ex - 10},${ey} Q${ex - 10},${ey - 12} ${ex},${ey - 14}Z`); V(eg, '#f2c43a', ex, ey, 12, 1.6); F(E(ex - 3, ey - 6, 2.6, 4), 'rgba(255,255,255,.7)'); addLight(ex, ey, 30, 'rgba(255,220,100,.4)'); }
+  for (const [dx, dy, a] of [[-rx - 20, 10, -.4], [rx + 10, 16, .5], [-rx * .4, 40, .1]]) { g.save(); g.translate(x + dx, y + dy); g.rotate(a); V(SP('M0,0 Q6,-14 2,-26 Q-4,-14 0,0Z'), '#f4d070', 1, -13, 8, 1); L(SP('M1,0 L2,-24'), '#c89a30', .8); g.restore(); }
+  OBA = () => { if (Math.sin(T * 2.4) > .5) for (const [dx, dy] of eggs.slice(0, 3)) { const p = [x + dx + 4, y + dy - 8]; F(SP(`M${p[0]},${p[1] - 5} l1,4 l4,1 l-4,1 l-1,4 l-1,-4 l-4,-1 l4,-1Z`), '#fffbe0', '#ffe080'); } }; } };
+
+// ---------- i mondi: gruppo 6 ----------
+WORLDS.nuvole = { name: 'Regno delle Nuvole', seed: 177, ob: ['fagiolo', 'voragine', 'nido'], night: 'rgba(20,24,80,.42)',
+  sky: [['#3a8ae8', '#7ab8f4', '#c8e4ff', '#eef6ff'], ['#3a2070', '#b0508a', '#f8907a', '#ffd8a0'], ['#04061c', '#0c1240', '#1a2460', '#2a3478']],
+  gr: ['#fbfdff', '#e8eefc', '#cdd8f2', '#a8b6dc'], patch: ['rgba(255,255,255,.5)', 'rgba(120,140,210,.16)'], lane: 'rgba(170,190,240,.22)', bank: '#e8f0ff', rock: '#8a8aa8', rockCap: 'rgba(255,255,255,.95)', grass: '#6ac84a', fg: ['#c8d4f0', '#dce6fa'],
+  skyFx(w) { if (TIME === 2) { g.save(); g.globalCompositeOperation = 'lighter'; for (let i = 0; i < 4; i++) { const x = rr(60, w - 60), y = rr(30, 160); F(E(x, y, 1.6, 1.6), 'rgba(255,250,220,.9)'); } g.restore(); } },
+  pfx(t) { for (let i = 0; i < 16; i++) { const x = ((i * 157.3 + t * (10 + i % 4 * 4) - cam * 1.1) % (VW + 200) + VW + 200) % (VW + 200) - 100, y = 330 + ((i * 61) % 200); g.globalAlpha = .18; g.fillStyle = '#ffffff'; g.beginPath(); g.ellipse(x, y, 40 + (i % 3) * 14, 6 + (i % 2) * 3, 0, 0, 7); g.fill(); g.globalAlpha = 1; }
+    for (let i = 0; i < 14; i++) { const k = (t * .25 + i / 14) % 1, x = ((i * 211) % VW), y = 120 + ((i * 47) % 300) - k * 40; g.fillStyle = `rgba(255,240,170,${.6 * Math.sin(k * Math.PI)})`; g.beginPath(); g.arc(x, y, 1.4, 0, 7); g.fill(); } },
+  far(w) { const sea = ridge(250, 40, 120, w); F(sea, atm('#f4f8ff', .35)); shadeClip(sea, 200, 300, 'rgba(255,255,255,.4)', atm('#c8d4f0', .35));       // il mare di nuvole lontano
+    for (let i = 0; i < 9; i++) { const x = rr(0, w), y = rr(232, 262), s = rr(1.4, 2.6); cloudPuff(x, y, s, atm('#ffffff', .3), atm('#d0dcf4', .35)); }
+    for (const [fx, fy, fs] of [[w * .22, 190, 1], [w * .78, 160, .8]]) { g.save(); g.translate(fx, fy); g.scale(fs, fs); F(SP('M-50,0 Q-40,26 -10,40 Q0,52 10,40 Q40,26 50,0Z'), atm('#a88a6a', .45)); F(SP('M-56,0 Q0,-14 56,0 Q0,10 -56,0Z'), atm('#7ab060', .45)); F(E(-16, -14, 14, 12), atm('#5a9a4a', .45)); F(E(14, -10, 10, 8), atm('#5a9a4a', .45)); F(SP('M20,-4 L24,-40 L28,-4Z'), atm('#e8e0d8', .45)); F(SP('M18,-38 L24,-52 L30,-38Z'), atm('#c8a040', .45)); cloudPuff(-40, 6, .8, atm('#ffffff', .35), atm('#d0dcf4', .4)); g.restore(); }   // isole volanti
+    const bx = w * .5; L(SP(`M${bx},300 Q${bx - 20},220 ${bx + 10},150 Q${bx + 30},90 ${bx - 6},20`), atm('#4a9a3a', .4), 9); for (let i = 0; i < 7; i++) { const y = 280 - i * 38; F(E(bx + (i % 2 ? 14 : -14), y, 10, 5, i % 2 ? -.4 : .4), atm('#5ab84a', .4)); } },   // la pianta del fagiolo lontana che sale fino al cielo
+  hill(w) { const h1 = ridge(300, 22, 90, w); F(h1, atm('#ffffff', .12)); shadeClip(h1, 280, 330, 'rgba(255,255,255,.6)', atm('#d8e2f6', .1));
+    for (let x = 10; x < w; x += rr(50, 110)) cloudPuff(x, rr(298, 312), rr(1.6, 2.6), '#ffffff', '#dfe7f8');
+    const h2 = ridge(318, 12, 140, w); F(h2, '#f4f8ff'); rim(h2, 'rgba(255,255,255,.7)', 4); },
+  groundFx(w) { for (let i = 0; i < 40; i++) { const x = rr(0, w), y = rr(HOR + 10, H), s = .5 + (y - HOR) / (H - HOR) * 1.4; g.save(); g.globalAlpha = .55; cloudPuff(x, y, s * rr(.8, 1.4), '#ffffff', '#dbe4f6'); g.restore(); }
+    for (let i = 0; i < 18; i++) { const x = rr(0, w), y = rr(HOR + 20, H); L(SP(`M${x - 50},${y} Q${x},${y - 8} ${x + 50},${y}`), 'rgba(150,170,220,.22)', 2); } },
+  scatter(x, y, s, k, d, inLane) { if (k < .45) { if (!inLane || k < .2) { g.save(); g.globalAlpha = .8; cloudPuff(x, y, s * .45, '#ffffff', '#dbe4f6'); g.restore(); } }
+    else if (k < .62 && !inLane) { L(SP(`M${x},${y} Q${x - 3 * s},${y - 8 * s} ${x + 2 * s},${y - 14 * s} q${5 * s},-2 ${3 * s},${-6 * s}`), '#5ab84a', 1.6 * s); beanLeaf(x, y - 6 * s, s * .45, -.3); }
+    else if (k < .7 && !inLane) { V(E(x, y - 3 * s, 3.4 * s, 4.4 * s), '#f2c43a', x, y - 3 * s, 4 * s, .8 * s); }
+    else if (k < .76 && !inLane) { g.save(); g.translate(x, y); g.rotate(k * 9); V(SP(`M0,0 Q${3 * s},${-6 * s} ${1 * s},${-12 * s} Q${-2 * s},${-6 * s} 0,0Z`), '#f4f0e8', 0, -6 * s, 5 * s, .7 * s); g.restore(); } },
+  lair() { lairRock({ rock: '#6a6a8a', hi: 'rgba(255,255,255,.35)', rim: 'rgba(220,230,255,.6)', arch: '#8a8aaa', arch2: '#7a7a9a', glow: [190, 150, 255], teeth: '#eef0ff', fl: 2,   // la tana: roccia della tempesta con la nuvola in testa e la pianta del fagiolo che ci si arrampica
+    top: capTop('rgba(250,252,255,.96)', 1),
+    deco: () => { L(SP('M-150,40 Q-170,-40 -120,-110 Q-80,-160 -20,-196'), '#3a8a2a', 8); L(SP('M-150,40 Q-170,-40 -120,-110 Q-80,-160 -20,-196'), '#5ab84a', 5); for (let i = 0; i < 6; i++) { const t = i / 6, xx = -150 + t * 130 - Math.sin(t * 3) * 20, yy = 40 - t * 236; beanLeaf(xx, yy, 1.2, i % 2 ? -.6 : Math.PI + .6); }
+      for (const [x, y, s] of [[-170, 40, 2.2], [150, 44, 2], [-60, 52, 1.6], [70, 54, 1.8]]) cloudPuff(x, y, s); } }); },
+  castle() { castleStd({ st: '#f4f6fc', roof: '#3a6ad8', roof2: '#e8b83a', spire: 1, gate: '#8a6a3a', shield: '#3a6ad8', cap: '#ffffff', flag: '#3a6ad8', flag2: '#e8b83a',   // il castello tra le nuvole: marmo bianco, tetti blu e d'oro, poggia su un banco di nubi
+    wallDeco: () => { L(SP('M-90,-62 L114,-62'), '#e8b83a', 3); for (let i = 0; i < 5; i++) { const x = -70 + i * 40; L(SP(`M${x},-46 Q${x + 6},-52 ${x + 12},-46`), '#c8d4f0', 2); } },
+    deco: () => { for (const [x, y, s] of [[-170, 46, 2.6], [-90, 56, 2], [0, 60, 2.4], [100, 56, 2.2], [190, 48, 2.6]]) cloudPuff(x, y, s); } }); } };

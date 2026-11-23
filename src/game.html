@@ -1068,7 +1068,7 @@ save.unlocked = save.unlocked || DW.START.slice();
 save.squad = (save.squad || DW.START).filter(kk => DW.U[kk]).slice(0, DW.DECK);
 save.decks = (save.decks || [save.squad, [], []]).map(d => (d || []).filter(kk => DW.U[kk]).slice(0, DW.DECK)); save.deckI = save.deckI || 0;   // tre mazzi: rosso, blu, verde
 save.decks[save.deckI] = save.squad;
-const UNLOCK = {pupazzo:{w:5, kind:'boss', noEgg:1, txt:'Batti il boss della mappa 6'}, zucca:{w:6, kind:'boss', noEgg:1, txt:'Batti il boss della mappa 7'}, gothel:{w:7, kind:'boss', noEgg:1, txt:'Batti il boss della mappa 8'}, marzapane:{w:8, kind:'boss', noEgg:1, txt:'Batti il boss della mappa 9'}, alberich:{w:9, kind:'boss', noEgg:1, txt:'Batti il boss della mappa 10'}, sirena:{w:10, kind:'boss', noEgg:1, txt:'Batti il boss della mappa 11'}, bandersnatch:{w:11, kind:'boss', noEgg:1, txt:'Batti il boss della mappa 12'}, ladroni:{w:12, kind:'boss', noEgg:1, txt:'Batti il boss della mappa 13'}, gigantegh:{w:13, kind:'boss', noEgg:1, txt:'Batti il boss della mappa 14'}, trollspecchio:{w:14, kind:'boss', noEgg:1, txt:'Batti il boss della mappa 15'}, dragonero:{pass:1, txt:'Livello 30 del Pass d’oro'}, krampus:{fr:80}, jabberwocky:{fr:80}, kraken:{fr:80}, idra:{fr:80}, mordred:{fr:60}, lupomannaro:{fr:60}, frankenstein:{fr:60}, hyde:{fr:60}, trollponte:{fr:20}, scheletri:{fr:20}, lupo:{gift:0, txt:'Vinci il castello 1'}, strega:{gift:1, txt:'Vinci il castello 2'}, gattovolpe:{w:0, kind:'boss', txt:'Batti il boss della mappa 1'}, gnomo:{fr:20}, spaventapasseri:{fr:20}, matrigna:{fr:40}, retopi:{fr:40}, omino:{fr:60}, babajaga:{fr:60}, stregamare:{fr:60}, reginacattiva:{fr:100}, reginanevi:{fr:100}, pandizenzero:{fr:40}, mummia:{fr:40}, morgana:{fr:60}, grifone:{fr:60}, spirito:{fr:60}, bestia:{fr:60}, ciclope:{fr:60}, senzatesta:{fr:60}, dracula:{secret:1}, medusa:{fr:60}, basilisco:{fr:100}, cavaliereverde:{fr:100}, reginacuori:{fr:40}, stregone:{fr:40}, pescecane:{fr:60}, diavolo:{fr:100},
+const UNLOCK = {pupazzo:{w:5, kind:'boss', noEgg:1, txt:'Batti il boss della mappa 6'}, zucca:{w:6, kind:'boss', noEgg:1, txt:'Batti il boss della mappa 7'}, gothel:{w:7, kind:'boss', noEgg:1, txt:'Batti il boss della mappa 8'}, marzapane:{w:8, kind:'boss', noEgg:1, txt:'Batti il boss della mappa 9'}, alberich:{w:9, kind:'boss', noEgg:1, txt:'Batti il boss della mappa 10'}, sirena:{w:10, kind:'boss', noEgg:1, txt:'Batti il boss della mappa 11'}, bandersnatch:{w:11, kind:'boss', noEgg:1, txt:'Batti il boss della mappa 12'}, ladroni:{w:12, kind:'boss', noEgg:1, txt:'Batti il boss della mappa 13'}, gigantegh:{w:13, kind:'boss', noEgg:1, txt:'Batti il boss della mappa 14'}, trollspecchio:{w:14, kind:'boss', noEgg:1, txt:'Batti il boss della mappa 15'}, dragonero:{pass:1, txt:'Livello 30 del Pass d’oro · Stagione 1'}, yeti:{pass:1, txt:'Livello 30 del Pass d’oro · Stagione 2'}, krampus:{fr:80}, jabberwocky:{fr:80}, kraken:{fr:80}, idra:{fr:80}, mordred:{fr:60}, lupomannaro:{fr:60}, frankenstein:{fr:60}, hyde:{fr:60}, trollponte:{fr:20}, scheletri:{fr:20}, lupo:{gift:0, txt:'Vinci il castello 1'}, strega:{gift:1, txt:'Vinci il castello 2'}, gattovolpe:{w:0, kind:'boss', txt:'Batti il boss della mappa 1'}, gnomo:{fr:20}, spaventapasseri:{fr:20}, matrigna:{fr:40}, retopi:{fr:40}, omino:{fr:60}, babajaga:{fr:60}, stregamare:{fr:60}, reginacattiva:{fr:100}, reginanevi:{fr:100}, pandizenzero:{fr:40}, mummia:{fr:40}, morgana:{fr:60}, grifone:{fr:60}, spirito:{fr:60}, bestia:{fr:60}, ciclope:{fr:60}, senzatesta:{fr:60}, dracula:{secret:1}, medusa:{fr:60}, basilisco:{fr:100}, cavaliereverde:{fr:100}, reginacuori:{fr:40}, stregone:{fr:40}, pescecane:{fr:60}, diavolo:{fr:100},
   fantasma:{fr:20, st:15}, coccodrillo:{fr:20, st:30}, barbablu:{fr:20, st:60},
   uncino:{w:1, kind:'boss', txt:'Batti il boss della mappa 2'}, tremotino:{cr:45}, mangiafuoco:{w:3, kind:'semi', txt:'Batti il semiboss della mappa 4'}, gigante:{w:4, kind:'boss', txt:'Batti il boss della mappa 5'}};
 Object.assign(UNLOCK, {minotauro:{secret:1}, fenice:{secret:1}, fuocofatuo:{fr:20}, diavoletto:{fr:20}, rospo:{fr:20}, cornacchia:{fr:20}, lumacone:{fr:40}, circe:{fr:80}, ecate:{fr:100}});   // Minotauro: 30 giorni di fila al calendario · Fenice: 20 castelli vinti in meno di 2 minuti
@@ -4150,6 +4150,7 @@ const LOOKS = {                                                            // sk
   ninja:{k:'topi', name:'Topi Ninja', from:'shop', ru:80}, cowboy:{k:'fionda', name:'Fionda Cowboy', from:'shop', ru:80}, natale:{k:'orco', name:'Orco Babbo Natale', from:'shop', ru:120},
   draganero:{k:'drago', name:'Drago Nero', from:'shop', ru:150, filter:'grayscale(1) brightness(.5) contrast(1.4)'},
   cavaliere:{k:'goblin', name:'Goblin Cavaliere', from:'pass', lv:15}, stellata:{k:'strega', name:'Strega Stellata', from:'pass', lv:25},
+  elfo:{k:'goblin', name:'Goblin Elfo di Natale', from:'pass', lv:15}, panzenzero:{k:'topi', name:'Topi Pan di Zenzero', from:'pass', lv:25},
   carnevale:{k:'goblin', name:'Goblin di Carnevale', from:'shop', ru:100, fest:[1, 25, 3, 10]}, sanvalentino:{k:'strega', name:'Strega di San Valentino', from:'shop', ru:100, fest:[2, 5, 2, 21]},
   pasqua:{k:'lupo', name:'Lupo Coniglio di Pasqua', from:'shop', ru:100, fest:[3, 15, 4, 30]}, capodanno:{k:'orco', name:'Orco di Capodanno', from:'shop', ru:100, fest:[12, 20, 1, 10]},
   cuoco:{k:'orco', name:'Orco Cuoco', from:'shop', ru:90}, pompiere:{k:'goblin', name:'Goblin Pompiere', from:'shop', ru:90}, astronauta:{k:'strega', name:'Strega Astronauta', from:'shop', ru:120}, dj:{k:'lupo', name:'Lupo DJ Rockstar', from:'shop', ru:120},
@@ -4910,7 +4911,7 @@ Object.assign(SC, {scimmia:.86, scimmie:.86, pipsciame:.95, sciame:.95, ragno:.9
 Object.assign(ICONW, {scimmie:120, sciame:120, ragno:110, lupetti:120, stregatto:100, sherekhan:130, gargoyle:100});
 
 /* ================= grafica nuova dei personaggi (dal prototipo, in una scatola a parte: NG) ================= */
-const NG_LIGHT = () => L, NG_MODE = () => MODE, NG_FLASH = () => `rgba(${FLASHC},${FLASH})`, NG_CHAR = () => CHAR;
+const NG_LIGHT = () => L, NG_MODE = () => MODE, NG_FLASH = () => `rgba(${FLASHC},${FLASH})`, NG_CHAR = () => CHAR, NG_FC = () => [FLASHC, FLASH];
 const NG = (() => {
 let g = null;
 let H = 560, WW = 1300, VW = 1300, HOR = 318, LX = 150, CX = 1130, BASE = 400, S = 1, G0 = 372, DY = 150, OY = 0, T = 0, cam = 0, RAW = 0;
@@ -9502,6 +9503,34 @@ function cavnuvoleD(o) {                                          // il Cavalier
   g.restore();
 }
 Object.assign(DRAW, { dragotempesta: dragotempestaD, jack: o => jackD(o, 0), jackre: o => jackD(o, 1), arpa: o => arpaD(o, 0), arpaincantata: o => arpaD(o, 1), gallina: gallinaD, cavnuvole: cavnuvoleD });
+// ---------- Pass Stagione 2 (dicembre): Yeti delle Nevi ----------
+function yetiD(o) {                                               // lo Yeti delle Nevi: bestione col pelo bianco a ciuffi, faccia e mani azzurro-grigie, corna corte, fiato di ghiaccio; lancia palle di neve
+  const fur = '#eef2f8', fd = '#c4cede', sk = '#8a9ab8', u = o.u, m = o.mood, w = o.walking ? 1 : 0, up = u > 0 ? u : 0, th = u < 0 ? -u : 0;
+  const b = bobOf(o, 3.4);
+  const tuft = (x, y, r, a = 0) => { V(SP(`M${x - r},${y} Q${x - r * .6},${y + r * 1.3} ${x},${y + r * .9} Q${x + r * .6},${y + r * 1.4} ${x + r},${y} Q${x},${y - r * 1.1} ${x - r},${y}Z`), fur, x, y, r, 1.4); };
+  g.save(); g.translate(0, b);
+  for (const [x, off, c] of [[-8, Math.PI, fd], [10, 0, fur]]) { const p2 = o.ph + off, sw = w ? Math.sin(p2) * 8 : 0, lift = w ? Math.max(0, Math.cos(p2)) * 5 : 0;      // gambe corte e pelose, piedoni
+    V(SP(`M${x - 10},-40 Q${x - 12 + sw * .5},-20 ${x - 9 + sw},${-6 - lift} L${x + 9 + sw},${-6 - lift} Q${x + 12 + sw * .5},-20 ${x + 10},-40Z`), c, x, -24, 12, 1.8);
+    V(SP(`M${x - 11 + sw},${-8 - lift} Q${x - 12 + sw},${-lift} ${x - 6 + sw},${-lift} L${x + 16 + sw},${-lift} Q${x + 18 + sw},${-6 - lift} ${x + 10 + sw},${-9 - lift}Z`), sk, x + 3, -4, 12, 1.4); }
+  const hb = limb(-16, -92, 1.9 + (w ? Math.sin(o.ph) * .5 : 0) - th * .3, 22, -.4, 20, 9, 7, 6, fd); V(E(hb[0], hb[1], 7, 6), sk, hb[0], hb[1], 7, 1.4);   // braccio dietro
+  const body = SP('M-30,-80 Q-34,-112 -6,-120 Q24,-122 30,-96 Q36,-66 26,-42 Q6,-30 -16,-36 Q-32,-48 -30,-80Z'); V(body, fur, -2, -78, 34);
+  g.save(); g.clip(body); F(E(8, -70, 20, 26), '#ffffff'); for (let i = 0; i < 14; i++) { const x = -26 + (i * 13) % 52, y = -112 + (i * 17) % 76; L(SP(`M${x},${y} q3,6 0,10`), fd, 1.3); } g.restore();
+  for (const [x, y, r] of [[-30, -60, 7], [-24, -42, 8], [26, -46, 7], [-8, -36, 8], [12, -36, 7]]) tuft(x, y, r);
+  g.save(); g.translate(14, -122); g.rotate(m === 3 ? -.12 : m === 4 ? .2 : Math.sin(o.t * 1.7) * .05);                  // testa
+  for (const s of [-1, 1]) V(SP(`M${s < 0 ? -10 : 6},-14 Q${s < 0 ? -18 : 14},-26 ${s < 0 ? -12 : 12},-30 Q${s < 0 ? -10 : 8},-22 ${s < 0 ? -4 : 2},-16Z`), '#e8e2cc', s < 0 ? -11 : 9, -22, 8, 1.4);
+  const hd = SP('M-18,4 Q-20,-18 -2,-22 Q16,-24 20,-8 Q22,6 14,14 Q0,20 -12,14 Q-18,10 -18,4Z'); V(hd, fur, 0, -3, 20);
+  for (const [x, y] of [[-14, -16], [-4, -22], [8, -22]]) tuft(x, y, 5);
+  const face = SP('M-6,-8 Q4,-14 14,-8 Q18,2 14,10 Q4,15 -4,10 Q-9,2 -6,-8Z'); V(face, sk, 4, 1, 12, 1.4);
+  eyesX(o, sk, [[1, -3, 3, 1], [10, -3.4, 2.6, -1]], 'almond', '#3ad8ff'); browsX(o, [[1, -7.4, 6, 1], [10, -7.6, 5, -1]], fd, 3, 'bushy');
+  F(E(15, 1.6, 2.6, 2), '#4a5a78'); mouthX(o, 6, 8, 11, m === 3 || th > .3 ? 'snarl' : 'grin');
+  if (m === 3 || th > .3) { g.save(); g.globalAlpha = .6; for (let i = 0; i < 3; i++) F(E(20 + i * 7, 8 + i * 2, 4 + i * 2, 2.6 + i), 'rgba(220,240,255,.7)'); g.restore(); }   // fiato di ghiaccio
+  g.restore();
+  const pv = up ? [-6 - up * 10, -136] : th ? [40 + th * 6, -104] : [30, -74];                                            // braccio davanti con la palla di neve
+  armTo(16, -96, pv[0], pv[1], 22, 20, 9, 7, 6, fur, up ? -1 : 1); V(E(pv[0], pv[1], 7, 6), sk, pv[0], pv[1], 7, 1.4);
+  if (!th || th < .5) { const bx = pv[0] + 2, by = pv[1] - 9; V(E(bx, by, 11, 10), '#f8fbff', bx, by, 11, 1.6); F(E(bx - 3, by - 3, 4, 3), '#ffffff'); L(SP(`M${bx - 6},${by + 4} q5,3 10,0`), '#c8d8ee', 1.2); glowB(bx, by, 14, 'rgba(180,230,255,.35)'); }
+  g.restore();
+}
+Object.assign(DRAW, { yeti: yetiD });
 // ---------- skin: costumi sui cattivi (colori dei vestiti, testa, corpo, oggetto in mano) ----------
 // ogni skin: k = personaggio, pal = colori, head(o) nel riquadro della testa, body(o, tall) sul busto, hand(o) nella mano davanti,
 // noHair / noHat / noCap = toglie capelli, cappello o cuffietta del disegno base
@@ -9626,6 +9655,16 @@ const SKINS = {
     head(o) { L(SP('M-8,-2 Q-10,-24 4,-22 Q16,-20 14,-4'), '#1c1a24', 3.4); L(SP('M-8,-2 Q-10,-24 4,-22 Q16,-20 14,-4'), '#8a8a9a', 1.4); V(E(-8, -1, 4, 5), '#d8283a', -8, -1, 4, 1.4); F(E(-8, -1, 2, 3), '#1c1a24');
       for (const [x, r] of [[3, 4], [10, 3.4]]) { V(star5(x, -4, r, .2), '#ff4ad8', x, -4, r, 1.2); F(star5(x, -4, r * .5, .2), 'rgba(255,255,255,.5)'); } L(SP('M7,-4 L6,-4'), '#1c1a24', 1); },
     hand(o, h) { g.save(); g.translate(h[0] + 4, h[1] - 2); g.rotate(-.6); V(SP('M-1.6,0 L-1.6,14 L1.6,14 L1.6,0Z'), '#1c1a24', 0, 7, 6, 1); V(E(0, -2, 4.4, 5), '#8a8a9a', 0, -2, 5, 1.2); for (const y of [-4, -2, 0]) L(SP(`M-3,${y} L3,${y}`), '#4a4a5a', .7); g.restore(); } },
+  // ---- Pass Stagione 2 ----
+  elfo: { k: 'goblin', pal: { cl: '#c8202a', sc: '#2a8a3a' }, noHair: 1,
+    body(o, t) { const p = SP(`M-7,${-35 * t} Q3,${-39 * t} 9,${-32 * t} Q13,${-24 * t} 10,-18 L-6,-18 Q-11,${-26 * t} -7,${-35 * t}Z`); V(p, '#2a9a4a', 2, -27 * t, 12, 1.6);
+      V(SP(`M-8,-20 L11,-20 L13,-14 L9,-17 L5,-12 L1,-17 L-3,-12 L-7,-17 L-10,-14Z`), '#2a9a4a', 1, -16, 11, 1.4); V(SP('M-9,-22 L11,-22 L11,-18 L-9,-18Z'), '#1c1a24', 1, -20, 10, 1.2); V(SP('M-1,-23 L5,-23 L5,-17 L-1,-17Z'), '#f2c43a', 2, -20, 3, 1);
+      for (const y of [-31, -26]) V(E(3, y * t, 1.4, 1.4), '#f2c43a', 3, y * t, 1.4, .7); V(SP(`M-6,${-37 * t} Q2,${-33 * t} 10,${-36 * t} Q8,${-31 * t} 2,${-32 * t} Q-4,${-31 * t} -6,${-37 * t}Z`), '#ffffff', 2, -35 * t, 8, 1.2); },
+    head(o) { const sw = Math.sin(o.t * 3) * 3; V(SP(`M-14,-12 Q-6,-34 8,-30 Q20,-28 ${28 + sw},-40 Q24,-24 16,-12Z`), '#2a9a4a', 4, -24, 18, 1.8); V(SP('M-15,-13 Q1,-19 17,-12 L17,-7 Q1,-14 -15,-8Z'), '#c8202a', 1, -11, 16, 1.4);
+      V(E(29 + sw, -41, 3.4, 3.4), '#f2c43a', 29 + sw, -41, 3.4, 1); F(E(28 + sw, -42, 1, 1), '#fff6c0'); },
+    hand(o) { V(SP('M-6,-2 L6,-2 L6,-14 L-6,-14Z'), '#d8283a', 0, -8, 7, 1.4); V(SP('M-1,-2 L1,-2 L1,-14 L-1,-14Z M-6,-9 L6,-9 L6,-7 L-6,-7Z'), '#f2c43a', 0, -8, 6, .8); V(SP('M0,-14 Q-6,-20 -4,-16 Q-2,-14 0,-14 Q2,-14 4,-16 Q6,-20 0,-14Z'), '#f2c43a', 0, -16, 4, 1); } },
+  panzenzero: { k: 'topi', pal: { fur: '#c8803e' },
+    head(o) { L(SP('M-5,-6 Q-2,-9 1,-6 Q4,-9 7,-6'), '#ffffff', 1.4); L(SP('M2,4 Q6,7 11,4'), '#ffffff', 1.2); for (const [x, y, c] of [[-4, 1, '#e8283a'], [-2, 6, '#2a9a4a']]) V(E(x, y, 1.6, 1.6), c, x, y, 1.6, .6); L(SP('M-1,-12 q1,-2 3,0'), '#ffffff', 1); } },
   // ---- topi ----
   ninja: { k: 'topi', pal: { fur: '#5a5468' },
     head(o) { const tl = Math.sin(o.t * 8) * 3; V(SP(`M-6,-7 Q-14,${-6 + tl} -20,${-2 + tl} L-18,${1 + tl} Q-12,${-2 + tl} -6,-4Z`), '#d8283a', -12, -4, 6, 1); V(SP(`M-6,-6 Q-14,${-1 + tl} -17,${4 + tl} L-15,${6 + tl} Q-11,${1 + tl} -6,-3Z`), '#d8283a', -11, 0, 5, 1);
@@ -10511,6 +10550,52 @@ function ngDragon(c, o) {                                                    // 
   const cr = Math.cos(rear), sr = Math.sin(rear);
   return [16 + 30 * cr - 13 * sr, -58 + bob + 30 * sr + 13 * cr, 16 + 10 * cr + 6 * sr, -58 + bob - 6 * cr + 10 * sr];   // bocca e occhiali
 }
+// --- immagini pronte (sprite): ogni posa si disegna una volta sola, poi si incolla; ombre e lampi di colore si ricavano dalla stessa immagine ---
+const TAU = Math.PI * 2, SPR = new Map(), KB = {}; let SPR_PX = 0, SPR_NEW = 0;
+const SPR_MAX = 1.8e7, SPR_BUDGET = 8;                                       // memoria massima (pixel) e pose nuove per fotogramma
+function sprPose(k, o) {                                                    // la posa "arrotondata": pochi fotogrammi per camminata, respiro e attacco
+  const a = o.arm || 0, u0 = a < 0 ? Math.min(1, -a / 1.5) : a > 0 ? -Math.min(1, a / 1.3) : 0, mood = o.hit ? 4 : a < -.3 ? 2 : a > .3 ? 3 : o.walking ? 1 : 0;
+  let t, ph = 0, u = 0, blink = 1, fk;
+  if (a) { u = Math.round(u0 * 4) / 4; t = .6; fk = 'a' + u; }
+  else if (o.walking) { const f = Math.floor((((o.ph || 0) % TAU) + TAU) % TAU / TAU * 10) % 10; ph = f / 10 * TAU; t = f * .24; fk = 'w' + f; }
+  else { const f = Math.floor((((o.t || 0) % 2.4) + 2.4) % 2.4 / .2) % 12; t = f * .2; blink = (o.blink ?? 1) < .5 ? .1 : 1; fk = 'i' + f + (blink < 1 ? 'b' : ''); }
+  const p = { t, ph, walking: !!o.walking && !a, atk: a ? .5 : -1, u, mood, blink, id: o.id || 0, look: o.look, hpf: o.hpf == null ? o.hpf : Math.round(o.hpf * 3) / 3, hyde: typeof o.hyde === 'number' ? Math.round(o.hyde * 6) / 6 : o.hyde, van: typeof o.van === 'number' ? Math.round(o.van * 6) / 6 : o.van };
+  return [p, fk + '|' + mood + '|' + (SUB[k] ? (o.id || 0) % 6 : '') + '|' + (o.look || '') + '|' + p.hpf + '|' + p.hyde + '|' + p.van];
+}
+function sprBox(k, o, fn) {                                                  // quanto spazio occupa il personaggio (provato in 4 pose, a bassa risoluzione)
+  const id = k + '|' + (o.look || '') + '|' + (SUB[k] ? (o.id || 0) % 6 : ''); if (KB[id]) return KB[id];
+  const q = .5, W = 480, Hh = 400, OX = 240, OY = 320, cv = document.createElement('canvas'); cv.width = W * q; cv.height = Hh * q; const g2 = cv.getContext('2d'), old = g;
+  g = g2; RAW = 1;
+  try { for (const ps of [{ t: 1, ph: 0, walking: false, atk: -1, u: 0, mood: 0 }, { t: 1, ph: 1.6, walking: true, atk: -1, u: 0, mood: 1 }, { t: .6, ph: 0, walking: false, atk: .5, u: 1, mood: 2 }, { t: .6, ph: 0, walking: false, atk: .5, u: -1, mood: 3 }]) {
+      g2.setTransform(q, 0, 0, q, OX * q, OY * q); fn(Object.assign({ blink: 1, id: o.id || 0, look: o.look, hpf: o.hpf, hyde: o.hyde, van: o.van }, ps)); } } finally { g = old; RAW = 0; }
+  const d = g2.getImageData(0, 0, cv.width, cv.height).data; let x0 = 1e9, y0 = 1e9, x1 = -1, y1 = -1;
+  for (let y = 0; y < cv.height; y++) for (let x = 0; x < cv.width; x++) if (d[(y * cv.width + x) * 4 + 3] > 8) { if (x < x0) x0 = x; if (x > x1) x1 = x; if (y < y0) y0 = y; if (y > y1) y1 = y; }
+  const b = x1 < 0 ? [-60, -160, 60, 20] : [x0 / q - OX - 14, y0 / q - OY - 14, x1 / q - OX + 14, y1 / q - OY + 14];
+  return KB[id] = b;
+}
+function sprSil(e, col) {                                                     // la sagoma piena di un colore (per ombre e lampi)
+  let s = e.sil[col]; if (s) return s;
+  s = document.createElement('canvas'); s.width = e.cv.width; s.height = e.cv.height; const x = s.getContext('2d'); x.drawImage(e.cv, 0, 0); x.globalCompositeOperation = 'source-in'; x.fillStyle = `rgb(${col})`; x.fillRect(0, 0, s.width, s.height);
+  SPR_PX += s.width * s.height; return e.sil[col] = s;
+}
+function sprDraw(k, c, o, fn) {
+  const m = NG_MODE(), tm = c.getTransform(), sc = Math.hypot(tm.a, tm.b); if (!(sc > 0)) return false;
+  const qi = Math.round(Math.log2(sc) * 6), qs = Math.pow(2, qi / 6), Lt = NG_LIGHT();
+  const [p, pk] = sprPose(k, o), key = k + '|' + pk + '|' + qi + '|' + (Lt.shadow || '') + Math.round((NG_CHAR() ? Lt.amtC : Lt.amtB || 0) * 24);
+  let e = SPR.get(key);
+  if (e) { SPR.delete(key); SPR.set(key, e); }
+  else {
+    if (m !== 'normal' || SPR_NEW >= SPR_BUDGET) return false;                // niente immagine pronta: si disegna come prima
+    SPR_NEW++; const b = sprBox(k, o, fn), cv = document.createElement('canvas'); cv.width = Math.max(1, Math.ceil((b[2] - b[0]) * qs)); cv.height = Math.max(1, Math.ceil((b[3] - b[1]) * qs));
+    const g2 = cv.getContext('2d'), old = g; g2.setTransform(qs, 0, 0, qs, -b[0] * qs, -b[1] * qs); g = g2; try { fn(p); } finally { g = old; }
+    e = { cv, b, sil: {} }; SPR.set(key, e); SPR_PX += cv.width * cv.height;
+    for (const [k2, e2] of SPR) { if (SPR_PX <= SPR_MAX) break; SPR.delete(k2); SPR_PX -= e2.cv.width * e2.cv.height; for (const s of Object.values(e2.sil)) SPR_PX -= s.width * s.height; }
+  }
+  const b = e.b; c.save(); c.rotate((o.lean || 0) * .5); const sq = o.sq || 0; c.scale(1 + sq, 1 - sq);
+  if (m === 'normal') c.drawImage(e.cv, b[0], b[1], b[2] - b[0], b[3] - b[1]);
+  else { const [fc, fa] = NG_FC(), a0 = c.globalAlpha; c.globalAlpha = a0 * (m === 'shadow' ? .3 : fa); c.drawImage(sprSil(e, m === 'shadow' ? '20,12,36' : fc), b[0], b[1], b[2] - b[0], b[3] - b[1]); c.globalAlpha = a0; }
+  c.restore(); return true;
+}
 
 // --- luce del gioco, ombre a terra e lampi di colore ---
 const _F = F, _L = L, _V = V, _glowB = glowB, _rim = rim;
@@ -10535,12 +10620,13 @@ const SUB = { topo: o => topo1(o, (o.id || 0) % 4 * 1.3), scheletro: o => schel1
   soldatineve: o => { for (const [x, s2, v] of [[-24, .9, 1], [24, .9, 2], [0, 1, 0]]) { g.save(); g.translate(x, 0); g.scale(s2, s2); pupazzonevD(Object.assign({}, o, { t: o.t + v, ph: o.ph + v })); g.restore(); } } };
 function draw(k, c, o) {                                                    // o: i parametri del gioco (arm, lean, sq, walking, ph, t, blink, hit…)
   const fn = SUB[k] || DRAW[k]; if (!fn) return false;
+  if (sprDraw(k, c, o, fn)) return true;
   const a = o.arm || 0, u = a < 0 ? Math.min(1, -a / 1.5) : a > 0 ? -Math.min(1, a / 1.3) : 0;
   const p = { t: o.t || 0, ph: o.ph || 0, walking: !!o.walking, atk: a ? .5 : -1, u, mood: o.hit ? 4 : a < -.3 ? 2 : a > .3 ? 3 : o.walking ? 1 : 0, blink: (o.blink ?? 1) < .5 ? .1 : 1, id: o.id || 0, look: o.look, hpf: o.hpf, hyde: o.hyde, van: o.van };
   const m = NG_MODE(); if (m === 'normal') g = c; else { PCOL = m === 'shadow' ? 'rgba(20,12,36,.22)' : NG_FLASH(); g = proxyOf(c); }
   c.save(); c.rotate((o.lean || 0) * .5); const sq = o.sq || 0; c.scale(1 + sq, 1 - sq); fn(p); c.restore(); g = null; return true;
 }
-return { draw, has: k => !!(SUB[k] || DRAW[k]), nw: { ensure: nwEnsure, back: nwBack, owned: nwOwned, front: nwFront, pt: nwPt }, dragon: ngDragon, skin: id => !!SKINS[id] };
+return { draw, has: k => !!(SUB[k] || DRAW[k]), nw: { ensure: nwEnsure, back: nwBack, owned: nwOwned, front: nwFront, pt: nwPt }, dragon: ngDragon, skin: id => !!SKINS[id], frame: () => { SPR_NEW = 0; }, sprInfo: () => ({ n: SPR.size, px: SPR_PX }) };
 })();
 const NG_H = {"goblin": 72, "orco": 158, "strega": 141, "cavaliere": 126, "arciere": 102, "fionda": 84, "topi": 48, "lupo": 113, "scheletri": 92, "trollponte": 112, "ragno": 50, "zombie": 101, "fuocofatuo": 79, "diavoletto": 82, "rospo": 36, "cornacchia": 77, "gargoyle": 86, "sciame": 90, "lupetti": 55, "scimmie": 115, "gattovolpe": 99, "gnomo": 86, "spaventapasseri": 122, "retopi": 112, "pandizenzero": 57, "mummia": 102, "pupazzo": 79, "matrigna": 138, "reginacuori": 122, "stregone": 147, "gothel": 122, "sirena": 94, "lumacone": 52, "fantasma": 97, "coccodrillo": 37, "ladroni": 105, "barbablu": 123, "omino": 80, "babajaga": 187, "stregamare": 106, "morgana": 109, "grifone": 107, "spirito": 177, "bestia": 86, "ciclope": 184, "senzatesta": 135, "dracula": 119, "medusa": 114, "pescecane": 73, "alberich": 71, "trollspecchio": 101, "mordred": 127, "lupomannaro": 115, "frankenstein": 133, "hyde": 126, "stregatto": 69, "stregaovest": 92, "sherekhan": 66, "krampus": 136, "jabberwocky": 127, "kraken": 141, "idra": 88, "bandersnatch": 83, "zucca": 116, "marzapane": 107, "gigantegh": 185, "uncino": 136, "mangiafuoco": 162, "tremotino": 82, "reginacattiva": 123, "reginanevi": 128, "basilisco": 120, "cavaliereverde": 162, "diavolo": 146, "dragonero": 120, "gigante": 185, "ecate": 120, "circe": 112, "minotauro": 196, "fenice": 119, "soldatino": 113, "principe": 109, "cacciatore": 128, "spiritista": 116, "porcellino": 88, "fata": 102, "re": 168, "bimbo": 55, "hanselgretel": 54, "nano": 69, "raperonzolo": 106, "pifferaio": 132, "musicanti": 127, "carrozza": 109, "ranocchio": 60, "peterpan": 123, "cappuccetto": 78, "robinhood": 122, "gattostivali": 78, "biancaneve": 104, "pinocchio": 100, "merlino": 146, "alice": 98, "wendy": 102, "giglio": 113, "cappellaio": 130, "brucaliffo": 115, "lepre": 99, "alibaba": 112, "sinbad": 135, "guardia": 139, "renna": 110, "fiammiferaia": 75, "pupazzoneve": 70, "cavcristallo": 124, "gemello": 102, "gemelli": 102, "pisello": 113, "tappeto": 94, "aladino": 113, "kai": 101, "gerda": 104, "pollicino": 57, "dragotempesta": 122, "jack": 113, "jackre": 121, "arpa": 98, "arpaincantata": 106, "gallina": 74, "cavnuvole": 136, "topo": 38, "scheletro": 92, "pipsciame": 67, "pipistrello": 67, "lupetto": 46, "scimmia": 115, "capoladroni": 105, "ladrone": 71, "matrigna_m": 138, "sorella": 81, "reginacuori_q": 122, "carta": 95, "burattino": 40, "corvo": 77};
 const NG_OLD = Object.assign({}, DRAW), NG_SKIN = new Set(Object.keys(LOOKS).filter(id => !LOOKS[id].tint && !LOOKS[id].filter));   // le skin con gli accessori restano col disegno di prima
@@ -10839,12 +10925,19 @@ $('calGo').onclick = () => {
 };
 $('calNo').onclick = () => { $('ovCal').hidden = true; };
 /* ================= Pass del Drago: stagioni di 30 giorni, 30 livelli, fila gratis e fila d'oro ================= */
-const PASS_XP = 150, PASS_LV = 30, PASS_RU = 500, PASS_DAYS = 30, PASS_T0 = new Date(2026, 10, 7).getTime();
+const PASS_XP = 150, PASS_LV = 30, PASS_RU = 500, PASS_S1 = new Date(2026, 11, 7).getTime();   // stagione 1: fino al 7 dicembre 2026; poi una stagione per ogni mese
+// i premi speciali del Pass d'oro di ogni stagione: cattivo esclusivo al livello 30, skin ai livelli 15 e 25 (le stagioni senza voce danno uova e rubini)
+const PASS_SEASONS = [
+  {name:'Il Drago Nero', char:'dragonero', l15:'cavaliere', l25:'stellata'},
+  {name:'Inverno', char:'yeti', l15:'elfo', l25:'panzenzero'}
+];
 const XP = {day:40, week:120, castle:20, crown:15};
-const passSeason = () => Math.max(0, Math.floor((Date.now() - PASS_T0) / 864e5 / PASS_DAYS));
-const passEnds = () => { const t = Math.max(0, PASS_T0 + (passSeason() + 1) * PASS_DAYS * 864e5 - Date.now()); const d = Math.floor(t / 864e5); return d >= 1 ? `${d} giorni` : `${Math.floor(t / 36e5)} ore`; };
+const passSeason = () => { const n = new Date(); return n.getTime() < PASS_S1 ? 0 : 1 + (n.getFullYear() - 2026) * 12 + n.getMonth() - 11; };
+const passEndT = () => { if (passSeason() === 0) return PASS_S1; const n = new Date(); return new Date(n.getFullYear(), n.getMonth() + 1, 1).getTime(); };
+const passEnds = () => { const t = Math.max(0, passEndT() - Date.now()); const d = Math.floor(t / 864e5); return d >= 1 ? `${d} giorni` : `${Math.floor(t / 36e5)} ore`; };
 const passFree = lv => lv % 10 === 0 ? {ru:10, eggs:{big:1}} : lv % 5 === 0 ? {eggs:{base:1}} : lv % 3 === 0 ? {lives:1} : lv % 2 === 0 ? {frR:6} : {gold:150 + lv * 20};
-const passPrem = lv => lv === 30 ? {char:'dragonero'} : lv === 15 ? {look:'cavaliere'} : lv === 25 ? {look:'stellata'} : lv % 10 === 0 ? {eggs:{leg:1}} : lv % 5 === 0 ? {ru:25} : lv % 3 === 0 ? {eggs:{big:1}} : lv % 2 === 0 ? {frR:12} : {gold:400 + lv * 40};
+const passPrem = lv => { const S = PASS_SEASONS[passSeason()] || {};
+  return lv === 30 && S.char ? {char:S.char} : lv === 15 && S.l15 ? {look:S.l15} : lv === 25 && S.l25 ? {look:S.l25} : lv === 30 ? {eggs:{leg:2}, ru:50} : lv % 10 === 0 ? {eggs:{leg:1}} : lv % 5 === 0 ? {ru:25} : lv % 3 === 0 ? {eggs:{big:1}} : lv % 2 === 0 ? {frR:12} : {gold:400 + lv * 40}; };
 const PMISS_D = [
   {id:'w3', txt:'Vinci 3 battaglie', need:3, add:b => b.win ? 1 : 0},
   {id:'k40', txt:'Batti 40 buoni', need:40, add:b => b.kills},
@@ -11974,7 +12067,7 @@ function frame(now) {
 function render(dt) {
   if (GALLERY) galCamera(); else if (inStory) storyCamera();
   ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-  NWON = nwOn(); drawSkyScreen();
+  NWON = nwOn(); if (NG.frame) NG.frame(); drawSkyScreen();
   ctx.save();
   if (shake > 0) ctx.translate((Math.random() - .5) * shake, (Math.random() - .5) * shake);
   ctx.translate(-cam.x * k, groundY); ctx.scale(k, k);
@@ -12951,6 +13044,11 @@ function galLabels() {
   ctx.restore();
 }
 
+/* ================= Pass Stagione 2: Yeti delle Nevi ================= */
+Object.assign(SHORT, {yeti:'Yeti delle Nevi'}); Object.assign(NAMES, {yeti:'Yeti delle Nevi'}); Object.assign(ROLE, {yeti:'Lancia palle di neve che rallentano i buoni.'});
+Object.assign(LINES, {yeti:['Fa freddo, eh?', 'Palla di neve!']}); Object.assign(RAR, {yeti:3}); VILLAINS.add('yeti');
+Object.assign(VOICE, {yeti:.7}); Object.assign(VALIAS, {yeti:'gigante'});
+{ const n = 140; HEIGHT.yeti = 112; SC.yeti = .9; DRAW.yeti = o => { const s2 = HEIGHT.yeti / n; ctx.save(); ctx.scale(s2, s2); NG.draw('yeti', ctx, o || {}); ctx.restore(); }; }
 /* ================= Mondo 16: Regno delle Nuvole ================= */
 Object.assign(SHORT, {dragotempesta:'Drago di Tempesta'}); Object.assign(NAMES, {dragotempesta:'Drago di Tempesta'});
 Object.assign(ROLE, {dragotempesta:'Vola e sputa fulmini che saltano su altri tre buoni.'});

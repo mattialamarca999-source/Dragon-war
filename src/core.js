@@ -78,6 +78,7 @@ const DW = (() => {
     gigantegh:  {side:0, cost:320, cd:13, hp:860, dmg:31, rate:2.1, range:32, spd:20, splash:45, stomp:{every:9, r:120, t:2.2}},
     trollspecchio:{side:0, cost:230, cd:9, hp:200, dmg:16, rate:1.3, range:140, spd:42, ranged:1, fly:1, bounce:{n:2, k:.6, r:110}},
     dragotempesta:{side:0, cost:260, cd:10, hp:300, dmg:20, rate:1.5, range:150, spd:34, ranged:1, fly:1, beast:1, bounce:{n:3, k:.55, r:120}},   // Mondo 16: vola e sputa fulmini che saltano su altri tre buoni
+    yeti:       {side:0, cost:240, cd:10, hp:420, dmg:20, rate:1.6, range:120, spd:30, ranged:1, beast:1, splash:30, slowHit:{t:2}},   // lo Yeti delle Nevi: solo dal Pass (Stagione 2)
     dragonero:  {side:0, cost:340, cd:12, hp:460, dmg:24, rate:1.4, range:120, spd:42, fly:1, beast:1, ranged:1, splash:40, burn:{t:3, k:.4}},   // il Drago Nero: solo dal Pass del Drago
     gigante:    {side:0, cost:350, cd:14, hp:560, dmg:30, rate:2.4, range:30,  spd:22, siege:3},
     // ---- nuovi comuni e rari (8 nov 2026) ----
