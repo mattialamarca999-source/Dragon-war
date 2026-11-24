@@ -3,7 +3,7 @@ import json
 def patch(fn, reps):
     s = open(fn).read()
     for a, b, mark in reps:
-        if mark in s: continue
+        if any(m in s for m in (mark if isinstance(mark, list) else [mark])): continue   # mark può essere una lista: basta che ce ne sia una
         assert s.count(a) == 1, (fn, a[:90], s.count(a))
         s = s.replace(a, b)
     open(fn, 'w').write(s)
@@ -29,7 +29,7 @@ patch('core.js', [
   "'Torre del riflesso', 'Il Trono del Drago']},\n"
   "    {name:'Regno delle Nuvole', theme:'nuvole', n:12, pool:['jack', 'arpa', 'gallina', 'cavnuvole', 'pollicino', 'cavcristallo', 'gemelli', 'merlino', 'principe', 'fata', 'renna', 'carrozza'], semi:'arpa_inc', boss:'jack_re',\n"
   "     names:['Il fagiolo magico', 'Prima nuvola', 'Scala di foglie', 'Ponte d’arcobaleno', 'Isola volante', 'Sala dell’Arpa', 'Nido d’oro', 'Buco tra le nuvole', 'Cucina del Gigante', 'Forziere del Gigante', 'Torre del vento', 'Il Trono delle Nuvole']}\n  ];", "theme:'nuvole'"),
- ("Array.from({length:14}, (_, i) => [i + 1,", "Array.from({length:15}, (_, i) => [i + 1,", "Array.from({length:15}"),
+ ("Array.from({length:14}, (_, i) => [i + 1,", "Array.from({length:15}, (_, i) => [i + 1,", ["Array.from({length:15}", "Array.from({length:16}"]),   # il Mondo 17 poi lo porta a 16
  ("'cavcristallo', 'gemelli']]];", "'cavcristallo', 'gemelli']], [20, ['jack', 'arpa', 'gallina', 'cavnuvole']]];", "[20, ['jack', 'arpa', 'gallina', 'cavnuvole']]"),
  ("const BCOST = {", "const BCOST = {jack:70, arpa:90, gallina:90, cavnuvole:150, ", "const BCOST = {jack:70"),
 ])

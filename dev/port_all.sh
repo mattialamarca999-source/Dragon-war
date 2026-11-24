@@ -7,5 +7,6 @@ python3 port_chars.py
 python3 port_worlds.py
 python3 port_skins.py
 python3 port_w16.py
+python3 port_w17.py
 python3 port_pass.py
 python3 build.py

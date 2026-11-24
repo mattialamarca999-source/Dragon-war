@@ -193,6 +193,7 @@ html:not([lang=it]) .scrHead>b{font-size:clamp(18px,5.6vw,24px)}
 .mGold2{display:flex;align-items:center;gap:6px;font-family:var(--display);font-size:18px;color:var(--gold2);background:var(--glass);border:2px solid rgba(255,211,90,.5);border-radius:999px;padding:4px 12px 4px 8px;font-variant-numeric:tabular-nums}
 .mapBody{position:relative;flex:1;min-height:0;overflow-y:auto;overscroll-behavior:contain}
 .mapIn{position:relative;min-height:100%}
+.node.night .disc{position:relative;box-shadow:0 0 0 3px #3a4a9a,0 4px 0 #000}.node .disc svg.moon{position:absolute;top:-10px;right:-10px;width:26px;height:26px}
 .node.semi .disc{width:70px;height:70px;background:radial-gradient(circle at 35% 30%,#e0c4ff,#7b3fb3 60%,#3a1a5a);color:#fff}
 .node .rw{display:flex;align-items:center;gap:2px;font:900 11px var(--body);color:#fff;text-shadow:0 1px 0 #000}
 .node .rw canvas{width:24px;height:22px}
@@ -4260,6 +4261,10 @@ function drawShots() {
         ctx.fillStyle = mix('#ff8a2a', L.shadow, qz(L.amtC * .6)); ctx.beginPath(); ctx.ellipse(0, 0, r, r * .85, 0, 0, 7); ctx.fill();
         ctx.fillStyle = '#4a7a2a'; ctx.fillRect(-1.5, -r - 4, 3, 5);
         ctx.globalCompositeOperation = 'lighter'; glow(ctx, 2, -r - 5, 9, '255,220,120', .9);
+      } else if (p.kind === 'cobrabianco') {                                      // lo sputo di veleno del Cobra Bianco
+        const r = 5 * CS * .8; ctx.globalCompositeOperation = 'lighter'; glow(ctx, x, y, 22 * CS * .8, '120,255,120', .8); ctx.globalCompositeOperation = 'source-over';
+        ctx.fillStyle = '#8aff6a'; ctx.beginPath(); ctx.arc(x, y, r, 0, 7); ctx.fill(); ctx.fillStyle = '#d8ffc8'; ctx.beginPath(); ctx.arc(x - r * .3, y - r * .3, r * .35, 0, 7); ctx.fill();
+        for (let i = 1; i < 3; i++) { ctx.globalAlpha = .5 / i; ctx.fillStyle = '#8aff6a'; ctx.beginPath(); ctx.arc(x - i * r * 1.4, y + i * r * .3, r * (1 - i * .3), 0, 7); ctx.fill(); } ctx.globalAlpha = 1;
       } else if (p.kind === 'dragotempesta') {                                   // il fulmine del Drago di Tempesta
         const z = 10 * CS * .8; ctx.globalCompositeOperation = 'lighter'; glow(ctx, x, y, 28 * CS * .8, '255,235,140', .9); ctx.globalCompositeOperation = 'source-over';
         ctx.strokeStyle = '#fff7a0'; ctx.lineWidth = 3 * CS * .8; ctx.lineJoin = 'round'; ctx.beginPath(); ctx.moveTo(x - z, y - z); ctx.lineTo(x, y - z * .1); ctx.lineTo(x - z * .4, y + z * .2); ctx.lineTo(x + z, y + z); ctx.stroke();
@@ -9531,6 +9536,160 @@ function yetiD(o) {                                               // lo Yeti del
   g.restore();
 }
 Object.assign(DRAW, { yeti: yetiD });
+// ---------- gruppo 17: Giungla di Mowgli (Mondo 17) ----------
+function cobrabiancoD(o) {                                      // il Cobra Bianco, Re del tesoro delle Tane Fredde: arrotolato su un mucchio d'oro che si trascina dietro, cappuccio enorme coi falsi occhi neri cerchiati d'oro, corona, e con la coda stringe l'Ankus del Re (il pungolo d'oro coi rubini); sputa veleno verde
+  const sc = '#efe8d4', sc2 = '#cfc4a4', gold = '#e8b830', ru = '#d0203a', u = o.u, m = o.mood, w = o.walking ? 1 : 0, up = u > 0 ? u : 0, hit = u < 0 ? -u : 0;
+  const sw = Math.sin(o.t * 2 + (w ? o.ph * 1.4 : 0)), bob = w ? Math.sin(o.ph * 2) * 1.2 : 0;
+  const tube = (p, wd) => { L(p, INK, wd + 4.4); L(p, sc, wd); L(p, 'rgba(255,255,255,.55)', wd * .22); };
+  g.save(); g.translate(hit * 6, 0);
+  // il mucchio del tesoro
+  V(SP('M-46,0 Q-40,-14 -16,-16 Q14,-17 30,-8 Q36,-3 34,0Z'), gold, -6, -8, 36, 1.4);
+  for (const [x, y, c] of [[-38, -4, gold], [-28, -9, '#f4cc50'], [-14, -12, gold], [2, -13, '#f4cc50'], [18, -10, gold], [28, -4, '#f4cc50'], [-20, -3, gold], [8, -4, gold]]) { V(E(x, y, 4.4, 2.4), c, x, y, 4.4, 1); L(E(x, y, 2.4, 1.2), 'rgba(160,100,20,.6)', .8); }
+  V(SP('M22,-4 L26,-18 L30,-4Z'), '#f4cc50', 26, -10, 6, 1); V(E(26, -18, 4, 2), '#f4cc50', 26, -18, 4, 1); V(E(-30, -2, 3, 2.2), '#3ac8a0', -30, -2, 3, .8);   // calice e gemma
+  g.save(); g.translate(0, bob);
+  // la coda stringe l'Ankus del Re
+  const ax = -40, ay = -14, ar = sw * .06 - up * .25;
+  g.save(); g.translate(ax, ay); g.rotate(ar);
+  V(SP('M-1.8,4 L-1.8,-46 L1.8,-46 L1.8,4Z'), gold, 0, -20, 24, 1.2); for (const y of [-6, -18, -30]) { V(E(0, y, 3.2, 2), '#c89820', 0, y, 3, .8); F(E(0, y, 1.4, 1.2), ru); }
+  V(SP('M0,-44 Q-12,-46 -12,-56 Q-12,-62 -6,-62 Q-9,-56 -6,-52 Q-3,-48 1,-48Z'), gold, -6, -54, 8, 1.2); V(SP('M-1.8,-46 L0,-60 L1.8,-46Z'), '#f4e0a0', 0, -52, 6, 1);   // gancio e punta
+  V(E(0, -46, 3, 3), ru, 0, -46, 3, 1); F(E(-1, -47, 1, 1), 'rgba(255,255,255,.8)'); glowB(0, -46, 8, 'rgba(255,60,80,.4)');
+  g.restore();
+  tube(SP(`M-14,-18 Q-34,-16 -38,-22 Q-44,-30 -36,-30 Q-30,-28 -40,-20`), 6);
+  // le spire
+  const coil = (cy, rx, ry, wd) => { F(E(-6, cy - 2, rx, ry), dk(sc, .3)); F(E(-6, cy - 4, rx * .7, ry * .55), dk(sc, .45)); tube(SP(`M${-6 - rx},${cy} A${rx},${ry} 0 1 1 ${-6 + rx},${cy} A${rx},${ry} 0 1 1 ${-6 - rx},${cy}`), wd); g.save(); g.globalAlpha = .35; for (let i = 0; i < 9; i++) { const a = Math.PI * (.12 + i * .095); L(SP(`M${-6 + Math.cos(a) * rx},${cy + Math.sin(a) * ry - wd * .3} l0,${wd * .6}`), sc2, 1.2); } g.restore(); };
+  coil(-20, 24, 8, 11); coil(-30, 18, 6, 10);
+  // il collo
+  const nx = 10 - up * 8 + hit * 8, ny = -74 - up * 4;
+  chain([[4, -32], [20 + sw * 2, -44], [4 - up * 4, -58], [nx, ny]], 12, 7.4, 6.4, sc, sc2);
+  g.save(); g.translate(nx, ny); g.rotate(-up * .2 + hit * .22 + sw * .03);
+  // il cappuccio enorme coi falsi occhi
+  const hood = SP('M-2,18 Q-30,8 -30,-14 Q-28,-40 -4,-44 Q16,-42 20,-22 Q24,2 8,18Z'); V(hood, sc, -4, -12, 30); g.save(); g.clip(hood);
+  F(SP('M-30,-14 Q-28,-40 -4,-44 Q-14,-30 -16,-10 Q-18,8 -2,18 Q-30,8 -30,-14Z'), 'rgba(170,150,110,.35)');
+  for (const [x, y, r] of [[-17, -18, 6.4], [9, -24, 4.6]]) { F(E(x, y, r * 1.45, r * 1.3), gold); F(E(x, y, r, r * .95), '#1b1426'); F(E(x - r * .3, y - r * .3, r * .28, r * .26), 'rgba(255,255,255,.35)'); }
+  for (let i = 0; i < 5; i++) L(SP(`M-6,${10 - i * 7} Q-1,${8 - i * 7} 4,${10 - i * 7}`), 'rgba(150,120,70,.55)', 1.6);
+  g.restore();
+  // la testa con la corona
+  const hd = SP('M-4,-30 Q2,-41 14,-40 Q28,-38 31,-29 Q32,-21 22,-20 Q8,-19 -2,-23 Q-6,-26 -4,-30Z'); V(hd, sc, 13, -30, 15); g.save(); g.clip(hd); for (let i = 0; i < 4; i++) L(SP(`M${2 + i * 6},-40 l2,4`), 'rgba(150,130,90,.55)', 1); g.restore();
+  V(SP('M3,-38 L5,-47 L9,-41 L13,-49 L17,-41 L21,-46 L21,-37 Q12,-40 3,-38Z'), gold, 12, -42, 9, 1.4); for (const x of [5, 13, 21]) V(E(x, x === 13 ? -49 : x === 5 ? -47 : -46, 1.4, 1.4), ru, x, -47, 1.4, .5);
+  const op = hit > .2 ? 1 : up ? .45 : 0;
+  if (op) { V(SP(`M6,-24 Q20,${-24 + op * 2} 31,-27 Q22,${-18 + op * 7} 6,-22Z`), '#8a2030', 18, -22, 11, 1); for (const x of [20, 26]) { F(PL([x, -25.6, x + 1, -20.6, x + 2, -25.8]), '#ffffff'); F(E(x + 1, -19.6, .8, 1.2), '#8aff6a'); } }
+  else { L(SP('M7,-22.6 Q19,-22 30,-26'), '#5a4a30', 1.4); if (o.t % 2.4 < .6) L(SP(`M31,-26 l7,${Math.sin(o.t * 30) * 1.6} m-2,0 l3,-2 m-3,2 l3,2`), ru, 1.2); }
+  F(SP('M11,-33 Q16,-37 21,-33 Q16,-30 11,-33Z'), '#ff3a3a', '#ff7a5a'); F(E(16.4, -33, .9, 1.8), '#1b0a10'); if (m === 3 || hit) glowB(16, -33, 7, 'rgba(255,60,60,.5)');
+  L(SP(`M10,-35.4 Q16,${m === 3 || hit ? -34.6 : -37.6} 22,-35.6`), '#a89870', 2);
+  if (hit > .2) { glowB(40, -25, 16, 'rgba(120,255,120,.55)'); for (let i = 0; i < 4; i++) F(E(36 + i * 7, -25 + i * 1.8, 2.8 - i * .5, 2.4 - i * .4), '#8aff6a'); }
+  g.restore();
+  g.restore();
+  g.restore();
+}
+
+function mowgliD(o, fire = 0) {                                 // Mowgli: il cucciolo d'uomo, pelle bruna, capelli neri a caschetto spettinati, perizoma rosso, piedi nudi; bastone. Boss: col Fiore Rosso, la torcia accesa, e la collana di zanne
+  const sk = '#b8703e', hair = '#1c1418', u = o.u, m = o.mood, w = o.walking ? 1 : 0, up = u > 0 ? u : 0, th = u < 0 ? -u : 0;
+  const b = bobOf(o, 3);
+  g.save(); g.translate(0, b);
+  const foot = f => V(SP(`M${f[0] - 3},${f[1] - 3} Q${f[0] + 8},${f[1] - 4} ${f[0] + 9},${f[1] + 1} L${f[0] - 3},${f[1] + 1}Z`), dk(sk, .08), f[0] + 3, f[1] - 1, 5, 1.1);
+  foot(legB(-3, -40, 18, 18, 5, 3.8, 2.8, o, Math.PI, dk(sk, .2), .8));
+  const hb = limb(-5, -70, 1.9 + (w ? Math.sin(o.ph) * .6 : 0) - th * .4, 12, -.5, 11, 3.6, 3, 2.4, dk(sk, .18)); V(E(hb[0], hb[1], 2.6, 2.6), dk(sk, .12), hb[0], hb[1], 2.6, 1);
+  const tor = SP('M-8,-74 Q2,-78 9,-72 Q11,-56 9,-42 L-9,-42 Q-10,-58 -8,-74Z'); V(tor, sk, 0, -58, 18); g.save(); g.clip(tor); F(E(5, -62, 6, 12), 'rgba(255,220,180,.25)'); L(SP('M-4,-62 Q1,-60 6,-62'), dk(sk, .25), 1); g.restore();
+  V(SP('M-10,-44 L10,-44 L11,-36 L6,-30 L1,-38 L-4,-30 L-10,-36Z'), '#c8303a', 0, -37, 11, 1.4); L(SP('M-10,-44 L10,-44'), '#8a1a20', 1.6);
+  if (fire) { for (let i = 0; i < 5; i++) { const x = -5 + i * 2.6, y = -71 + Math.abs(i - 2) * -1.2; V(PL([x - 1.2, y, x, y + 5, x + 1.2, y]), '#f4ecd8', x, y + 2, 2, .7); } L(SP('M-7,-72 Q0,-66 8,-71'), '#5a3a20', 1); }
+  foot(legB(3, -40, 18, 18, 5.2, 4, 3, o, 0, sk, .8));
+  g.save(); g.translate(2, -86); g.rotate(m === 3 ? -.12 : m === 4 ? -.26 : Math.sin(o.t * 2) * .04);
+  const face = SP('M-7,-5 Q-7,-13 1,-13 Q9,-13 9,-5 Q9,3 6,7 Q2,9 -2,8 Q-6,5 -7,-5Z'); V(face, sk, 1, -2, 12);
+  eyesX(o, sk, [[.8, -2.6, 2.8, 1], [6.6, -2.8, 2.3, -1]], 'almond', '#3a2010'); browsX(o, [[.8, -6.8, 5, 1], [6.6, -7, 4, -1]], hair, 2, m === 3 ? 'thick' : 'arch');
+  V(SP('M6,-1 Q10,2 8,4 Q6,4 5.4,2Z'), dk(sk, .05), 7.6, 2, 3, 1); mouthX(o, 3.6, 5.4, 5, m === 0 || m === 1 ? 'smile' : 'grin');
+  V(E(-6, -2, 2.2, 3), sk, -6, -2, 2.4, 1);
+  V(SP('M-9,2 Q-12,-10 -6,-15 Q0,-19 6,-17 Q12,-16 11,-9 Q7,-12 2,-10 Q-1,-13 -4,-9 Q-6,-5 -6,2 Q-7,6 -9,2Z'), hair, 0, -8, 12, 1.4);
+  for (const [x, a] of [[-6, -2.6], [-1, -2], [5, -1.5], [9, -1]]) L(SP(`M${x},-15 l${Math.cos(a) * 4},${Math.sin(a) * 4}`), hair, 2.2);
+  g.restore();
+  if (fire) {                                                     // il Fiore Rosso
+    const pv = up ? [4, -110] : th ? [26 + th * 4, -86] : [16, -68];
+    armTo(6, -72, pv[0], pv[1], 11, 10, 3.6, 3, 2.4, sk, up ? -1 : 1);
+    g.save(); g.translate(pv[0], pv[1]); g.rotate(up ? -.3 : th ? .9 : .15);
+    V(SP('M-2,10 L-2,-18 L2,-18 L2,10Z'), '#6a4426', 0, -4, 14, 1.2); V(SP('M-3.6,-18 L3.6,-18 L3,-22 L-3,-22Z'), '#3a2a20', 0, -20, 4, 1);
+    const fl = 1 + Math.sin(o.t * 16) * .12; glowB(0, -30, 26 * fl, 'rgba(255,150,40,.75)');
+    F(SP(`M-6,-22 Q-9,-32 -3,${-40 * fl} Q-1,-32 2,${-44 * fl} Q4,-34 7,-36 Q8,-28 6,-22Z`), '#ff6a1a', '#ffb040'); F(SP(`M-3,-22 Q-4,-28 0,-34 Q2,-28 4,-30 Q4,-24 3,-22Z`), '#ffd35a', '#fff0a0');
+    g.restore(); V(E(pv[0], pv[1], 2.6, 2.6), sk, pv[0], pv[1], 2.6, 1);
+  } else {                                                        // il bastone
+    const pv = up ? [2, -104] : th ? [24 + th * 6, -70] : [14, -60], rr = up ? -.6 : th ? 1.4 + th * .3 : .3;
+    armTo(6, -72, pv[0], pv[1], 11, 10, 3.6, 3, 2.4, sk, up ? -1 : 1);
+    g.save(); g.translate(pv[0], pv[1]); g.rotate(rr); V(SP('M-1.6,16 L-1.6,-34 Q0,-38 1.6,-34 L1.6,16Z'), '#8a6a3a', 0, -9, 26, 1.2); L(SP('M0,-28 l-4,-4 M0,-18 l4,-3'), '#5a8a3a', 1.4); g.restore();
+    V(E(pv[0], pv[1], 2.6, 2.6), sk, pv[0], pv[1], 2.6, 1);
+  }
+  g.restore();
+}
+
+function balooD(o) {                                            // Baloo: il vecchio orso bruno della giungla, in piedi, panciuto e bonario, muso chiaro; dà zampate
+  const fur = '#7a5a40', fd = dk(fur, .25), mz = '#d8c0a0', u = o.u, m = o.mood, w = o.walking ? 1 : 0, up = u > 0 ? u : 0, th = u < 0 ? -u : 0;
+  const b = bobOf(o, 2.4);
+  const paw = (f, c) => { V(E(f[0] + 3, f[1] - 1, 9, 4.6), c, f[0] + 3, f[1] - 1, 9, 1.2); for (const t2 of [-3, 0, 3]) F(E(f[0] + 10, f[1] - 2 + t2 * .5, 1.1, .8), '#e8e0d0'); };
+  g.save(); g.translate(0, b);
+  paw(legB(-10, -36, 17, 16, 11, 9, 8, o, Math.PI, fd, .6), fd);
+  const ba = limb(-16, -70, 2 + (w ? Math.sin(o.ph) * .4 : 0) + up * .5, 17, -.6, 15, 10, 8.4, 7.4, fd); V(E(ba[0], ba[1], 7, 6.4), fd, ba[0], ba[1], 7, 1.2);
+  const body = SP('M-26,-56 Q-30,-88 -6,-94 Q18,-96 24,-74 Q32,-50 22,-34 Q2,-26 -16,-30 Q-28,-38 -26,-56Z'); V(body, fur, -2, -62, 32);
+  g.save(); g.clip(body); F(E(6, -50, 16, 20), '#a8886a'); for (let i = 0; i < 6; i++) L(SP(`M${-22 + i * 6},${-88 + (i % 2) * 5} q2,4 0,8`), fd, 1.2); g.restore();
+  paw(legB(8, -36, 17, 16, 11.4, 9.4, 8.4, o, 0, fur, .6), fur);
+  g.save(); g.translate(8, -100); g.rotate(up ? -.2 * up : th ? .2 : m === 4 ? .2 : Math.sin(o.t * 1.6) * .05);
+  V(E(-10, -14, 6, 6), fur, -10, -14, 6, 1.4); V(E(7, -16, 5.4, 5.4), fur, 7, -16, 5.4, 1.4); F(E(-10, -14, 3, 3), '#c8a080'); F(E(7, -16, 2.6, 2.6), '#c8a080');
+  const hd = SP('M-16,0 Q-18,-16 -2,-18 Q14,-18 16,-6 Q20,6 12,12 Q0,16 -10,10 Q-18,6 -16,0Z'); V(hd, fur, 0, -2, 18);
+  V(E(9, 3, 10, 7.6), mz, 9, 3, 10, 1.4); V(E(16, -1, 4, 3), '#2a1a14', 16, -1, 4, 1); F(E(15, -2, 1.2, .8), 'rgba(255,255,255,.6)');
+  eyesX(o, fur, [[-1, -6, 2.6, 1], [8, -7, 2.2, -1]], 'beady', '#2a1a14'); browsX(o, [[-1, -10.4, 5, 1], [8, -11.4, 4, -1]], dk(fur, .45), 2.2, 'bushy');
+  mouthX(o, 9, 7, 7, m === 3 || th > .3 ? 'snarl' : 'smile');
+  g.restore();
+  const pv = up ? [24, -126] : th ? [46 + th * 6, -72] : [26, -52];                                                          // la zampata
+  armTo(14, -76, pv[0], pv[1], 16, 15, 10.4, 8.8, 7.8, fur, up ? -1 : 1); V(E(pv[0], pv[1], 7.6, 6.6), dk(fur, .1), pv[0], pv[1], 7, 1.4); for (const t2 of [-3, 0, 3]) F(E(pv[0] + 6, pv[1] + t2, 1.2, .9), '#e8e0d0');
+  if (th > .3) { g.save(); g.globalAlpha = th * .7; L(SP(`M${pv[0] - 4},${pv[1] - 22} Q${pv[0] + 16},${pv[1] - 10} ${pv[0] + 12},${pv[1] + 16}`), '#fff4c0', 3); g.restore(); }
+  g.restore();
+}
+
+function bagheeraD(o, nera = 0) {                               // Bagheera: la pantera nera, elegante, occhi verde-oro, coda lunga; salta e graffia. Miniboss: occhi che brillano, rosetta delle macchie viola, collare d'oro spezzato
+  const fur = nera ? '#1c1626' : '#26222e', fd = '#121018', hi = nera ? 'rgba(170,120,255,.45)' : 'rgba(150,160,200,.35)', u = o.u, m = o.mood, w = o.walking ? 1 : 0, up = u > 0 ? u : 0, th = u < 0 ? -u : 0;
+  const crouch = up * 6, leap = th * 10;
+  const b = w ? -Math.abs(Math.sin(o.ph * 1.2)) * 2.5 : Math.sin(o.t * 2.2) * .8;
+  g.save(); g.translate(leap, b + crouch - leap * .6);
+  const tw = Math.sin(o.t * 2.4); L(SP(`M-28,-34 Q-46,${-30 + tw * 6} -50,${-48 + tw * 8} Q-52,${-58 + tw * 6} -44,${-60 + tw * 4}`), fd, 7.4); L(SP(`M-28,-34 Q-46,${-30 + tw * 6} -50,${-48 + tw * 8} Q-52,${-58 + tw * 6} -44,${-60 + tw * 4}`), fur, 5);
+  for (const [x, off] of [[-20, Math.PI], [14, 0]]) { const f = legB(x, -26, 12, 13, 6.4, 5, 4.4, o, off * 1.2, fd, .7); V(E(f[0] + 2, f[1], 5, 2.6), fd, f[0] + 2, f[1], 5, 1); }
+  const body = SP('M-30,-32 Q-30,-46 -10,-46 Q12,-48 24,-42 Q30,-34 22,-22 Q0,-18 -22,-22 Q-32,-24 -30,-32Z'); V(body, fur, -3, -34, 28);
+  g.save(); g.clip(body); F(E(0, -44, 22, 4), hi); if (nera) for (let i = 0; i < 7; i++) { const x = -22 + i * 7, y = -38 + (i % 2) * 6; L(E(x, y, 2.4, 2), 'rgba(170,120,255,.35)', 1); } g.restore();
+  for (const [x, off] of [[-12, Math.PI * .5], [20, Math.PI * 1.5]]) { const f = legB(x, -24, 12, 13, 6.6, 5.2, 4.6, o, off * 1.2, fur, .7); V(E(f[0] + 2, f[1], 5.4, 2.8), fur, f[0] + 2, f[1], 5, 1); if (th > .3) for (const t2 of [-2, 0, 2]) L(SP(`M${f[0] + 6},${f[1] + t2} l3,1`), '#f4f0e8', 1); }
+  g.save(); g.translate(26, -46); g.rotate(up ? .25 : th ? -.15 : m === 4 ? .2 : Math.sin(o.t * 1.6) * .04);
+  V(PL([-8, -6, -6, -16, 0, -8]), fur, -5, -10, 6, 1.4); V(PL([0, -8, 4, -17, 7, -7]), fur, 4, -11, 6, 1.4); F(PL([-6.6, -8, -5.6, -13, -2.6, -8.6]), '#5a4060');
+  const hd = SP('M-10,2 Q-12,-10 0,-10 Q12,-10 16,-3 Q20,2 16,6 Q4,10 -6,8 Q-11,6 -10,2Z'); V(hd, fur, 2, -1, 14); g.save(); g.clip(hd); F(E(2, -8, 10, 3), hi); g.restore();
+  V(E(15, 1, 2.2, 1.6), '#3a2a3a', 15, 1, 2, .8);
+  const ec = nera ? '#d8a0ff' : '#c8e040'; F(SP('M1,-4 Q5,-7 9,-4 Q5,-2 1,-4Z'), ec, nera ? '#e8c8ff' : '#e8ff80'); F(E(5, -4, .7, 1.4), '#0a0810'); if (nera) glowB(5, -4, 8, 'rgba(200,140,255,.6)');
+  browsX(o, [[5, -7.6, 6, -1]], '#0a0810', 1.6, m === 3 || th ? 'thick' : 'flat');
+  const op = m === 3 || th > .3; if (op) { F(SP('M6,4 Q12,10 18,5 Z'), '#7a1a30'); F(PL([9, 4.6, 10, 8, 11, 4.8]), '#ffffff'); F(PL([14, 4.4, 15, 7.4, 16, 4.4]), '#ffffff'); } else L(SP('M6,5 Q11,7 16,5'), '#0a0810', 1.2);
+  for (const s of [-1, 1]) L(SP(`M16,${2 + s} l8,${s * 2}`), 'rgba(240,240,250,.6)', .7);
+  if (nera) { V(SP('M-9,6 Q0,12 8,8 L7,11 Q0,15 -9,9Z'), '#e8b830', 0, 9, 9, 1); F(E(-2, 11, 1.6, 1.6), '#c8303a'); }
+  g.restore();
+  g.restore();
+}
+
+function hathiD(o, re = 0) {                                    // Hathi: l'elefante capo della giungla, grigio, orecchie enormi, zanne; carica. Re: gualdrappa rossa e oro sulla schiena e sulla fronte, zanne con anelli d'oro
+  const sk = '#8a8a96', sd = dk(sk, .22), u = o.u, m = o.mood, w = o.walking ? 1 : 0, up = u > 0 ? u : 0, th = u < 0 ? -u : 0;
+  const b = w ? -Math.abs(Math.sin(o.ph)) * 2.5 : Math.sin(o.t * 1.6) * 1;
+  g.save(); g.translate(th * 12, b);
+  const leg = (x, off, c) => { const p = o.ph + off, a = w ? Math.sin(p) * 6 : 0, lift = w ? Math.max(0, Math.cos(p)) * 4 : 0; V(SP(`M${x - 8},-46 L${x + 8},-46 L${x + 8 + a},${-4 - lift} Q${x + a},${-lift + 1} ${x - 8 + a},${-4 - lift}Z`), c, x + a, -24, 12, 1.6); for (const t2 of [-4, 0, 4]) F(E(x + a + t2, -3 - lift, 1.8, 1.2), '#e8e4d8'); };
+  leg(-24, Math.PI, sd); leg(14, 0, sd);
+  L(SP(`M-44,-60 Q-52,${-48 + Math.sin(o.t * 3) * 4} -50,-36`), sd, 2.4);
+  const body = SP('M-46,-60 Q-48,-96 -10,-100 Q30,-102 40,-76 Q44,-52 32,-42 Q0,-34 -34,-40 Q-48,-46 -46,-60Z'); V(body, sk, -4, -70, 44);
+  g.save(); g.clip(body); F(E(-4, -46, 40, 10), 'rgba(40,30,60,.18)'); for (let i = 0; i < 6; i++) L(SP(`M${-30 + i * 12},-60 q3,4 0,8`), sd, 1); g.restore();
+  if (re) { const gw = SP('M-28,-98 Q0,-104 24,-96 L28,-62 Q0,-56 -30,-62Z'); V(gw, '#c8202a', -2, -80, 28, 1.6); g.save(); g.clip(gw); for (let i = 0; i < 6; i++) F(SP(`M${-28 + i * 10},-62 l5,-8 l5,8Z`), '#e8b830'); L(SP('M-30,-90 L28,-90'), '#e8b830', 2.4); g.restore(); for (let i = 0; i < 6; i++) V(E(-26 + i * 10, -58, 2.2, 3), '#e8b830', -26 + i * 10, -58, 2.4, .8); }
+  leg(-14, Math.PI * .5, sk); leg(26, Math.PI * 1.5, sk);
+  g.save(); g.translate(36, -78); g.rotate(up ? -.25 : th ? .1 : m === 4 ? .15 : Math.sin(o.t * 1.4) * .04);
+  const ef = Math.sin(o.t * 2.2) * .12; g.save(); g.translate(-6, -4); g.rotate(-.1 + ef); const ear = SP('M0,-14 Q-26,-22 -30,0 Q-28,20 -6,22 Q2,10 2,0Z'); V(ear, sk, -14, 2, 22, 1.8); g.save(); g.clip(ear); F(E(-12, 2, 12, 14), '#b89aa8'); g.restore(); g.restore();
+  const hd = SP('M-6,-18 Q8,-26 20,-16 Q26,-6 22,8 Q14,14 6,12 Q-6,10 -8,-2 Q-10,-12 -6,-18Z'); V(hd, sk, 8, -4, 20);
+  if (re) { V(SP('M2,-18 Q12,-24 20,-16 L16,-8 Q10,-12 4,-10Z'), '#c8202a', 11, -15, 9, 1.2); V(E(12, -16, 2.4, 2.4), '#e8b830', 12, -16, 2.4, .8); }
+  const tr = up ? -1 : th ? .8 : Math.sin(o.t * 1.8) * .4;                                                                 // proboscide
+  const tp = [[18, 4], [26, 16 + tr * 4], [26 + tr * 10, 30 + tr * 2], [22 + tr * 18, up ? -2 : 40]];
+  chain(tp, 12, 6, 3, sk);
+  for (const s of [-1, 1]) { V(SP(`M${14 + s},8 Q${22 + s},18 ${34 + s * 2},14 Q${24},12 ${18},6Z`), '#f4eed8', 24, 11, 8, 1.2); if (re) V(E(22 + s, 12, 2, 2.6), '#e8b830', 22, 12, 2, .7); }
+  eyesX(o, sk, [[10, -6, 2.4, -1]], 'almond', '#2a1a14'); browsX(o, [[10, -10, 5, -1]], sd, 2, m === 3 || th ? 'thick' : 'flat');
+  g.restore();
+  if (up > .5) { g.save(); g.globalAlpha = .6; for (let i = 0; i < 3; i++) F(E(30 + i * 4, -96 - i * 6, 4 + i * 2, 2 + i), 'rgba(200,230,255,.6)'); g.restore(); }   // barrito
+  g.restore();
+}
+Object.assign(DRAW, { cobrabianco: cobrabiancoD, mowgli: o => mowgliD(o, 0), mowglire: o => mowgliD(o, 1), baloo: balooD, bagheera: o => bagheeraD(o, 0), bagheerare: o => bagheeraD(o, 1), hathi: o => hathiD(o, 0), hathire: o => hathiD(o, 1) });
+
 // ---------- skin: costumi sui cattivi (colori dei vestiti, testa, corpo, oggetto in mano) ----------
 // ogni skin: k = personaggio, pal = colori, head(o) nel riquadro della testa, body(o, tall) sul busto, hand(o) nella mano davanti,
 // noHair / noHat / noCap = toglie capelli, cappello o cuffietta del disegno base
@@ -10388,6 +10547,84 @@ WORLDS.nuvole = { name: 'Regno delle Nuvole', seed: 177, ob: ['fagiolo', 'voragi
     wallDeco: () => { L(SP('M-90,-62 L114,-62'), '#e8b83a', 3); for (let i = 0; i < 5; i++) { const x = -70 + i * 40; L(SP(`M${x},-46 Q${x + 6},-52 ${x + 12},-46`), '#c8d4f0', 2); } },
     deco: () => { for (const [x, y, s] of [[-170, 46, 2.6], [-90, 56, 2], [0, 60, 2.4], [100, 56, 2.2], [190, 48, 2.6]]) cloudPuff(x, y, s); } }); } };
 
+// ---------- ostacoli: gruppo 7 (Giungla di Mowgli) ----------
+function jLeaf(x, y, s, a, c = '#3f9a3a') { g.save(); g.translate(x, y); g.rotate(a); g.scale(s, s); V(SP('M0,0 Q10,-12 30,-10 Q42,-8 46,0 Q40,6 28,7 Q10,8 0,0Z'), c, 22, -2, 22, 1.2); L(SP('M2,0 Q20,-3 44,0'), dk(c, .3), 1); for (let i = 1; i < 5; i++) L(SP(`M${i * 9},-1 l4,-6 M${i * 9},0 l4,5`), dk(c, .22), .7); g.restore(); }
+function palmJ(x, y, s, lean, col = '#3a8a34') {                                  // palma: tronco a anelli che si piega, ciuffo di foglie lunghe, noci di cocco
+  const tx = x + lean * s, ty = y - 120 * s; L(SP(`M${x},${y} Q${x + lean * .2 * s},${y - 70 * s} ${tx},${ty}`), '#5a3e24', 9 * s); L(SP(`M${x},${y} Q${x + lean * .2 * s},${y - 70 * s} ${tx},${ty}`), '#8a6a44', 6 * s);
+  for (let i = 1; i < 9; i++) { const t = i / 9, px = x + (lean * .2 * 2 * t * (1 - t) + lean * t * t) * s, py = y - (70 * 2 * t * (1 - t) + 120 * t * t) * s; L(SP(`M${px - 3.4 * s},${py} l${6.8 * s},${-1.4 * s}`), '#5a3e24', 1.2 * s); }
+  for (const [a, l] of [[-2.9, 1], [-2.3, 1.1], [-1.7, .8], [-1.2, 1.1], [-.5, 1], [.1, .9], [-3.4, .8]]) { const ex = tx + Math.cos(a) * 46 * l * s, ey = ty + Math.sin(a) * 20 * s + 18 * l * s; L(SP(`M${tx},${ty} Q${tx + Math.cos(a) * 26 * l * s},${ty + Math.sin(a) * 30 * s - 6 * s} ${ex},${ey}`), dk(col, .35), 7 * s); L(SP(`M${tx},${ty} Q${tx + Math.cos(a) * 26 * l * s},${ty + Math.sin(a) * 30 * s - 6 * s} ${ex},${ey}`), col, 4.4 * s); }
+  for (const [dx, dy] of [[-3, 4], [3, 5], [0, 7]]) V(E(tx + dx * s, ty + dy * s, 3.4 * s, 3.4 * s), '#6a4a2a', tx + dx * s, ty + dy * s, 3 * s, .8 * s); }
+function crown(x, y, s, c) { for (const [dx, dy, r] of [[-16, 0, 16], [14, -2, 18], [0, -14, 20], [-6, 6, 14], [10, 8, 14]]) { const p = E(x + dx * s, y + dy * s, r * s, r * s * .86); F(p, c); g.save(); g.clip(p); F(E(x + (dx - r * .3) * s, y + (dy - r * .4) * s, r * .7 * s, r * .5 * s), 'rgba(255,255,200,.16)'); F(E(x + (dx + r * .3) * s, y + (dy + r * .6) * s, r * s, r * .5 * s), 'rgba(0,30,20,.25)'); g.restore(); } }
+function jungleTree(x, y, s, c) { V(SP(`M${x - 5 * s},${y} Q${x - 3 * s},${y - 30 * s} ${x - 2 * s},${y - 56 * s} L${x + 3 * s},${y - 56 * s} Q${x + 4 * s},${y - 30 * s} ${x + 6 * s},${y}Z`), '#6a5038', x, y - 28 * s, 12 * s, 1.4 * s); crown(x, y - 64 * s, s * 1.1, c); }
+function vineDrop(x, y, len, s = 1, c = '#3a8a34') { L(SP(`M${x},${y} q${4 * s},${len * .5} ${-2 * s},${len}`), dk(c, .3), 2.2 * s); for (let i = 1; i < 6; i++) { const yy = y + len * i / 6, xx = x + Math.sin(i * 1.3) * 2 * s; F(E(xx + (i % 2 ? 3 : -3) * s, yy, 3 * s, 1.6 * s, i % 2 ? .5 : -.5), c); } }
+function fern(x, y, s, c = '#3f9a3a') { for (const a of [-2.6, -2.1, -1.6, -1.1, -.6]) { const ex = x + Math.cos(a) * 22 * s, ey = y + Math.sin(a) * 18 * s; L(SP(`M${x},${y} Q${x + Math.cos(a) * 12 * s},${y + Math.sin(a) * 18 * s - 4 * s} ${ex},${ey}`), dk(c, .3), 3 * s); L(SP(`M${x},${y} Q${x + Math.cos(a) * 12 * s},${y + Math.sin(a) * 18 * s - 4 * s} ${ex},${ey}`), c, 1.8 * s); } }
+OBS.waingunga = { draw(k, W) {                                              // il fiume Waingunga: acqua verde-bruna, ninfee e fiori di loto, sassi per guadare, un tronco caduto e il coccodrillo che spia con gli occhi fuori dall'acqua
+  const few = waterBody(k, W, { bank: '#8a7448', deep: '#2a5a4a', mid: '#4a8a6a', glint: '#f4f8dc' });
+  for (const p of few.slice(0, 7)) { const s = k.ps(p.y); g.save(); g.translate(p.x, p.y); g.scale(s, s); V(SP('M0,0 L14,-2 A15,6 0 1 1 13,3Z'), '#4a9a3a', 0, 0, 15, 1.6); if (p.r > .4) { for (let i = 0; i < 7; i++) { g.save(); g.translate(2, -4); g.rotate(-1.6 + i * .5); V(SP('M0,0 Q-3,-6 0,-11 Q3,-6 0,0Z'), i % 2 ? '#f8a8c8' : '#ffd0e0', 0, -5, 4, .9); g.restore(); } F(E(2, -4, 2, 1.6), '#f2c040'); } g.restore(); }
+  const st = k.pts(5, .5).sort((a, b) => a.x - b.x); for (const p of st) { const s = k.ps(p.y); boulder(p.x, p.y + 4, s * .9, '#8a8a78', 'rgba(90,160,70,.7)'); }
+  const lx = k.cx + (k.x1 - k.cx) * .45, ly = k.cy + 6; g.save(); g.translate(lx, ly); g.rotate(-.12); V(SP('M-70,-8 L60,-10 Q68,-2 60,8 L-70,8 Q-76,0 -70,-8Z'), '#7a5a3a', -4, 0, 60, 2); L(E(62, -1, 5, 8), '#4a3420', 1.6); for (const x of [-40, -6, 30]) L(SP(`M${x},-8 q4,8 0,16`), '#5a4028', 1.2); fern(-50, -6, .8); fern(20, -8, .7); g.restore();
+  const cx2 = k.cx - (k.cx - k.x0) * .3, cy2 = k.cy + 10; OBA = ((b) => () => { b(); const dx = Math.sin(T * .3) * 40, yy = cy2 + Math.sin(T * 1.4) * 1.2; g.save(); g.translate(cx2 + dx, yy); F(E(0, 2, 34, 4), 'rgba(20,50,40,.35)'); V(SP('M-28,0 Q-20,-5 -10,-4 L22,-3 Q30,-2 32,0 Q20,2 -28,0Z'), '#4a6a3a', 0, -2, 20, 1.2); for (const x of [-16, -8]) { V(E(x, -5, 3.4, 3), '#5a7a44', x, -5, 3, 1); F(E(x + .6, -5.6, 1.6, 1.4), '#f2d040'); F(E(x + .8, -5.6, .5, 1.2), '#1b1238'); } for (let i = 0; i < 4; i++) F(PL([-2 + i * 6, -3, 1 + i * 6, -7, 4 + i * 6, -3]), '#4a6a3a'); g.restore(); })(OBA); } };
+OBS.rovine = { draw(k, W) {                                                 // le Tane Fredde: la città perduta, colonne spezzate, gradini di pietra, la grande testa di pietra mezza sepolta e ricoperta di liane, monete d'oro tra i sassi
+  F(k.shape(1.04, 1, 2), 'rgba(20,40,20,.22)'); const ston = '#a8a088', sd = dk(ston, .3);
+  const fl = k.shape(.92, .8); F(fl, '#8a8670'); g.save(); g.clip(fl); for (let y = k.yT; y < k.bot(k.cx) + 20; y += 12) for (let x = k.x0 + ((y / 12) % 2) * 14; x < k.x1; x += 28) L(SP(`M${x},${y} l24,0 l0,10`), 'rgba(40,40,30,.3)', 1.4); for (let i = 0; i < 16; i++) { const x = k.x0 + rr(0, k.x1 - k.x0), y = k.yT + rr(0, 60); F(E(x, y, rr(8, 20), rr(3, 6)), 'rgba(80,150,60,.45)'); } g.restore();
+  const cols = k.pts(4, .84).sort((a, b) => a.y - b.y);
+  for (const [i, p] of cols.entries()) { const s = k.ps(p.y) * 2.2, hh = (30 + (i * 17) % 30) * s; g.save(); g.translate(p.x, p.y + 4); V(SP(`M${-9 * s},0 L${9 * s},0 L${8 * s},${-6 * s} L${-8 * s},${-6 * s}Z`), sd, 0, -3 * s, 9 * s, 1.4); V(SP(`M${-6 * s},${-6 * s} L${6 * s},${-6 * s} L${6 * s},${-hh} L${2 * s},${-hh - 4 * s} L${-1 * s},${-hh + 2 * s} L${-6 * s},${-hh - 3 * s}Z`), ston, 0, -hh / 2, 8 * s, 1.4); for (const x of [-3, 0, 3]) L(SP(`M${x * s},${-8 * s} L${x * s},${-hh + 4 * s}`), 'rgba(60,50,30,.3)', 1); vineDrop(5 * s, -hh, hh * .7, s * .8); g.restore(); }
+  const hx = k.cx - 20, hy = k.cy + 14, s = Math.min(1.6, (k.x1 - k.x0) / 300);
+  g.save(); g.translate(hx, hy); g.scale(s, s); F(E(4, 4, 62, 10), 'rgba(20,30,20,.35)');
+  const head = SP('M-46,4 Q-52,-40 -30,-62 Q0,-80 30,-62 Q52,-40 46,4Z'); V(head, ston, 0, -30, 50, 2); g.save(); g.clip(head);
+  F(SP('M-30,-62 Q0,-80 30,-62 L26,-52 Q0,-66 -26,-52Z'), sd); for (let i = 0; i < 7; i++) F(E(-24 + i * 8, -62, 3.4, 4), sd);                        // la corona di pietra
+  for (const s2 of [-1, 1]) { F(SP(`M${s2 * 22},-34 Q${s2 * 14},-42 ${s2 * 6},-34 Q${s2 * 14},-30 ${s2 * 22},-34Z`), '#3a3a2a'); L(SP(`M${s2 * 26},-42 Q${s2 * 14},-50 ${s2 * 4},-42`), sd, 2.4); }
+  L(SP('M0,-36 L-4,-16 Q0,-12 4,-16'), sd, 2.4); L(SP('M-14,-6 Q0,0 14,-6'), sd, 2.6); L(SP('M-20,-70 L-8,-30 L-16,4'), 'rgba(40,30,20,.45)', 1.6);
+  F(SP('M-46,-20 Q-36,-34 -24,-28 Q-30,-12 -46,0Z'), 'rgba(80,150,60,.6)'); F(SP('M46,-40 Q34,-56 20,-60 Q30,-44 46,-26Z'), 'rgba(80,150,60,.55)');
+  if (TIME === 2) for (const s2 of [-1, 1]) { glowB(s2 * 14, -34, 8, 'rgba(120,255,140,.6)'); F(E(s2 * 14, -34, 2.4, 1.6), '#b8ffb0'); }
+  g.restore(); for (const [x, l] of [[-34, 40], [-10, 30], [20, 46], [38, 26]]) vineDrop(x, -64, l, 1.2, '#4a9a3a'); for (const [x, a] of [[-44, Math.PI + .5], [44, -.4]]) jLeaf(x, 2, .9, a);
+  for (const [x, y] of [[-30, 10], [-18, 12], [24, 9], [34, 13]]) { V(E(x, y, 4, 2.2), '#e8b830', x, y, 4, .9); }
+  g.restore();
+  OBA = () => { if (TIME !== 2 && Math.sin(T * 2.6) > .55) { const p = [hx + 24 * s, hy + 6 * s]; F(SP(`M${p[0]},${p[1] - 5} l1,4 l4,1 l-4,1 l-1,4 l-1,-4 l-4,-1 l4,-1Z`), '#fffbe0', '#ffe080'); } }; } };
+OBS.fico = { draw(k, W) {                                                   // il grande fico della giungla: radici aeree che scendono come tende, radici enormi a terra, liane, la Rupe del Consiglio sotto; di notte le lucciole
+  F(k.shape(1.04, 1, 2), 'rgba(20,40,20,.25)'); const bk = '#8a6a4a', bd = dk(bk, .3);
+  for (const [i, p] of k.pts(26, 1.02, .8).entries()) { const s = k.ps(p.y); if (i % 3) fern(p.x, p.y + 2, s * (1 + p.r * .5)); else jLeaf(p.x, p.y, s * .8, i % 2 ? -2.6 : -.5, '#4aa040'); }
+  const x = k.cx + 20, y = k.cy + 12, top = k.yT - 260, wd = Math.min(70, (k.x1 - k.x0) * .14);
+  V(SP(`M${x - wd * 1.8},${y + 6} Q${x - wd},${y - 10} ${x - wd * .7},${y - 40} L${x - wd * .5},${top + 60} Q${x},${top + 40} ${x + wd * .5},${top + 60} L${x + wd * .6},${y - 40} Q${x + wd},${y - 10} ${x + wd * 1.9},${y + 8} Q${x},${y + 16} ${x - wd * 1.8},${y + 6}Z`), bk, x - wd * .3, y - 80, wd * 1.4, 3);
+  for (const dx of [-.5, -.2, .15, .4]) L(SP(`M${x + dx * wd},${y} Q${x + dx * wd * 1.3},${y - 120} ${x + dx * wd * .9},${top + 60}`), bd, 2.4);
+  for (const [dx, a] of [[-1.8, -1], [-1.2, -1], [1.3, 1], [1.9, 1]]) L(SP(`M${x + dx * wd * .5},${y - 20} Q${x + dx * wd * .8},${y - 4} ${x + dx * wd},${y + 8}`), bd, 6);
+  crown(x - wd * 1.4, top + 40, 2.4, '#2f7a34'); crown(x + wd * 1.4, top + 30, 2.6, '#2a7030'); crown(x, top, 2.8, '#3a8a3a');
+  for (let i = 0; i < 9; i++) { const rx = x - wd * 2.4 + i * wd * .6, ry = top + 70 + (i % 3) * 10; L(SP(`M${rx},${ry} Q${rx + 4},${(ry + y) / 2} ${rx + (i % 2 ? 3 : -3)},${y - 4 - (i % 4) * 14}`), '#8a7458', 2.2); }
+  const rk = SP(`M${x - wd * 3.2},${y + 14} Q${x - wd * 3.2},${y - 10} ${x - wd * 2.2},${y - 14} L${x - wd * 1.4},${y - 12} Q${x - wd * 1.2},${y + 6} ${x - wd * 1.4},${y + 16}Z`); V(rk, '#8a8a78', x - wd * 2.2, y, wd, 2); F(SP(`M${x - wd * 3.1},${y - 4} Q${x - wd * 2.4},${y - 16} ${x - wd * 1.5},${y - 10} Q${x - wd * 2.3},${y - 8} ${x - wd * 3.1},${y - 4}Z`), 'rgba(110,170,80,.8)');
+  for (const [dx, l] of [[-2, 120], [-1, 150], [1.2, 130], [2.1, 100]]) vineDrop(x + dx * wd, top + 50, l, 1.4, '#3f9a3a');
+  OBA = () => { if (TIME === 2 || TIME === 1) { g.save(); g.globalCompositeOperation = 'lighter'; for (let i = 0; i < 10; i++) { const a = T * .4 + i * 2.1, fx = x + Math.cos(a) * wd * 2.4, fy = y - 60 + Math.sin(a * 1.3) * 50 - i * 6, b = .5 + .5 * Math.sin(T * 4 + i); F(E(fx, fy, 6, 6), `rgba(200,255,120,${.25 * b})`); F(E(fx, fy, 1.6, 1.6), `rgba(240,255,170,${.9 * b})`); } g.restore(); } }; } };
+
+// ---------- i mondi: gruppo 7 ----------
+WORLDS.giungla = { name: 'Giungla di Mowgli', seed: 191, ob: ['waingunga', 'rovine', 'fico'], night: 'rgba(6,30,30,.46)',
+  sky: [['#3a94c8', '#78c0cc', '#c4e4c0', '#ecf4d0'], ['#2a1848', '#8a3a68', '#ee7a44', '#ffc86a'], ['#020a10', '#061a26', '#0c2a2e', '#163a36']],
+  gr: ['#a8c060', '#6aa040', '#3a7a34', '#1e5228'], patch: ['rgba(255,240,150,.16)', 'rgba(10,40,20,.2)'], lane: 'rgba(210,170,100,.18)', bank: '#8a7448', rock: '#8a8a78', rockCap: 'rgba(90,160,70,.85)', grass: '#3f8a30', fg: ['#0c2814', '#123a1e'],
+  skyFx(w) { if (TIME === 2) { g.save(); g.globalCompositeOperation = 'lighter'; for (let i = 0; i < 5; i++) { const x = rr(60, w - 60), y = rr(30, 150); F(E(x, y, 1.4, 1.4), 'rgba(255,250,220,.85)'); } g.restore(); } },
+  pfx(t) { for (let i = 0; i < 12; i++) { const k = (t * .06 + i / 12) % 1, x = ((i * 173.1 - cam * 1.1 + Math.sin(t + i) * 30) % (VW + 100) + VW + 100) % (VW + 100) - 50, y = 80 + k * 520; g.save(); g.translate(x, y); g.rotate(t * 2 + i); g.globalAlpha = .7 * Math.sin(k * Math.PI); g.fillStyle = i % 3 ? '#5aa03a' : '#c8a040'; g.beginPath(); g.ellipse(0, 0, 4, 1.8, 0, 0, 7); g.fill(); g.restore(); }
+    if (TIME !== 0) for (let i = 0; i < 18; i++) { const x = ((i * 211.7 + Math.sin(t * .7 + i) * 40 - cam) % VW + VW) % VW, y = 300 + ((i * 53) % 260) + Math.sin(t * 1.3 + i * 2) * 14, b = .5 + .5 * Math.sin(t * 3 + i * 1.7); g.fillStyle = `rgba(200,255,120,${.22 * b})`; g.beginPath(); g.arc(x, y, 6, 0, 7); g.fill(); g.fillStyle = `rgba(240,255,170,${.9 * b})`; g.beginPath(); g.arc(x, y, 1.6, 0, 7); g.fill(); } },
+  far(w) { clouds(w, 5, 50, 170);
+    const m1 = ridge(240, 110, 130, w); F(m1, atm('#4a7a6a', .5)); shadeClip(m1, 130, 320, 'rgba(255,255,255,.1)', atm('#6a9a7a', .6));
+    const wx = w * .3; F(SP(`M${wx - 8},150 L${wx + 8},150 L${wx + 14},262 L${wx - 14},262Z`), atm('#dff4f0', .35)); for (let i = 0; i < 4; i++) L(SP(`M${wx - 6 + i * 4},152 L${wx - 8 + i * 5},258`), atm('#ffffff', .3), 1.2); F(E(wx, 262, 26, 6), atm('#ffffff', .3));   // la cascata
+    for (const [tx, ts] of [[w * .62, 1], [w * .7, .7], [w * .9, .85]]) { g.save(); g.translate(tx, 262); g.scale(ts, ts); const c = atm('#7a7a62', .5); F(SP('M-30,0 L-26,-30 L26,-30 L30,0Z'), c); F(SP('M-22,-30 L-18,-54 L18,-54 L22,-30Z'), c); F(SP('M-14,-54 Q-16,-80 0,-96 Q16,-80 14,-54Z'), c); F(SP('M-1.4,-96 L0,-110 L1.4,-96Z'), c); for (const x of [-40, 40]) F(SP(`M${x - 6},0 L${x - 6},-24 Q${x},-34 ${x + 6},-24 L${x + 6},0Z`), c); g.restore(); }   // le Tane Fredde lontane
+    const m2 = ridge(280, 50, 90, w); F(m2, atm('#3a6a4a', .35)); for (let x = 0; x < w; x += rr(24, 50)) crown(x, rr(270, 286), rr(.6, .9), atm('#3a7044', .32));
+    g.save(); g.globalAlpha = .45; for (let i = 0; i < 4; i++) F(E(rr(0, w), rr(270, 290), rr(120, 220), 10), atm('#ffffff', .2)); g.restore(); },
+  hill(w) { const h1 = ridge(300, 34, 140, w); F(h1, atm('#2f6a3a', .12)); for (let x = 0; x < w; x += rr(30, 64)) crown(x, rr(292, 304), rr(.9, 1.3), mix(atm('#2a6a34', .1), '#4a8a3a', rnd() * .4));
+    for (let x = 40; x < w; x += rr(140, 260)) palmJ(x, rr(318, 326), rr(.7, .95), rr(-30, 30), '#3a8a34');
+    const h2 = ridge(318, 16, 160, w); F(h2, '#356e36'); rim(h2, TIME === 1 ? 'rgba(255,200,120,.5)' : 'rgba(220,255,180,.28)', 4); for (let x = 20; x < w; x += rr(40, 90)) fern(x, rr(318, 326), rr(.9, 1.3), '#3f8a34'); },
+  groundFx(w) { for (let i = 0; i < 24; i++) { const x = rr(0, w), y = rr(HOR + 10, H), s = .6 + (y - HOR) / (H - HOR) * 1.2; g.save(); g.globalAlpha = TIME === 2 ? .05 : .14; F(E(x, y, 70 * s, 14 * s), '#fff4b0'); g.restore(); }   // macchie di sole tra le foglie
+    for (let i = 0; i < 70; i++) { const x = rr(0, w), y = rr(HOR + 10, H), s = .5 + (y - HOR) / (H - HOR) * 1.2; g.save(); g.translate(x, y); g.rotate(rr(0, 6)); F(E(0, 0, 4 * s, 1.8 * s), ['#8a7a3a', '#6a8a34', '#a8843a', '#4a7a2a'][i % 4]); g.restore(); } },
+  scatter(x, y, s, k, d, inLane) { if (k < .55) { g.strokeStyle = mix('#5aa040', '#2a6a30', d * .7 + rnd() * .3); grassTuft(x, y, s, g.strokeStyle); }
+    else if (k < .72 && !inLane) fern(x, y, s * .7, mix('#3f9a3a', '#5ab048', rnd()));
+    else if (k < .82 && !inLane) flower(x, y, s, ['#ff5a3a', '#ffa020', '#ff7ab0', '#f8e060'][Math.floor(rnd() * 4)]);
+    else if (k < .9 && !inLane) jLeaf(x, y, s * .4, rnd() < .5 ? -2.8 : -.4, '#4a9a3a'); else if (!inLane) boulder(x, y, s * .7, '#8a8a78', 'rgba(90,160,70,.7)'); },
+  lair() { lairRock({ rock: '#5a6a5a', hi: 'rgba(220,255,200,.22)', rim: 'rgba(200,255,180,.45)', arch: '#8a8a70', arch2: '#7a7a62', glow: [120, 255, 140], teeth: '#e8e4cc', skull: '#efe8d4',   // la tana: la grotta delle Tane Fredde, roccia muschiosa, liane, il tesoro del re che luccica all'ingresso
+    top: () => { F(SP('M-170,-60 Q-150,-170 -96,-196 L-40,-212 L40,-208 Q92,-190 122,-128 Q100,-150 60,-176 Q10,-196 -40,-196 Q-110,-170 -150,-80Z'), 'rgba(70,140,60,.85)'); for (let i = 0; i < 14; i++) F(E(-140 + i * 20, -150 - Math.sin(i / 13 * Math.PI) * 60 + (i % 3) * 10, 12, 6), 'rgba(80,160,70,.7)'); },
+    deco: () => { for (const [x, l] of [[-130, 110], [-90, 150], [-40, 120], [30, 90], [110, 120]]) vineDrop(x, -190 + Math.abs(x) * .3, l, 1.6, '#3f9a3a');
+      for (const [x, y] of [[40, 40], [60, 44], [92, 42], [112, 46], [76, 48]]) V(E(x, y, 5, 2.6), '#e8b830', x, y, 5, 1); V(E(52, 36, 3, 2.4), '#3ac8a0', 52, 36, 3, .8); V(E(100, 37, 3, 2.4), '#d0203a', 100, 37, 3, .8);
+      palmJ(-190, 50, 1.2, -30); for (const [x, y, s] of [[-160, 50, 1.6], [170, 52, 1.4], [-60, 56, 1.1]]) fern(x, y, s); for (const [x, a] of [[180, -.5], [-120, Math.PI + .4]]) jLeaf(x, 46, 1.3, a, '#4aa040'); } }); },
+  castle() { castleStd({ st: '#d8c098', roof: '#c8603a', roof2: '#e8b830', spire: 'dome', gate: '#7a4a2a', shield: '#e88a20', cap: '#f4e4c0', flag: '#e88a20', flag2: '#3a9a4a',   // il castello della giungla: tempio di arenaria con le cupole, tetti di terracotta e cupola d'oro, liane sulle mura, palme e banani intorno
+    wallDeco: () => { L(SP('M-90,-60 L114,-60'), '#b89060', 4); for (let i = 0; i < 8; i++) F(SP(`M${-84 + i * 26},-60 l6,-8 l6,8Z`), '#c8a070'); for (const [x, l] of [[-80, 50], [-30, 36], [60, 60], [100, 40]]) vineDrop(x, -74, l, 1.2, '#3f9a3a'); },
+    deco: () => { palmJ(-200, 46, 1.3, 26); palmJ(220, 50, 1.2, -24); for (const [x, y, s] of [[-150, 50, 1.6], [170, 54, 1.5], [-70, 58, 1.2], [90, 60, 1.3]]) fern(x, y, s); for (const [x, a] of [[-120, -.4], [140, Math.PI + .4]]) jLeaf(x, 52, 1.2, a, '#4aa040'); } }); } };
+
 // --- i mondi nel gioco: lo sfondo si disegna una volta per ogni ora del giorno; tana e castello in fogli a parte (così tremano, sprofondano, si girano) ---
 const NW_SX = 860 / 980;                                                     // 1 unità del prototipo = 0,8776 unità del gioco (tana→castello: 980 → 860)
 let NWS = null, OBK = null, LO = [0, 0];
@@ -10628,7 +10865,7 @@ function draw(k, c, o) {                                                    // o
 }
 return { draw, has: k => !!(SUB[k] || DRAW[k]), nw: { ensure: nwEnsure, back: nwBack, owned: nwOwned, front: nwFront, pt: nwPt }, dragon: ngDragon, skin: id => !!SKINS[id], frame: () => { SPR_NEW = 0; }, sprInfo: () => ({ n: SPR.size, px: SPR_PX }) };
 })();
-const NG_H = {"goblin": 72, "orco": 158, "strega": 141, "cavaliere": 126, "arciere": 102, "fionda": 84, "topi": 48, "lupo": 113, "scheletri": 92, "trollponte": 112, "ragno": 50, "zombie": 101, "fuocofatuo": 79, "diavoletto": 82, "rospo": 36, "cornacchia": 77, "gargoyle": 86, "sciame": 90, "lupetti": 55, "scimmie": 115, "gattovolpe": 99, "gnomo": 86, "spaventapasseri": 122, "retopi": 112, "pandizenzero": 57, "mummia": 102, "pupazzo": 79, "matrigna": 138, "reginacuori": 122, "stregone": 147, "gothel": 122, "sirena": 94, "lumacone": 52, "fantasma": 97, "coccodrillo": 37, "ladroni": 105, "barbablu": 123, "omino": 80, "babajaga": 187, "stregamare": 106, "morgana": 109, "grifone": 107, "spirito": 177, "bestia": 86, "ciclope": 184, "senzatesta": 135, "dracula": 119, "medusa": 114, "pescecane": 73, "alberich": 71, "trollspecchio": 101, "mordred": 127, "lupomannaro": 115, "frankenstein": 133, "hyde": 126, "stregatto": 69, "stregaovest": 92, "sherekhan": 66, "krampus": 136, "jabberwocky": 127, "kraken": 141, "idra": 88, "bandersnatch": 83, "zucca": 116, "marzapane": 107, "gigantegh": 185, "uncino": 136, "mangiafuoco": 162, "tremotino": 82, "reginacattiva": 123, "reginanevi": 128, "basilisco": 120, "cavaliereverde": 162, "diavolo": 146, "dragonero": 120, "gigante": 185, "ecate": 120, "circe": 112, "minotauro": 196, "fenice": 119, "soldatino": 113, "principe": 109, "cacciatore": 128, "spiritista": 116, "porcellino": 88, "fata": 102, "re": 168, "bimbo": 55, "hanselgretel": 54, "nano": 69, "raperonzolo": 106, "pifferaio": 132, "musicanti": 127, "carrozza": 109, "ranocchio": 60, "peterpan": 123, "cappuccetto": 78, "robinhood": 122, "gattostivali": 78, "biancaneve": 104, "pinocchio": 100, "merlino": 146, "alice": 98, "wendy": 102, "giglio": 113, "cappellaio": 130, "brucaliffo": 115, "lepre": 99, "alibaba": 112, "sinbad": 135, "guardia": 139, "renna": 110, "fiammiferaia": 75, "pupazzoneve": 70, "cavcristallo": 124, "gemello": 102, "gemelli": 102, "pisello": 113, "tappeto": 94, "aladino": 113, "kai": 101, "gerda": 104, "pollicino": 57, "dragotempesta": 122, "jack": 113, "jackre": 121, "arpa": 98, "arpaincantata": 106, "gallina": 74, "cavnuvole": 136, "topo": 38, "scheletro": 92, "pipsciame": 67, "pipistrello": 67, "lupetto": 46, "scimmia": 115, "capoladroni": 105, "ladrone": 71, "matrigna_m": 138, "sorella": 81, "reginacuori_q": 122, "carta": 95, "burattino": 40, "corvo": 77};
+const NG_H = {"goblin": 72, "orco": 158, "strega": 141, "cavaliere": 126, "arciere": 102, "fionda": 84, "topi": 48, "lupo": 113, "scheletri": 92, "trollponte": 112, "ragno": 50, "zombie": 101, "fuocofatuo": 79, "diavoletto": 82, "rospo": 36, "cornacchia": 77, "gargoyle": 86, "sciame": 90, "lupetti": 55, "scimmie": 115, "gattovolpe": 99, "gnomo": 86, "spaventapasseri": 122, "retopi": 112, "pandizenzero": 57, "mummia": 102, "pupazzo": 79, "matrigna": 138, "reginacuori": 122, "stregone": 147, "gothel": 122, "sirena": 94, "lumacone": 52, "fantasma": 97, "coccodrillo": 37, "ladroni": 105, "barbablu": 123, "omino": 80, "babajaga": 187, "stregamare": 106, "morgana": 109, "grifone": 107, "spirito": 177, "bestia": 86, "ciclope": 184, "senzatesta": 135, "dracula": 119, "medusa": 114, "pescecane": 73, "alberich": 71, "trollspecchio": 101, "mordred": 127, "lupomannaro": 115, "frankenstein": 133, "hyde": 126, "stregatto": 69, "stregaovest": 92, "sherekhan": 66, "krampus": 136, "jabberwocky": 127, "kraken": 141, "idra": 88, "bandersnatch": 83, "zucca": 116, "marzapane": 107, "gigantegh": 185, "uncino": 136, "mangiafuoco": 162, "tremotino": 82, "reginacattiva": 123, "reginanevi": 128, "basilisco": 120, "cavaliereverde": 162, "diavolo": 146, "dragonero": 120, "gigante": 185, "ecate": 120, "circe": 112, "minotauro": 196, "fenice": 119, "soldatino": 113, "principe": 109, "cacciatore": 128, "spiritista": 116, "porcellino": 88, "fata": 102, "re": 168, "bimbo": 55, "hanselgretel": 54, "nano": 69, "raperonzolo": 106, "pifferaio": 132, "musicanti": 127, "carrozza": 109, "ranocchio": 60, "peterpan": 123, "cappuccetto": 78, "robinhood": 122, "gattostivali": 78, "biancaneve": 104, "pinocchio": 100, "merlino": 146, "alice": 98, "wendy": 102, "giglio": 113, "cappellaio": 130, "brucaliffo": 115, "lepre": 99, "alibaba": 112, "sinbad": 135, "guardia": 139, "renna": 110, "fiammiferaia": 75, "pupazzoneve": 70, "cavcristallo": 124, "gemello": 102, "gemelli": 102, "pisello": 113, "tappeto": 94, "aladino": 113, "kai": 101, "gerda": 104, "pollicino": 57, "dragotempesta": 122, "jack": 113, "jackre": 121, "arpa": 98, "arpaincantata": 106, "gallina": 74, "cavnuvole": 136, "yeti": 154, "cobrabianco": 125, "mowgli": 106, "mowglire": 121, "baloo": 123, "bagheera": 64, "bagheerare": 64, "hathi": 102, "hathire": 102, "topo": 38, "scheletro": 92, "pipsciame": 67, "pipistrello": 67, "lupetto": 46, "scimmia": 115, "capoladroni": 105, "ladrone": 71, "matrigna_m": 138, "sorella": 81, "reginacuori_q": 122, "carta": 95, "burattino": 40, "corvo": 77};
 const NG_OLD = Object.assign({}, DRAW), NG_SKIN = new Set(Object.keys(LOOKS).filter(id => !LOOKS[id].tint && !LOOKS[id].filter));   // le skin con gli accessori restano col disegno di prima
 for (const k of Object.keys(DRAW)) { if (!NG.has(k) || !NG_H[k] || k === 'drago') continue;
   const old = DRAW[k], hk = k;
@@ -11427,13 +11664,13 @@ function showMap(w = mapWorld, hero = mapHero) {
   for (let c = 0; c < n; c++) {
     const lv = DW.levelOf(w, c), open = hero ? heroOpen(w, c) : castleOpen(w, c), st = hero ? crownsOf(w, c) : starsOf(w, c), bs = lv.boss && !lv.semi, b = document.createElement('button');
     const isNext = open && !st && !nextNode;
-    b.className = 'node' + (bs ? ' boss' : lv.semi ? ' semi' : '') + (open ? '' : ' lock') + (isNext ? ' next' : '');
+    b.className = 'node' + (bs ? ' boss' : lv.semi ? ' semi' : '') + (lv.night ? ' night' : '') + (open ? '' : ' lock') + (isNext ? ' next' : '');
     b.style.left = pos[c][0] + '%'; b.style.top = pos[c][1] + '%';
     const icon = !open ? '<svg viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="10" rx="2" fill="#8a84a0"/><path d="M8 11V8a4 4 0 0 1 8 0v3" stroke="#8a84a0" stroke-width="2.6" fill="none"/></svg>'
       : bs ? '<svg viewBox="0 0 24 24"><path d="M3 18 L4 7 L9 12 L12 5 L15 12 L20 7 L21 18 Z" fill="#ffd35a" stroke="#1c1a24" stroke-width="1.6" stroke-linejoin="round"/></svg>'
       : lv.semi ? '<svg viewBox="0 0 24 24"><path d="M12 2 L20 5 V11 C20 16 16 20 12 22 C8 20 4 16 4 11 V5 Z" fill="#e0c4ff" stroke="#1c1a24" stroke-width="1.6"/></svg>' : String(c + 1);
     const nShards = (st ? 2 : lv.shardN) * (hero ? 2 : 1);
-    b.innerHTML = `<span class="disc">${icon}</span><span class="nm">${lv.name}</span>${open ? `<span class="sstars">${hero ? crownHtml(st) : starHtml(st)}</span><span class="rw"><canvas width="56" height="52"></canvas>×${nShards}</span>` : ''}`;
+    b.innerHTML = `<span class="disc">${icon}${lv.night ? '<svg class="moon" viewBox="0 0 24 24"><path d="M15 3a9 9 0 1 0 6 15A8 8 0 0 1 15 3Z" fill="#fff2a8" stroke="#1c1a24" stroke-width="1.6"/></svg>' : ''}</span><span class="nm">${lv.name}</span>${open ? `<span class="sstars">${hero ? crownHtml(st) : starHtml(st)}</span><span class="rw"><canvas width="56" height="52"></canvas>×${nShards}</span>` : ''}`;
     if (open) drawIcon(b.querySelector('canvas'), lv.shard);
     b.setAttribute('aria-label', `${c + 1}. ${lv.name}${open ? '' : ', chiuso'}`);
     b.onclick = () => open ? showSquad(w, c, hero ? {hard:true} : {}) : toast('Prima conquista il castello precedente');
@@ -12019,6 +12256,7 @@ function battleLight() {                                                    // g
   if (lightOverride != null) return lightOverride;
   if (s.hard) return 1;                                                    // l'Eroica si gioca sempre di notte
   if (s.inf) return s.inf.special === 'night' ? 1 : DW.nightP(s.t - (s.inf.t0 || 0));   // Infinita: ogni mondo nuovo riparte di giorno
+  if (s.lv && s.lv.night) { lightP = 1; return 1; }                       // castello notturno: si combatte sempre di notte
   if (s.lv && s.lv.world === 7) { if (s.t < .3) lightP = Math.max(lightP, .5); return Math.min(1, .5 + s.t / 70 * .5); }   // Torre delle Trecce Maledette: si parte al tramonto e scende la notte
   const t = s.t;
   let p = DW.nightP(t);                                                    // il sole cala prima: tramonto dai 25 secondi, notte piena a 80
@@ -12035,7 +12273,7 @@ function frame(now) {
   if (GALLERY) { lightP += (gal.light - lightP) * Math.min(1, rdt * 2); galTick(rdt); }
   else if (inStory) { lightP += (SLIDES[story.i].p - lightP) * Math.min(1, rdt * 1.6); storyTick(rdt); }
   else if (inMenu) lightP = HERO ? 1 : (1 - Math.cos(time * Math.PI * 2 / 48)) / 2;   // nel menu il giorno e la notte scorrono da soli
-  else lightP += (battleLight() - lightP) * Math.min(1, rdt * .7);
+  else { const bl = battleLight(); lightP += (bl - lightP) * Math.min(1, rdt * .7); }   // prima si chiede la luce (un castello notturno può mettere subito la notte)
   setLight(lightP);
   if (running && !paused && countT > 0) {
     const before = Math.ceil(countT); countT -= rdt;
@@ -13069,6 +13307,26 @@ MUS_FILE.w16 = 'w12';                                                     // il 
   Object.assign(SC, {dragotempesta:.92, jack:.84, jackre:.86, arpa:.86, arpaincantata:.9, gallina:.88, cavnuvole:.86});
   for (const k of Object.keys(NAT)) DRAW[k] = o => { const s2 = HEIGHT[k] / NAT[k]; ctx.save(); ctx.scale(s2, s2); NG.draw(k, ctx, o || {}); ctx.restore(); }; }
 GSETS.mondo16 = ['dragotempesta', 'jack', 'arpa', 'gallina', 'cavnuvole', 'arpaincantata', 'jackre'];
+/* ================= Mondo 17: Giungla di Mowgli ================= */
+Object.assign(SHORT, {cobrabianco:'Cobra Bianco'}); Object.assign(NAMES, {cobrabianco:'Cobra Bianco'});
+Object.assign(ROLE, {cobrabianco:'Lentissimo, ma il suo veleno continua a far male a lungo.'});
+Object.assign(UNLOCK, {cobrabianco:{w:16, kind:'boss', noEgg:1, txt:'Batti il boss della mappa 17'}});
+Object.assign(LINES, {cobrabianco:['Il tesoro è mio!', 'Sssì…']});
+Object.assign(RAR, {cobrabianco:3}); VILLAINS.add('cobrabianco');
+GOODS.push('mowgli', 'bagheera', 'baloo', 'hathi');
+Object.assign(WNAME, {mowgli:'Mowgli', bagheera:'Bagheera', baloo:'Baloo', hathi:'Hathi'});
+Object.assign(WTXT, {mowgli:'Il cucciolo d’uomo: velocissimo e schiva i colpi.', bagheera:'La pantera nera: corre e salta addosso ai cattivi.', baloo:'Il vecchio orso: resiste tanto e le sue zampate colpiscono più cattivi.', hathi:'L’elefante: carica e travolge tutto.'});
+Object.assign(VOICE, {cobrabianco:.7, mowgli:1.3, bagheera:1, baloo:.8, hathi:.7, mowglire:1.25, bagheerare:.95, hathire:.65});
+Object.assign(VALIAS, {cobrabianco:'basilisco', mowgli:'pollicino', mowglire:'pollicino', bagheera:'robinhood', bagheerare:'robinhood', baloo:'nani', hathi:'carrozza', hathire:'carrozza'});
+THEMES.giungla = {sky:'#78c0cc', amt:.42, hill1:'#3a7a3a', hill2:'#2a6a34', tree:'#2a7a34', tt:'palm', g1:'#a8c060', g2:'#3a7a34', stone:'#a8a088', roof:['#c8603a', '#e8b830'], fx:'sparkle', card:['#1a4a2a', '#8ad070']};
+OBST.giungla = ['waingunga', 'rovine', 'fico']; ROADC.giungla = '#b89a60';
+OBST_BY_NAME.unshift([/waingunga/i, 'waingunga'], [/tane fredde|scimmie/i, 'rovine'], [/fico|rupe|lucciole/i, 'fico']);
+MUS_FILE.w17 = 'w13'; MUS_BOSS.w17 = 'w13b';                               // la giungla usa la musica del Deserto di Aladino (e la sua musica del boss)
+{ const NAT = {cobrabianco:125, mowgli:106, mowglire:121, baloo:123, bagheera:64, bagheerare:64, hathi:102, hathire:102};   // altezza vera dei disegni nuovi
+  Object.assign(HEIGHT, {cobrabianco:86, mowgli:84, mowglire:92, baloo:100, bagheera:56, bagheerare:58, hathi:100, hathire:102});
+  Object.assign(SC, {cobrabianco:.9, mowgli:.86, mowglire:.88, baloo:.9, bagheera:.9, bagheerare:.92, hathi:.92, hathire:.92});
+  for (const k of Object.keys(NAT)) DRAW[k] = o => { const s2 = HEIGHT[k] / NAT[k]; ctx.save(); ctx.scale(s2, s2); NG.draw(k, ctx, o || {}); ctx.restore(); }; }
+GSETS.mondo17 = ['cobrabianco', 'mowgli', 'bagheera', 'baloo', 'hathi', 'bagheerare', 'hathire', 'mowglire'];
 new ResizeObserver(resize).observe($('stage'));
 resize(); if (GALLERY) startGallery(); else if (save.seenStory) { showMenu(); battleResume(); } else startStory();
 if (!GALLERY) netInit();
