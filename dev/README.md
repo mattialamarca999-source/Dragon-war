@@ -21,10 +21,13 @@ Gli script usano percorsi fissi (`/home/claude/dragon-war`, `/home/claude/dw-rep
   - `port_worlds.py`: sfondi, tana e castello in battaglia, nel menu e nella storia;
   - `port_skins.py`: le skin;
   - `port_w16.py`: il Mondo 16;
+  - `port_w18.py`: il Mondo 18 (Isola degli Oni). Novità riusabili: `mods` nel mondo (meccaniche per castello: `tide` marea, `pearls` Perle di Ryūjin), `fury` (più è ferito più è forte), `call` (il boss chiama aiuto a metà vita), `air` (vola sopra l'acqua ma si può colpire). In `game.html` la lista `COMING` dice quali mondi mostrare come «Coming soon»;
   - `port_w17.py`: il Mondo 17 (Giungla di Mowgli). Ha due cose nuove che si possono usare nei mondi futuri: più miniboss nello stesso mondo (`semis:{3:'...', 7:'...'}`, il numero è il castello contato da 0) e castelli che si giocano solo di notte (`nights:[2, 6, 10]`, sulla mappa hanno la luna);
   - `port_pass.py`: il Pass a stagioni mensili;
+  - per bilanciare un cattivo nuovo: `tools/simoni.js` (battaglie simulate, confronto coi cattivi forti);
   - `port_play.py`: preparazione al Play Store: invito «Diventa tester» nel menu (acceso con `TESTER_ON`, solo telefoni Android nel browser) e pulsanti del menu che stanno sempre nello schermo. La pagina dei tester è in `dev/play/tester.html` (i link vanno in `LINKS`, poi si copia nella radice del sito);
   - `build.py`: costruisce `dragon-war.html`.
+- `port_all.sh` riparte ogni volta da `port_base/core-before-w16.js` (regole pulite) e gli script dei mondi le rifanno: così non si sporcano col tempo.
 - `core.js` (regole e dati di gioco) e `i18n/*.json` (inglese e spagnolo) vengono modificati direttamente dagli script, che controllano se una modifica c'è già.
 
 ## Regole del progetto (di Mattia)

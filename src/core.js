@@ -77,6 +77,7 @@ const DW = (() => {
     ladrone:    {side:0, sub:1, hp:38,  dmg:6,  rate:.8, range:18, spd:70, steal:1},
     gigantegh:  {side:0, cost:320, cd:13, hp:860, dmg:31, rate:2.1, range:32, spd:20, splash:45, stomp:{every:9, r:120, t:2.2}},
     trollspecchio:{side:0, cost:230, cd:9, hp:200, dmg:16, rate:1.3, range:140, spd:42, ranged:1, fly:1, bounce:{n:2, k:.6, r:110}},
+    reoni:      {side:0, cost:300, cd:12, hp:700, dmg:32, rate:1.5, range:30, spd:36, splash:40, fury:{dmg:1, spd:.6}},   // Mondo 18: il Re degli Oni, più è ferito più picchia forte e corre
     cobrabianco:{side:0, cost:270, cd:11, hp:440, dmg:22, rate:1.8, range:130, spd:24, beast:1, ranged:1, splash:25, burn:{t:6, k:.9}, poison:1},   // Mondo 17: lentissimo, ma il suo veleno continua a far male a lungo
     dragotempesta:{side:0, cost:260, cd:10, hp:300, dmg:20, rate:1.5, range:150, spd:34, ranged:1, fly:1, beast:1, bounce:{n:3, k:.55, r:120}},   // Mondo 16: vola e sputa fulmini che saltano su altri tre buoni
     yeti:       {side:0, cost:240, cd:10, hp:420, dmg:20, rate:1.6, range:120, spd:30, ranged:1, beast:1, splash:30, slowHit:{t:2}},   // lo Yeti delle Nevi: solo dal Pass (Stagione 2)
@@ -158,6 +159,13 @@ const DW = (() => {
     gallina:    {side:1, hp:110, dmg:13, rate:1.6, range:110, spd:40,  bounty:50, ranged:1, splash:30},          // lancia uova d'oro
     cavnuvole:  {side:1, hp:250, dmg:17, rate:1.3, range:28,  spd:46,  bounty:70, charge:{dmg:24, r:50, kb:50}},  // carica con la lancia dalla nuvola
     arpaincantata:{side:1, hp:90, dmg:14, rate:1.5, range:160, spd:30, bounty:60, ranged:1, splash:35},         // (solo per il semi-boss)
+    momotaro:   {side:1, hp:130, dmg:14, rate:1,   range:30,  spd:60,  bounty:55, splash:20},                    // Mondo 18: il ragazzo nato dalla pesca, colpo di katana su più cattivi
+    cane:       {side:1, hp:120, dmg:12, rate:.8,  range:24,  spd:95,  bounty:45},                               // il Cane: corre e morde
+    scimmiamomo:{side:1, hp:95,  dmg:10, rate:.7,  range:24,  spd:80,  bounty:45, dodge:.3},                     // la Scimmia: graffia veloce e schiva
+    fagiano:    {side:1, hp:80,  dmg:12, rate:1,   range:28,  spd:70,  bounty:50, air:1},                        // il Fagiano: vola sopra l'acqua, becca dall'alto
+    canere:     {side:1, hp:300, dmg:22, rate:.8,  range:26,  spd:85,  bounty:80},                               // (solo per il miniboss)
+    scimmiare:  {side:1, hp:280, dmg:20, rate:.7,  range:28,  spd:75,  bounty:80, dodge:.3},                     // (solo per il miniboss)
+    momotarore: {side:1, hp:300, dmg:24, rate:1,   range:34,  spd:46,  bounty:80, splash:40, call:{at:.5, ks:['cane', 'scimmiamomo', 'fagiano']}},   // (solo per il boss: a metà vita chiama i tre amici)
     mowgli:     {side:1, hp:95,  dmg:12, rate:.9,  range:26,  spd:85,  bounty:45, dodge:.25},                    // Mondo 17: il cucciolo d'uomo, velocissimo, schiva
     baloo:      {side:1, hp:330, dmg:16, rate:1.4, range:28,  spd:34,  bounty:70, splash:25},                    // il vecchio orso: resiste tanto, zampate su più cattivi
     bagheera:   {side:1, hp:150, dmg:18, rate:.9,  range:26,  spd:95,  bounty:60, charge:{dmg:22, r:40, kb:30}},  // la pantera: corre e salta addosso
@@ -222,6 +230,9 @@ const DW = (() => {
     riflesso:         {base:'principe',     name:'Riflesso del Principe',    semi:1, hp:1150, dmg:30, scale:1.6, tint:'#d8e8ff'},
     re_specchi:       {base:'re',           name:'Re degli Specchi',         boss:1, hp:2400, dmg:40, scale:1.3, tint:'#cfe8ff'},
     arpa_inc:         {base:'arpaincantata', name:'Arpa Incantata',          semi:1, hp:1250, dmg:30, scale:1.4, tint:'#e8d0ff'},
+    cane_momo:        {base:'canere',       name:'Il Cane di Momotaro',      semi:1, hp:1350, dmg:30, scale:1.5, tint:'#ffe8c0'},
+    scimmia_momo:     {base:'scimmiare',    name:'La Scimmia di Momotaro',   semi:1, hp:1300, dmg:30, scale:1.5, tint:'#ffd0a0'},
+    momotaro_re:      {base:'momotarore',   name:'Momotaro col Vessillo',    boss:1, hp:2900, dmg:46, scale:1.35, tint:'#ff8a9a'},
     pantera_nera:     {base:'bagheerare',   name:'Bagheera la Pantera Nera', semi:1, hp:1300, dmg:30, scale:1.4, tint:'#d8c0ff'},
     re_elefanti:      {base:'hathire',      name:'Hathi il Re degli Elefanti', semi:1, hp:1450, dmg:32, scale:1.25, tint:'#ffe8c0'},
     mowgli_fuoco:     {base:'mowglire',     name:'Mowgli col Fiore Rosso',   boss:1, hp:2800, dmg:44, scale:1.35, tint:'#ff9a40'},
@@ -272,14 +283,18 @@ const DW = (() => {
     {name:'Regno delle Nuvole', theme:'nuvole', n:12, pool:['jack', 'arpa', 'gallina', 'cavnuvole', 'pollicino', 'cavcristallo', 'gemelli', 'merlino', 'principe', 'fata', 'renna', 'carrozza'], semi:'arpa_inc', boss:'jack_re',
      names:['Il fagiolo magico', 'Prima nuvola', 'Scala di foglie', 'Ponte d’arcobaleno', 'Isola volante', 'Sala dell’Arpa', 'Nido d’oro', 'Buco tra le nuvole', 'Cucina del Gigante', 'Forziere del Gigante', 'Torre del vento', 'Il Trono delle Nuvole']},
     {name:'Giungla di Mowgli', theme:'giungla', n:12, pool:['mowgli', 'bagheera', 'baloo', 'hathi', 'jack', 'cavnuvole', 'pollicino', 'cavcristallo', 'merlino', 'principe', 'fata', 'renna'], semis:{3:'pantera_nera', 7:'re_elefanti'}, boss:'mowgli_fuoco', nights:[2, 6, 10],
-     names:['Il branco di Seeonee', 'La Rupe del Consiglio', 'Luna sulla giungla', 'Il ramo di Bagheera', 'Le lezioni di Baloo', 'Il fiume Waingunga', 'Le Tane Fredde', 'La pista degli elefanti', 'Il popolo delle scimmie', 'Il grande fico', 'Notte delle lucciole', 'Il Fiore Rosso']}
+     names:['Il branco di Seeonee', 'La Rupe del Consiglio', 'Luna sulla giungla', 'Il ramo di Bagheera', 'Le lezioni di Baloo', 'Il fiume Waingunga', 'Le Tane Fredde', 'La pista degli elefanti', 'Il popolo delle scimmie', 'Il grande fico', 'Notte delle lucciole', 'Il Fiore Rosso']},
+    {name:'Isola degli Oni', theme:'oni', n:12, pool:['momotaro', 'cane', 'scimmiamomo', 'fagiano', 'mowgli', 'bagheera', 'jack', 'cavnuvole', 'cavcristallo', 'merlino', 'principe', 'fata'], semis:{5:'cane_momo', 8:'scimmia_momo'}, boss:'momotaro_re', nights:[6],
+     mods:{1:{tide:{p:26, w:200, slow:.55}}, 2:{pearls:{every:12}}, 3:{tide:{p:22, w:260, slow:.45}}, 4:{tide:{p:26, w:200, slow:.55}, pearls:{every:12}}, 5:{tide:{p:26, w:200, slow:.55}}, 6:{tide:{p:24, w:280, slow:.5}},
+           7:{pearls:{every:7}}, 8:{pearls:{every:10}}, 9:{tide:{p:24, w:240, slow:.5}}, 10:{tide:{p:22, w:280, slow:.45}, pearls:{every:8}}, 11:{tide:{p:26, w:220, slow:.5}, pearls:{every:10}}},
+     names:['La spiaggia dello sbarco', 'Alta marea', 'Il dono del Re Drago', 'Onde sulla spiaggia', 'Perle nella risacca', 'Il Cane di Momotaro', 'Luna sull’isola', 'Il tesoro del Re Drago', 'La Scimmia sul tetto', 'Il volo del Fagiano', 'Il cancello degli Oni', 'Momotaro']}
   ];
   // il sole cala: dal tramonto alla notte i buoni arrivano più spesso e più robusti
   const NIGHT = Object.assign({pace:.12, hp:.06, w3:0, from:2}, typeof process !== 'undefined' && process.env && process.env.DW_NIGHT ? JSON.parse(process.env.DW_NIGHT) : {});
   const nightP = t => t < 25 ? 0 : t < 55 ? (t - 25) / 30 * .5 : Math.min(1, .5 + (t - 55) / 25 * .5);   // 0 giorno · 0,5 tramonto · 1 notte
   const wmulB = w => w <= 4 ? 1.1 + .05 * (w - 1) : 1.25 + .02 * (w - 4);   // mondi 2-5: +10/15/20/25%, poi +2% a mondo (mondo 10: +35%)
   const wmul = w => (w <= 9 ? wmulB(w) : wmulB(9) + .015 * (w - 9)) * (w >= 2 ? 1 + NIGHT.w3 : 1);               // dal mondo 3 un filo in più (w3)
-  const WMOD = Object.fromEntries(Array.from({length:16}, (_, i) => [i + 1, {hp:wmul(i + 1), qty:wmul(i + 1)}]));
+  const WMOD = Object.fromEntries(Array.from({length:17}, (_, i) => [i + 1, {hp:wmul(i + 1), qty:wmul(i + 1)}]));
   // dal mondo 6 la storia è più gentile: i buoni crescono meno e all'inizio arrivano un tipo alla volta (l'Eroica resta com'era)
   const EASE = Object.assign({from:5, s:.10, q:.45, gap:16, late:1.09}, typeof process !== 'undefined' && process.env && process.env.DW_EASE ? JSON.parse(process.env.DW_EASE) : {});
   const COMP_EXTRA = +((typeof process !== 'undefined' && process.env && process.env.COMP) || 1.05);
@@ -308,7 +323,7 @@ const DW = (() => {
       eMul:(1 + EK.a * (ge - 4) + EK.b * (ge - 4) * (ge - 4)) * comp * (last ? .9 : isSemi ? .94 : 1),   // col boss in campo, il resto del castello è un po' più leggero
       waves:waves.map(w => [w[0], w[1], w[2] / (last || isSemi ? 1 : (WMOD[w0] || {}).qty || 1)]), hpMul:last || isSemi ? 1 : (WMOD[w0] || {}).hp || 1, rush:active.slice(-3).concat(active.slice(0, 2)),
       shard:shards[g % shards.length], shardN:last || isSemi ? 6 : 4,
-      boss:last ? W.boss : isSemi ? semiK : null, bossAt:last ? 70 : 55, semi:isSemi, night:!!(W.nights && W.nights.includes(c))};
+      boss:last ? W.boss : isSemi ? semiK : null, bossAt:last ? 70 : 55, semi:isSemi, night:!!(W.nights && W.nights.includes(c)), mods:W.mods && W.mods[c] || null};
     if (w >= EASE.from) {                                                   // mondo 6: un terzo dello sconto, mondo 7: due terzi, dal mondo 8: tutto
       const r = Math.min(1, (w - EASE.from + 1) / 3), q = (WMOD[w0] || {}).qty || 1, qe = 1 + (q - 1) * (1 - EASE.q * r);
       lv.orig = {eMul:lv.eMul, waves:lv.waves, hpMul:lv.hpMul};
@@ -494,7 +509,7 @@ const DW = (() => {
 
   // ---- Modalità Infinita: ondate numerate senza fine ogni 20 secondi, un boss ogni 3 ondate ----
   const INF_POOL = [[1, ['soldatino', 'arciere', 'cacciatore', 'nani', 'porcellino']], [5, ['ranocchio', 'raperonzolo', 'fata', 'pollicino', 'hanselgretel', 'principe']],
-    [10, ['carrozza', 'musicanti', 'pifferaio', 'merlino', 'peterpan', 'gattostivali', 'robinhood', 'cappuccetto', 'spiritista']], [15, ['biancaneve', 'alice', 'wendy', 'cappellaio', 'sinbad', 'renna', 'cavcristallo', 'gemelli']], [20, ['jack', 'arpa', 'gallina', 'cavnuvole']], [24, ['mowgli', 'bagheera', 'baloo', 'hathi']]];
+    [10, ['carrozza', 'musicanti', 'pifferaio', 'merlino', 'peterpan', 'gattostivali', 'robinhood', 'cappuccetto', 'spiritista']], [15, ['biancaneve', 'alice', 'wendy', 'cappellaio', 'sinbad', 'renna', 'cavcristallo', 'gemelli']], [20, ['jack', 'arpa', 'gallina', 'cavnuvole']], [24, ['mowgli', 'bagheera', 'baloo', 'hathi']], [28, ['momotaro', 'cane', 'scimmiamomo', 'fagiano']]];
   const INF_WAVE = 20;
   const infBosses = () => Object.keys(ELITE).filter(k => U[k] && !/dracula/.test(k)).sort((a, b) => ELITE[a].hp - ELITE[b].hp);
   const infLevel = () => ({world:5, castle:0, g:40, name:'Modalità Infinita', hp:1e9, gold:0, eMul:1, waves:[], rush:[], shard:null, shardN:0, boss:null, bossAt:1e9, semi:false, inf:true});
@@ -701,13 +716,22 @@ const DW = (() => {
 
     const alive = s.units.filter(u => !u.dead);
     const crocOnField = alive.some(u => u.k === 'coccodrillo' && u.side === 0);
+    const MOD = s.mp ? null : s.lv.mods, mid = (s.base.x + s.castle.x) / 2;   // Mondo 18: marea e Perle di Ryūjin
+    s.tideW = MOD && MOD.tide ? MOD.tide.w * (.5 - .5 * Math.cos(s.t * 2 * Math.PI / MOD.tide.p)) : 0;
+    if (MOD && MOD.pearls) {
+      s.pearls = s.pearls || []; if (s.pearlT == null) s.pearlT = 8;
+      if ((s.pearlT -= dt) <= 0) { s.pearlT = MOD.pearls.every; s.pearls.push({id:++s.id, x:mid - 180 + Math.random() * 360, y:.15 + Math.random() * .7, t:0}); s.ev.push({type:'pearlNew'}); }
+      for (const p of s.pearls) { p.t += dt; if (p.t > 16) { p.gone = 1; continue; }
+        for (const u of alive) if (!u.dead && Math.abs(u.x - p.x) < 20 && Math.abs(u.y - p.y) < .3) { u.pearlT = 10; p.gone = 1; s.ev.push({type:'pearl', x:p.x, y:p.y, side:u.side}); break; } }
+      s.pearls = s.pearls.filter(p => !p.gone);
+    }
     for (const u of alive) {
       if (u.dead) continue;
       const d = U[u.k], dir = u.side ? -1 : 1;
       u.swing = Math.max(0, u.swing - dt * 4);
       if (u.ttl != null && (u.ttl -= dt) <= 0) { u.dead = true; s.ev.push({type:'vanish', x:u.x, y:u.y}); continue; }   // i miraggi svaniscono
       if (u.big > 0) u.big -= dt;
-      if (u.goldT > 0) u.goldT -= dt; if (u.cookie > 0) u.cookie -= dt; if (u.pig > 0) u.pig -= dt; if (u.buffT > 0) u.buffT -= dt; if (u.smokeT > 0) u.smokeT -= dt;
+      if (u.goldT > 0) u.goldT -= dt; if (u.cookie > 0) u.cookie -= dt; if (u.pig > 0) u.pig -= dt; if (u.buffT > 0) u.buffT -= dt; if (u.smokeT > 0) u.smokeT -= dt; if (u.pearlT > 0) u.pearlT -= dt;
       if (u.burnT > 0) { u.burnT -= dt; u.burnA = (u.burnA || 0) + u.burnD * dt; if (u.burnA >= 4) { const n = Math.floor(u.burnA); u.burnA -= n; hurt(s, u, n, 'burn', 'diavolo'); if (u.dead) continue; } if (u.burnT <= 0) u.burnD = 0; }
       if (u.weakT > 0) u.weakT -= dt;
       if (d.slime) for (const e of alive) if (!e.dead && e.side !== u.side && Math.abs(e.x - u.x) <= d.slime.r) e.slowT = Math.max(e.slowT || 0, .25);   // la bava del Lumacone
@@ -723,6 +747,7 @@ const DW = (() => {
         continue;
       }
       abilities(s, u, d, dir, alive);
+      if (d.call && !u.called && u.hp < u.max * d.call.at) { u.called = 1; d.call.ks.forEach((k2, i) => { const m2 = addUnit(s, k2, u.x + (i - 1) * 18, (u.y + .3 * i) % 1); m2.side = u.side; }); s.ev.push({type:'call', x:u.x, y:u.y}); }   // il boss chiama gli amici
       if (u.vanT > 0) u.vanT -= dt;
       let tgt = null, best = Infinity;
       if (!d.ghost && !(u.vanT > 0)) for (const e of alive) {                       // il fantasma ignora i buoni e punta al castello
@@ -758,7 +783,7 @@ const DW = (() => {
         u.st = 'atk';
         if ((u.atkT -= dt * slow) <= 0) {
           u.atkT = d.rate; u.swing = 1;
-          let mul = (u.big > 0 ? 2 : 1) * (u.weakT > 0 ? .6 : 1) * (u.buffT > 0 ? 1.3 : 1) * (u.hyde ? d.hyde.m : 1) * (d.heads ? 1 + d.heads.m * (1 - u.hp / u.max) : 1) * (d.moon ? 1 + d.moon.dmg * s.night : 1);
+          let mul = (u.big > 0 ? 2 : 1) * (u.weakT > 0 ? .6 : 1) * (u.buffT > 0 ? 1.3 : 1) * (u.hyde ? d.hyde.m : 1) * (d.heads ? 1 + d.heads.m * (1 - u.hp / u.max) : 1) * (d.moon ? 1 + d.moon.dmg * s.night : 1) * (u.pearlT > 0 ? 1.4 : 1) * (d.fury ? 1 + d.fury.dmg * (1 - u.hp / u.max) : 1);
           if (u.disg) { mul *= d.disguise; u.disg = 0; s.ev.push({type:'unmask', x:u.x, y:u.y}); }   // giù la maschera: primo morso triplo
           if (d.ranged) s.shots.push({from:u.x, x:u.x, y:u.y, tid:hitB ? 0 : tgt.id, toB:hitB ? 1 - u.side : -1,
             dmg:d.dmg * u.dm * mul, side:u.side, aid:u.id, t:0, dur:.35 + (hitB ? bDist : best) / 600, kind:d.elite ? d.elite.base : u.k});
@@ -768,7 +793,8 @@ const DW = (() => {
       } else {
         u.st = 'walk';
         const boost = u.k === 'uncino' && crocOnField ? 1.35 : 1;  // Uncino scappa dal coccodrillo
-        u.x += dir * d.spd * u.spdMul * boost * slow * (d.moon ? 1 + d.moon.spd * s.night : 1) * dt; u.atkT = Math.min(u.atkT, d.rate * .35);
+        const wet = s.tideW > 0 && !d.fly && !d.air && Math.abs(u.x - mid) < s.tideW ? MOD.tide.slow : 1;   // nell'acqua dell'alta marea si cammina piano
+        u.x += dir * d.spd * u.spdMul * boost * slow * wet * (u.pearlT > 0 ? 1.15 : 1) * (d.fury ? 1 + d.fury.spd * (1 - u.hp / u.max) : 1) * (d.moon ? 1 + d.moon.spd * s.night : 1) * dt; u.atkT = Math.min(u.atkT, d.rate * .35);
       }
     }
     for (const p of s.shots) {
@@ -792,7 +818,7 @@ const DW = (() => {
   const reward = s => s.inf ? 0 : Math.round(.5 * (s.hard ? 2 : 1) * (s.over > 0 ? s.lv.gold + 50 * stars(s) + s.stats.stolen * 2 : 20 + Math.round((30 + 3 * (s.lv.g || 0)) * (1 - s.castle.hp / s.castle.max))));
 
   // I Capricci del Drago: battaglie con una regola storta. Se ne apre uno per ogni mappa completata
-  const BCOST = {mowgli:80, bagheera:110, baloo:130, hathi:170, jack:70, arpa:90, gallina:90, cavnuvole:150, mowgli:80, bagheera:110, baloo:130, hathi:170, jack:70, arpa:90, gallina:90, cavnuvole:150, mowgli:80, bagheera:110, baloo:130, hathi:170, jack:70, arpa:90, gallina:90, cavnuvole:150, mowgli:80, bagheera:110, baloo:130, hathi:170, jack:70, arpa:90, gallina:90, cavnuvole:150, mowgli:80, bagheera:110, baloo:130, hathi:170, jack:70, arpa:90, gallina:90, cavnuvole:150, mowgli:80, bagheera:110, baloo:130, hathi:170, jack:70, arpa:90, gallina:90, cavnuvole:150, mowgli:80, bagheera:110, baloo:130, hathi:170, jack:70, arpa:90, gallina:90, cavnuvole:150, mowgli:80, bagheera:110, baloo:130, hathi:170, jack:70, arpa:90, gallina:90, cavnuvole:150, soldatino:40, arciere:60, pollicino:55, hanselgretel:60, ranocchio:70, raperonzolo:80, peterpan:80, cacciatore:90, fata:100, pifferaio:100, nani:110, porcellino:120, carrozza:130, musicanti:140, principe:180, bimbi:70, wendy:90, giglio:70, cappellaio:100, brucaliffo:100, lepre:70, alibaba:90, sinbad:150, guardie:120, renna:130, fiammiferaia:100, soldatineve:110, cavcristallo:170, gemelli:120, pisello:120, cappuccetto:55, pinocchio:70, robinhood:90, gattostivali:90, alice:90, biancaneve:100, merlino:120};   // i buoni costano Bontà
+  const BCOST = {momotaro:110, cane:80, scimmiamomo:80, fagiano:90, mowgli:80, bagheera:110, baloo:130, hathi:170, jack:70, arpa:90, gallina:90, cavnuvole:150, soldatino:40, arciere:60, pollicino:55, hanselgretel:60, ranocchio:70, raperonzolo:80, peterpan:80, cacciatore:90, fata:100, pifferaio:100, nani:110, porcellino:120, carrozza:130, musicanti:140, principe:180, bimbi:70, wendy:90, giglio:70, cappellaio:100, brucaliffo:100, lepre:70, alibaba:90, sinbad:150, guardie:120, renna:130, fiammiferaia:100, soldatineve:110, cavcristallo:170, gemelli:120, pisello:120, cappuccetto:55, pinocchio:70, robinhood:90, gattostivali:90, alice:90, biancaneve:100, merlino:120};   // i buoni costano Bontà
   const ALT_BMUL = 1.7, ALT_CASTLE = 1600, OVERTIME = 150, DUEL_MAX = 300;                       // duello alternativo: buoni un po' più forti, castello dei buoni
   const CK = [1.42, 1.5, .97, 1, 1.14];                           // ritocchi provati con le simulazioni a due
   const COOP = [                                                   // i castelli speciali per giocare in due
