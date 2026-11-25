@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Dragon War · Diventa tester</title>
+<link rel="icon" href="icon-192.png">
+<style>
+:root{--ink:#1c1a24;--parch:#f6e7c4;--gold:#f2b33d;--bg:#16121f;--vio:#7b3fb3}
+*{box-sizing:border-box}
+body{margin:0;background:radial-gradient(circle at 50% 0,#3a1e5a,var(--bg) 60%);color:var(--ink);font:16px/1.55 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;padding:24px 16px 48px}
+main{max-width:640px;margin:0 auto;background:var(--parch);border:3px solid var(--ink);border-radius:18px;box-shadow:0 6px 0 #000;padding:22px 22px 28px}
+header{display:flex;align-items:center;gap:14px;margin-bottom:6px}
+header img{width:64px;height:64px;border-radius:14px;border:2px solid var(--ink)}
+h1{margin:0;font-size:26px;line-height:1.15}
+.sub{margin:2px 0 0;color:#6a5a48;font-size:15px}
+.lang{display:flex;gap:8px;margin:14px 0 4px}
+.lang button{font:700 14px system-ui,sans-serif;border:2px solid var(--ink);border-radius:10px;background:#fff8e6;padding:6px 12px;cursor:pointer}
+.lang button[aria-pressed="true"]{background:var(--gold)}
+ol{list-style:none;padding:0;margin:18px 0 0;display:grid;gap:12px;counter-reset:s}
+ol li{counter-increment:s;background:#fff8e6;border:2px solid var(--ink);border-radius:14px;padding:12px 14px 12px 58px;position:relative}
+ol li::before{content:counter(s);position:absolute;left:12px;top:12px;width:34px;height:34px;border-radius:50%;background:var(--gold);border:2px solid var(--ink);display:grid;place-items:center;font-weight:900}
+ol b{display:block;font-size:17px}
+.go{display:inline-block;margin-top:8px;background:var(--vio);color:#fff;text-decoration:none;font-weight:800;border:2px solid var(--ink);border-radius:12px;padding:8px 14px;box-shadow:0 3px 0 #000}
+.go.off{background:#8a84a0;pointer-events:none}
+.gift{margin-top:16px;background:#2a1e3e;color:#ffe2a0;border-radius:14px;padding:12px 14px;border:2px solid var(--ink)}
+.small{font-size:14px;color:#6a5a48;margin-top:14px}
+[hidden]{display:none!important}
+</style>
+</head>
+<body>
+<main>
+  <header><img src="icon-192.png" alt=""><div>
+    <h1 data-l="it">Diventa tester di Dragon War</h1><h1 data-l="en" hidden>Become a Dragon War tester</h1><h1 data-l="es" hidden>Hazte tester de Dragon War</h1>
+    <p class="sub" data-l="it">Aiutaci a portare il gioco sul Play Store</p><p class="sub" data-l="en" hidden>Help us bring the game to the Play Store</p><p class="sub" data-l="es" hidden>Ayúdanos a llevar el juego a Play Store</p>
+  </div></header>
+  <div class="lang"><button id="bIt" aria-pressed="true">Italiano</button><button id="bEn" aria-pressed="false">English</button><button id="bEs" aria-pressed="false">Español</button></div>
+
+  <section data-l="it">
+    <p>Per pubblicare un gioco nuovo sul Play Store, Google chiede che almeno 12 persone lo provino per 14 giorni di fila. Ti servono solo un telefono Android e un account Google. È gratis.</p>
+    <ol>
+      <li><b>Entra nel gruppo dei tester</b>Con lo stesso account Google che usi sul telefono.<br><a class="go" data-k="group" href="#">Entra nel gruppo</a></li>
+      <li><b>Accetta l'invito al test</b>Apri il link e tocca «Diventa un tester».<br><a class="go" data-k="test" href="#">Apri l'invito</a></li>
+      <li><b>Installa Dragon War dal Play Store</b><a class="go" data-k="store" href="#">Vai al Play Store</a></li>
+      <li><b>Resta nel test per 14 giorni</b>Non uscire dal gruppo e gioca ogni tanto: anche una battaglia al giorno va benissimo.</li>
+    </ol>
+    <p class="gift">🎁 I tuoi progressi del gioco web restano tuoi: collega il salvataggio online e li ritrovi anche nell'app.</p>
+    <p class="small">I link si attivano appena il test è aperto. Domande? Scrivi a <b>[email in arrivo]</b>.</p>
+  </section>
+  <section data-l="en" hidden>
+    <p>To publish a new game on the Play Store, Google requires at least 12 people to test it for 14 days in a row. All you need is an Android phone and a Google account. It's free.</p>
+    <ol>
+      <li><b>Join the tester group</b>Use the same Google account you use on your phone.<br><a class="go" data-k="group" href="#">Join the group</a></li>
+      <li><b>Accept the test invite</b>Open the link and tap "Become a tester".<br><a class="go" data-k="test" href="#">Open the invite</a></li>
+      <li><b>Install Dragon War from the Play Store</b><a class="go" data-k="store" href="#">Go to the Play Store</a></li>
+      <li><b>Stay in the test for 14 days</b>Don't leave the group and play now and then: one battle a day is plenty.</li>
+    </ol>
+    <p class="gift">🎁 Your web game progress stays yours: link your online save and you'll find it in the app too.</p>
+    <p class="small">The links turn on as soon as the test opens. Questions? Write to <b>[email coming soon]</b>.</p>
+  </section>
+  <section data-l="es" hidden>
+    <p>Para publicar un juego nuevo en Play Store, Google pide que al menos 12 personas lo prueben durante 14 días seguidos. Solo necesitas un móvil Android y una cuenta de Google. Es gratis.</p>
+    <ol>
+      <li><b>Únete al grupo de testers</b>Con la misma cuenta de Google que usas en el móvil.<br><a class="go" data-k="group" href="#">Unirme al grupo</a></li>
+      <li><b>Acepta la invitación a la prueba</b>Abre el enlace y toca «Convertirse en tester».<br><a class="go" data-k="test" href="#">Abrir la invitación</a></li>
+      <li><b>Instala Dragon War desde Play Store</b><a class="go" data-k="store" href="#">Ir a Play Store</a></li>
+      <li><b>Quédate en la prueba 14 días</b>No salgas del grupo y juega de vez en cuando: con una batalla al día basta.</li>
+    </ol>
+    <p class="gift">🎁 Tu progreso del juego web sigue siendo tuyo: vincula el guardado online y lo encontrarás también en la app.</p>
+    <p class="small">Los enlaces se activan en cuanto se abra la prueba. ¿Dudas? Escribe a <b>[email próximamente]</b>.</p>
+  </section>
+</main>
+<script>
+// i link veri si mettono qui quando ci sono (Google Group, invito al test chiuso, pagina del Play Store)
+const LINKS = {group:'', test:'', store:''};
+document.querySelectorAll('a[data-k]').forEach(a => { const u = LINKS[a.dataset.k]; if (u) { a.href = u; a.target = '_blank'; a.rel = 'noopener'; } else a.classList.add('off'); });
+const setL = l => { document.documentElement.lang = l; document.querySelectorAll('[data-l]').forEach(e => e.hidden = e.dataset.l !== l); bIt.setAttribute('aria-pressed', l === 'it'); bEn.setAttribute('aria-pressed', l === 'en'); bEs.setAttribute('aria-pressed', l === 'es'); };
+bIt.onclick = () => setL('it'); bEn.onclick = () => setL('en'); bEs.onclick = () => setL('es');
+const h = location.hash.slice(1), nl = (navigator.language || '').slice(0, 2);
+setL(['it', 'en', 'es'].includes(h) ? h : ['it', 'es'].includes(nl) ? nl : 'en');
+</script>
+</body>
+</html>
