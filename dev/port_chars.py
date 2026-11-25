@@ -65,7 +65,7 @@ function draw(k, c, o) {                                                    // o
   const m = NG_MODE(); if (m === 'normal') g = c; else { PCOL = m === 'shadow' ? 'rgba(20,12,36,.22)' : NG_FLASH(); g = proxyOf(c); }
   c.save(); c.rotate((o.lean || 0) * .5); const sq = o.sq || 0; c.scale(1 + sq, 1 - sq); fn(p); c.restore(); g = null; return true;
 }
-return { draw, has: k => !!(SUB[k] || DRAW[k]), nw: { ensure: nwEnsure, back: nwBack, owned: nwOwned, front: nwFront, pt: nwPt }, dragon: ngDragon, skin: id => !!SKINS[id], frame: () => { SPR_NEW = 0; }, sprInfo: () => ({ n: SPR.size, px: SPR_PX }) };
+return { draw, has: k => !!(SUB[k] || DRAW[k]), nw: { ensure: nwEnsure, prep: nwPrep, ready: () => !!NWS && NWS.sets.some(Boolean), back: nwBack, owned: nwOwned, front: nwFront, pt: nwPt }, dragon: ngDragon, skin: id => !!SKINS[id], frame: () => { SPR_NEW = 0; }, sprInfo: () => ({ n: SPR.size, px: SPR_PX }) };
 })();
 const NG_H = ''' + json.dumps(NH) + r''';
 const NG_OLD = Object.assign({}, DRAW), NG_SKIN = new Set(Object.keys(LOOKS).filter(id => !LOOKS[id].tint && !LOOKS[id].filter));   // le skin con gli accessori restano col disegno di prima

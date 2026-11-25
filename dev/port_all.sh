@@ -12,4 +12,5 @@ python3 port_w17.py
 python3 port_w18.py
 python3 port_pass.py
 python3 port_play.py
+python3 port_opt.py
 python3 build.py

@@ -97,9 +97,10 @@ const I18N_FIT_SEL = '.ub .nm, .slot span, .card2 .nm';
 const I18N_FIT = new Set(); let I18N_FIT_RAF = 0;
 function i18nFitEl(el) {
   const box = el.parentElement; if (!box || !el.isConnected) return;
-  el.style.fontSize = ''; el.style.whiteSpace = '';
   const w = box.clientWidth - 6; if (w <= 0) { if ((el.i18nTry = (el.i18nTry || 0) + 1) < 20) setTimeout(() => i18nFitLater(el), 250); return; }
   el.i18nTry = 0;
+  if (!el.style.fontSize && !el.style.whiteSpace && el.scrollWidth <= w) return;   // ci sta già: non si tocca niente (niente ricalcoli della pagina)
+  el.style.fontSize = ''; el.style.whiteSpace = '';
   let fs = parseFloat(getComputedStyle(el).fontSize) || 12;
   while (el.scrollWidth > w && fs > 8) { fs -= .5; el.style.fontSize = fs + 'px'; }
   if (el.scrollWidth > w) { el.style.whiteSpace = 'normal'; el.style.textAlign = 'center'; }

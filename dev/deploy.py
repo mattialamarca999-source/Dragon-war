@@ -10,6 +10,25 @@ head = ('<link rel="manifest" href="manifest.webmanifest">\n<meta name="theme-co
 assert src.count('<title>Dragon War</title>') == 1
 top = ('<!doctype html>\n<html lang="it">\n<head>\n<meta charset="utf-8">\n'
        '<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">\n')   # su Claude queste righe le aggiunge la piattaforma, qui no
-import sys
-open(sys.argv[1] if len(sys.argv) > 1 else '/home/claude/dw-repo/index.html', 'w', encoding='utf-8').write(top + src.replace('<title>Dragon War</title>', '<title>Dragon War</title>\n' + head))
-print('ok')
+import sys, re, os, hashlib
+out = sys.argv[1] if len(sys.argv) > 1 else '/home/claude/dw-repo/index.html'
+page = top + src.replace('<title>Dragon War</title>', '<title>Dragon War</title>\n' + head)
+# Il codice grande va in un file a parte: così il telefono se lo ricorda già "tradotto" e il gioco si apre molto prima.
+d = os.path.dirname(out); os.makedirs(d + '/js', exist_ok=True); js = []
+def cut(m):
+    attrs, body = m.group(1), m.group(2)
+    if 'src=' in attrs or len(body) < 4000: return m.group(0)
+    h = hashlib.sha1(body.encode('utf-8')).hexdigest()[:10]; n = len(js) + 1; fn = f'js/g{n}-{h}.js'   # il nome cambia con il contenuto: una pagina vecchia trova sempre il suo codice
+    open(d + '/' + fn, 'w', encoding='utf-8').write(body); js.append('./' + fn)
+    old = sorted((f for f in os.listdir(d + '/js') if re.fullmatch(rf'g{n}(-[0-9a-f]+)?\.js', f) and f != os.path.basename(fn)), key=lambda f: -os.path.getmtime(d + '/js/' + f))
+    for f in old[1:]: os.remove(d + '/js/' + f)                        # si tiene solo la versione precedente
+    return f'<script{attrs} src="{fn}"></script>'
+page = re.sub(r'<script([^>]*)>(.*?)</script>', cut, page, flags=re.S)
+open(out, 'w', encoding='utf-8').write(page)
+sw = d + '/sw.js'
+if os.path.exists(sw):                     # il service worker scarica il codice già all'installazione
+    t = open(sw, encoding='utf-8').read()
+    t2 = re.sub(r"const JS = \[.*?\];", 'const JS = ' + str(js).replace("'", "'") + ';', t)
+    assert t2 != t or 'const JS = ' + str(js) + ';' in t, 'manca const JS in sw.js'
+    open(sw, 'w', encoding='utf-8').write(t2)
+print('ok · file di codice:', js, '· pagina', len(page), 'caratteri')

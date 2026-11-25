@@ -1091,6 +1091,8 @@ const castleOpen = (w, c) => BETA || (c === 0 ? worldOpen(w) : starsOf(w, c - 1)
 const secretLocked = kk => !isUnlocked(kk) && UNLOCK[kk] && (UNLOCK[kk].cr || UNLOCK[kk].secret);
 const dispName = kk => secretLocked(kk) ? '???' : SHORT[kk];
 function drawCard(cv, kk) {                                                // i segreti non si vedono: solo un punto di domanda
+  const sig = kk + '|' + (secretLocked(kk) ? '?' : DW.U[kk] && DW.U[kk].side === 0 && save.look ? save.look[kk] || '' : '') + '|' + cv.width + 'x' + cv.height;
+  if (cv.dwSig === sig) return; cv.dwSig = sig;                              // già disegnata così: niente da rifare
   if (!secretLocked(kk)) return drawIcon(cv, kk);
   const c = cv.getContext('2d'); c.setTransform(1, 0, 0, 1, 0, 0); c.clearRect(0, 0, cv.width, cv.height);
   const g = c.createRadialGradient(cv.width / 2, cv.height / 2, 4, cv.width / 2, cv.height / 2, cv.width / 2); g.addColorStop(0, 'rgba(120,60,160,.55)'); g.addColorStop(1, 'rgba(0,0,0,0)');
@@ -3088,7 +3090,21 @@ function drawObstacle() {
 let NWON = false, nwHeadW = null, nwDS = 1, dragonHead = {x:110, y:172};
 function nwOn() {                                                          // in battaglia: sfondo, tana e castello nuovi
   if (GALLERY || !s || !s.base || !s.castle || !NG.nw || !(P34 ? s.lv : inMenu || inStory)) return false;   // anche nel menu, dietro i pulsanti
-  return NG.nw.ensure({th:TH, ob:P34 ? obstKind() : null, l:cam.x - 30, r:cam.x + W / k + 30, t:-groundY / k - 30, b:(H - groundY) / k + 2, dy:DY, px:k * dpr, p:lightP, spr:Math.max(1, BS / .78)});
+  return NG.nw.ensure({lazy:inMenu && !inStory && time < 4, th:TH, ob:P34 ? obstKind() : null, l:cam.x - 30, r:cam.x + W / k + 30, t:-groundY / k - 30, b:(H - groundY) / k + 2, dy:DY, px:k * dpr, p:lightP, spr:Math.max(1, BS / .78)});
+}
+let BATTLE_WH = (() => { try { return JSON.parse(localStorage.getItem('dw_bwh') || 'null'); } catch (e) { return null; } })();   // misure del campo nell'ultima battaglia (con la barra delle carte), ricordate anche alla prossima apertura
+function battleView(w2, h2) {                                              // la stessa vista che calcola resize() in battaglia, senza cambiare niente
+  const k2 = Math.min(w2 / 1150, (h2 - 40) / 420), cs = Math.min(2.1, Math.max(1, .64 / k2)), bs = Math.min(1.45, cs * .78), dpx = Math.max(50, Math.min(300, h2 * .4)), gy = Math.min(h2 - 40 - dpx, Math.max(h2 * .42, 420 * k2 + 30)), cx = 495 - (w2 / k2) / 2;
+  return {l:cx - 30, r:cx + w2 / k2 + 30, t:-gy / k2 - 30, b:(h2 - gy) / k2 + 2, dy:dpx / k2, px:k2 * dpr, spr:Math.max(1, bs / .78)};
+}
+function nwPrepBattle(w, c) {                                               // mentre scegli la squadra, lo sfondo della battaglia si disegna a pezzi: al «Via» è già pronto
+  if (!NG.nw || !NG.nw.prep || GALLERY) return;
+  let wh = BATTLE_WH && BATTLE_WH[0] === W ? BATTLE_WH : null;
+  if (!wh) { let tmp = null; if (!$('unitRow').querySelector('.ub')) { tmp = document.createElement('button'); tmp.className = 'ub'; tmp.innerHTML = '<kbd>1</kbd><canvas width="112" height="104"></canvas><span class="nm">x</span><span class="cs">1</span>'; $('unitRow').insertBefore(tmp, $('fireBtn')); }   // la prima volta la barra delle carte è vuota: una carta finta per misurarla giusta
+    document.body.classList.remove('inMenu'); const r = $('stage').getBoundingClientRect(); wh = [r.width, r.height]; document.body.classList.add('inMenu'); if (tmp) tmp.remove(); }   // si misura il campo come sarà in battaglia (niente si vede: si rimette subito)
+  const sv = s.lv, lv = DW.levelOf(w, c), p = sqOpt.hard || lv.night ? 1 : w === 7 ? .5 : 0;
+  let ob; try { s.lv = lv; ob = obstKind(); } finally { s.lv = sv; }
+  NG.nw.prep(Object.assign({th:DW.WORLDS[w].theme, ob, p}, battleView(wh[0], wh[1])));
 }
 function nwPlace(xs, floor, need) {                                       // la soglia della grotta / del portone dove nascono i personaggi; e tutto dentro lo schermo
   const sp = dyAt(xs, .5), s = Math.min(Math.max(1, BS / .78), Math.max(.3, (sp + groundY / k - 34) / need));
@@ -3097,6 +3113,7 @@ function nwPlace(xs, floor, need) {                                       // la 
 const NW_SEEN = new WeakMap();                                              // quando è comparso ogni personaggio: esce dal buio della tana
 function nwAppear(u) { if (!NWON || !P34) return 1; let t0 = NW_SEEN.get(u); if (t0 == null) NW_SEEN.set(u, t0 = time); return Math.min(1, (time - t0) / .4); }
 function nwTana(b, mirror) {
+  if (NG.nw.ready && !NG.nw.ready()) return;                                // sfondo non ancora pronto (apertura): la tana arriva tra un attimo
   const sh = shakeB[mirror ? 1 : 0] > 0 ? Math.sin(time * 80) * 3 : 0, lost = b.hp <= 0, dy = lost ? Math.min(1, endT / 1.2) * 60 : 0;
   const pl = nwPlace(mirror ? s.castle.x - 30 : s.base.x + 30, 40, 365);
   NG.nw.owned(ctx, 'L', L.p, time, {dx:sh, dy:dy + pl.dy, s:pl.s, flip:mirror, at:mirror ? 'C' : 'L'});
@@ -3106,6 +3123,7 @@ function nwTana(b, mirror) {
   if (!mirror) { mouthW = {x:pt.x + (m.x - 92) * ds, y:pt.y + (m.y - 228) * ds}; nwHeadW = {x:pt.x + (dragonHead.x - 92) * ds, y:pt.y + (dragonHead.y - 228) * ds}; nwDS = ds; }
 }
 function nwCastle() {
+  if (NG.nw.ready && !NG.nw.ready()) return;
   const c = s.castle, f = c.hp / c.max, sink = c.hp <= 0 ? Math.min(1, endT / 1.2) * 150 : 0, sh = shakeB[1] > 0 ? Math.sin(time * 90) * 2.5 : 0;
   const pl = nwPlace(c.x - 30, 34, 402);
   NG.nw.owned(ctx, 'C', L.p, time, {dx:sh, dy:sink + pl.dy, s:pl.s, cracks:f < .33 ? 2 : f < .66 ? 1 : 0, crackC:L.shadow});
@@ -10850,41 +10868,79 @@ function nwGround(w) {                                                       // 
     W.scatter(x, y, s, k, d, inLane); }
 }
 const nwFree = st => { for (const z of st.sets) if (z) for (const c of [z.bg, z.lair, z.castle]) c.width = c.height = 0; };
-function nwBuild(t) {
-  nwApply(NWS.P); TIME = t; const W = WD(); seed = W.seed || 7; LIGHTS = []; FLAMES = []; FLAGS = []; OBA = null;
-  const old = g; RAW = 1;
+const nwSnap = () => ({ g, RAW, TIME, seed, LIGHTS, FLAMES, FLAGS, OBA, LITOK, S, H, WW, VW, HOR, LX, CX, BASE, G0, DY, OY });
+const nwPut = o => { g = o.g; RAW = o.RAW; TIME = o.TIME; seed = o.seed; LIGHTS = o.LIGHTS; FLAMES = o.FLAMES; FLAGS = o.FLAGS; OBA = o.OBA; LITOK = o.LITOK; S = o.S; H = o.H; WW = o.WW; VW = o.VW; HOR = o.HOR; LX = o.LX; CX = o.CX; BASE = o.BASE; G0 = o.G0; DY = o.DY; OY = o.OY; };
+function* nwPause(st) { st.mine = nwSnap(); nwPut(st.outer); yield; st.outer = nwSnap(); nwApply(st.P); nwPut(st.mine); }   // pausa: il gioco ritrova tutto com'era, poi si riprende da qui
+function* nwBuildG(t, P) {                                                   // costruisce giorno, tramonto o notte a pezzi (un livello alla volta)
+  const st = { outer: nwSnap(), P }; nwApply(P); TIME = t; const W = WD(); seed = W.seed || 7; LIGHTS = []; FLAMES = []; FLAGS = []; OBA = null; RAW = 1;
   try {
-    const sky = layer(WW, skyLayer, 0); LITOK = 0; const far = layer(WW, w => W.far(w)), hill = layer(WW, w => W.hill(w)); LITOK = 1;
-    const gr = layer(WW, nwGround);
+    const sky = layer(WW, skyLayer, 0); yield* nwPause(st); LITOK = 0; const far = layer(WW, w => W.far(w)); yield* nwPause(st); const hill = layer(WW, w => W.hill(w)); LITOK = 1; yield* nwPause(st);
+    const gr = layer(WW, nwGround); yield* nwPause(st);
     const bg = document.createElement('canvas'); bg.width = sky.width; bg.height = sky.height; g = bg.getContext('2d'); g.scale(S, S); g.translate(0, -OY);
     for (const c of [sky, far, hill]) g.drawImage(c, 0, OY, WW, H - OY);
     const hzc = hex(W.sky[t][3]).join(','), hz = g.createLinearGradient(0, 210, 0, HOR + 30); hz.addColorStop(0, `rgba(${hzc},0)`); hz.addColorStop(.8, `rgba(${hzc},${t === 2 ? .2 : .36})`); hz.addColorStop(1, `rgba(${hzc},0)`); g.fillStyle = hz; g.fillRect(0, 200, WW, 160);
     g.drawImage(gr, 0, OY, WW, H - OY);
     for (const c of [sky, far, hill, gr]) c.width = c.height = 0;
+    yield* nwPause(st);
     const n0 = [LIGHTS.length, FLAMES.length, FLAGS.length];
-    const S0 = S; S = Math.min(3, S * (NWS.P.spr || 1));                  // tana e castello si possono ingrandire: più definiti
+    const S0 = S; S = Math.min(3, S * (P.spr || 1));                     // tana e castello si possono ingrandire: più definiti
     const lair = layer(WW, () => { g.save(); g.translate(LX, BASE); W.lair(); g.restore(); }, 1, [LX - 290, BASE - 420, LX + 330, BASE + 130]);
+    yield* nwPause(st);
     const n1 = [LIGHTS.length, FLAMES.length, FLAGS.length];
     const castle = layer(WW, () => { g.save(); g.translate(CX, BASE); W.castle(); g.restore(); }, 1, [CX - 310, BASE - 660, CX + 330, BASE + 130]);
     S = S0;
     [LIGHTS, FLAMES, FLAGS].forEach((arr, j) => { for (let i = n0[j]; i < arr.length; i++) arr[i].own = i < n1[j] ? 'L' : 'C'; });
     return { bg, lair, castle, lights: LIGHTS, flames: FLAMES, flags: FLAGS, oba: OBA };
-  } finally { g = old; RAW = 0; }
+  } finally { const o = st.outer, keep = [LIGHTS, FLAMES, FLAGS, OBA]; nwPut(o); [LIGHTS, FLAMES, FLAGS, OBA] = keep; }   // luci, fiamme e bandiere restano quelle appena fatte, come prima
 }
-function nwEnsure(v) {                                                       // v: mondo, ostacolo e riquadro visibile (in unità del gioco)
-  if (!WORLDS[v.th]) return false;
-  const key = [v.th, v.ob, Math.round(v.l), Math.round(v.r), Math.round(v.t), Math.round(v.b), Math.round(v.dy), Math.round(v.px * 100), Math.round((v.spr || 1) * 20)].join('|');
-  if (NWS && NWS.key === key) return true;
+function nwBuild(t, P = NWS.P) { const it = nwBuildG(t, P); let r; while (!(r = it.next()).done); return r.value; }   // tutto in una volta (serve per il primo disegno)
+const nwKey = v => [v.th, v.ob, Math.round(v.l), Math.round(v.r), Math.round(v.t), Math.round(v.b), Math.round(v.dy), Math.round(v.px * 100), Math.round((v.spr || 1) * 20)].join('|');
+function nwMake(v, key) {                                                   // un mondo nuovo, ancora da disegnare
   const LXn = (70 - v.l) / NW_SX, ww = (v.r - v.l) / NW_SX;
   const P = { th: v.th, ob: v.ob, LX: LXn, CX: LXn + 980, WW: ww, VW: ww, G0: 372, HOR: 318, BASE: 400, DY: Math.max(60, v.dy / NW_SX), OY: Math.min(0, 372 + v.t / NW_SX), H: Math.max(560, 372 + v.b / NW_SX), S: Math.min(2.2, v.px * NW_SX), spr: v.spr || 1, l: v.l };
-  if (NWS) { nwFree(NWS); clearTimeout(NWS.tm); }
   const fg = []; { let sd = 99; const r = () => (sd = (sd * 16807) % 2147483647) / 2147483647; for (let x = -40; x < ww + 120; x += 60 + r() * 110) fg.push([x, r(), r()]); }
-  NWS = { key, P, sets: [null, null, null], fg, ow: { L: [], C: [] } };
-  const first = v.p < .25 ? 0 : v.p < .75 ? 1 : 2, rest = [0, 1, 2].filter(i => i !== first), me = NWS;
-  NWS.sets[first] = nwBuild(first);
-  const next = () => { if (NWS !== me || !rest.length) return; const i = rest.shift(); me.sets[i] = nwBuild(i); me.tm = setTimeout(next, 40); };
-  me.tm = setTimeout(next, 40);
+  return { key, P, sets: [null, null, null], fg, ow: { L: [], C: [] } };
+}
+const nwFirst = p => p < .25 ? 0 : p < .75 ? 1 : 2;
+function nwEnsure(v) {                                                       // v: mondo, ostacolo e riquadro visibile (in unità del gioco)
+  if (!WORLDS[v.th]) return false;
+  const key = nwKey(v);
+  if (NWS && NWS.key === key) return true;
+  if (NWS) { clearTimeout(NWS.tm); NWS.run = null; }
+  let hit = NW_KEEP.find(z => z.key === key);                                  // già fatto poco fa (per esempio tornando al menu): si riusa
+  if (hit) NW_KEEP.splice(NW_KEEP.indexOf(hit), 1);
+  else if (NW_PREP && NW_PREP.key === key) { hit = NW_PREP; clearTimeout(hit.tm); hit.run = null; NW_PREP = null; }   // preparato mentre sceglievi la squadra
+  if (NWS && NWS !== hit) nwKeep(NWS);
+  NWS = hit || nwMake(v, key);
+  NWS.first = nwFirst(v.p);
+  if (!v.lazy && !NWS.sets.some(Boolean)) NWS.sets[NWS.first] = nwBuild(NWS.first, NWS.P);   // il primo momento del giorno subito, per disegnare (all'apertura invece a pezzi: lazy)
+  nwMore(NWS);
   return true;
+}
+let NW_PREP = null;
+function nwPrep(v) {                                                         // prepara in anticipo, a pezzi, un mondo che servirà tra poco (la battaglia)
+  if (!WORLDS[v.th]) return; const key = nwKey(v);
+  if ((NWS && NWS.key === key) || NW_KEEP.some(z => z.key === key) || (NW_PREP && NW_PREP.key === key)) return;
+  if (NW_PREP) clearTimeout(NW_PREP.tm);
+  const me = NW_PREP = nwMake(v, key), f = nwFirst(v.p), order = [f, ...[0, 1, 2].filter(i => i !== f)];
+  const step = () => {
+    if (NW_PREP !== me) return;
+    if (!me.run) { const i = order.find(j => !me.sets[j]); if (i == null) { NW_PREP = null; nwKeep(me); return; } me.run = { i, it: nwBuildG(i, me.P) }; }
+    const r = me.run.it.next(); if (r.done) { me.sets[me.run.i] = r.value; me.run = null; }
+    me.tm = setTimeout(step, 30);
+  };
+  me.tm = setTimeout(step, 30);
+}
+const NW_KEEP = [];                                                          // gli ultimi mondi lasciati, per tornarci senza rifarli
+function nwKeep(st) { NW_KEEP.unshift(st); while (NW_KEEP.length > 2) nwFree(NW_KEEP.pop()); }   // al massimo gli ultimi due (memoria del telefono)
+function nwMore(me) {                                                        // gli altri momenti del giorno: un pezzo ogni 30 ms, senza bloccare
+  const step = () => {
+    if (NWS !== me) return;
+    if (!me.run) { const i = [me.first ?? 0, 0, 1, 2].find(j => !me.sets[j]); if (i == null) return; me.run = { i, it: nwBuildG(i, me.P) }; }
+    const r = me.run.it.next(); if (r.done) { me.sets[me.run.i] = r.value; me.run = null; }
+    me.tm = setTimeout(step, 30);
+  };
+  clearTimeout(me.tm); me.run = null; me.tm = setTimeout(step, me.sets.some(Boolean) ? 60 : 0);
 }
 function nwW(p) {                                                            // quanto pesa giorno, tramonto e notte (sfuma tra due)
   const w = [0, 0, 0]; if (p < .5) { const f = ease(Math.max(0, p) / .5); w[0] = 1 - f; w[1] = f; } else { const f = ease(Math.min(1, (p - .5) / .5)); w[1] = 1 - f; w[2] = f; }
@@ -10901,7 +10957,7 @@ const NW_GL = {};                                                             //
 function nwGlow(col) { if (NW_GL[col]) return NW_GL[col]; const c = document.createElement('canvas'); c.width = c.height = 128; const x = c.getContext('2d'), rg = x.createRadialGradient(64, 64, 2, 64, 64, 64); rg.addColorStop(0, col); rg.addColorStop(1, 'rgba(0,0,0,0)'); x.fillStyle = rg; x.fillRect(0, 0, 128, 128); return NW_GL[col] = c; }
 const nwTime = p => p < .25 ? 0 : p < .75 ? 1 : 2;
 function nwBack(c, p, t) {
-  if (!NWS) return; nwApply(NWS.P); T = t; TIME = nwTime(p); const wts = nwW(p), W = WD(), s0 = nwSet0();
+  if (!NWS || !NWS.sets.some(Boolean)) return; nwApply(NWS.P); T = t; TIME = nwTime(p); const wts = nwW(p), W = WD(), s0 = nwSet0();
   g = c; RAW = 1; c.save(); c.translate(NWS.P.l, -G0 * NW_SX); c.scale(NW_SX, NW_SX);
   nwBlend(c, wts, z => z.bg, im => c.drawImage(im, 0, OY, WW, H - OY));
   if (wts[1] > .02 && !W.noSun) { c.save(); c.globalCompositeOperation = 'lighter'; c.globalAlpha = wts[1]; const sx = VW * .6, sy = 262;           // i raggi del tramonto
@@ -10914,7 +10970,7 @@ function nwBack(c, p, t) {
   c.restore(); g = null; RAW = 0; NWS.ow = { L: [], C: [] };
 }
 function nwOwned(c, who, p, t, o) {                                          // tana ('L') o castello ('C'); o: spostamento, scala, girata, crepe
-  if (!NWS) return; nwApply(NWS.P); T = t; TIME = nwTime(p); const wts = nwW(p), s0 = nwSet0();
+  if (!NWS || !NWS.sets.some(Boolean)) return; nwApply(NWS.P); T = t; TIME = nwTime(p); const wts = nwW(p), s0 = nwSet0();
   const AX = who === 'L' ? LX : CX, TX = (o.at === 'C' ? CX : o.at === 'L' ? LX : AX) + (o.dx || 0) / NW_SX, sc = o.s || 1, sg = o.flip ? -1 : 1, dy = (o.dy || 0) / NW_SX;
   NWS.ow[who].push({ AX, TX, sc, sg, dy });
   g = c; RAW = 1; c.save(); c.translate(NWS.P.l, -G0 * NW_SX); c.scale(NW_SX, NW_SX); c.translate(TX, BASE + dy); c.scale(sg * sc, sc); c.translate(-AX, -BASE);
@@ -10932,7 +10988,7 @@ function nwPt(who, x, y) {                                                   // 
   return { x: NWS.P.l + NW_SX * (o.TX + o.sg * o.sc * x), y: NW_SX * (BASE - G0 + o.dy + o.sc * y), s: NW_SX * o.sc };
 }
 function nwFront(c, p, t) {                                                  // davanti ai personaggi: luci della notte, pulviscolo, erba in primo piano
-  if (!NWS) return; nwApply(NWS.P); T = t; TIME = nwTime(p); cam = 0; const wts = nwW(p), W = WD(), s0 = nwSet0();
+  if (!NWS || !NWS.sets.some(Boolean)) return; nwApply(NWS.P); T = t; TIME = nwTime(p); cam = 0; const wts = nwW(p), W = WD(), s0 = nwSet0();
   g = c; RAW = 1; c.save(); c.translate(NWS.P.l, -G0 * NW_SX); c.scale(NW_SX, NW_SX);
   if (wts[2] > .02) { c.save(); c.globalCompositeOperation = 'lighter'; c.globalAlpha = wts[2];
     for (const l of s0.lights) for (const o of l.own ? NWS.ow[l.own] : [null]) { let x = l.x, y = l.y, r = l.r; if (o) { x = o.TX + o.sg * o.sc * (l.x - o.AX); y = BASE + o.dy + o.sc * (l.y - BASE); r *= o.sc; }
@@ -11072,14 +11128,27 @@ function draw(k, c, o) {                                                    // o
   const m = NG_MODE(); if (m === 'normal') g = c; else { PCOL = m === 'shadow' ? 'rgba(20,12,36,.22)' : NG_FLASH(); g = proxyOf(c); }
   c.save(); c.rotate((o.lean || 0) * .5); const sq = o.sq || 0; c.scale(1 + sq, 1 - sq); fn(p); c.restore(); g = null; return true;
 }
-return { draw, has: k => !!(SUB[k] || DRAW[k]), nw: { ensure: nwEnsure, back: nwBack, owned: nwOwned, front: nwFront, pt: nwPt }, dragon: ngDragon, skin: id => !!SKINS[id], frame: () => { SPR_NEW = 0; }, sprInfo: () => ({ n: SPR.size, px: SPR_PX }) };
+return { draw, has: k => !!(SUB[k] || DRAW[k]), nw: { ensure: nwEnsure, prep: nwPrep, ready: () => !!NWS && NWS.sets.some(Boolean), back: nwBack, owned: nwOwned, front: nwFront, pt: nwPt }, dragon: ngDragon, skin: id => !!SKINS[id], frame: () => { SPR_NEW = 0; }, sprInfo: () => ({ n: SPR.size, px: SPR_PX }) };
 })();
 const NG_H = {"goblin": 72, "orco": 158, "strega": 141, "cavaliere": 126, "arciere": 102, "fionda": 84, "topi": 48, "lupo": 113, "scheletri": 92, "trollponte": 112, "ragno": 50, "zombie": 101, "fuocofatuo": 79, "diavoletto": 82, "rospo": 36, "cornacchia": 77, "gargoyle": 86, "sciame": 90, "lupetti": 55, "scimmie": 115, "gattovolpe": 99, "gnomo": 86, "spaventapasseri": 122, "retopi": 112, "pandizenzero": 57, "mummia": 102, "pupazzo": 79, "matrigna": 138, "reginacuori": 122, "stregone": 147, "gothel": 122, "sirena": 94, "lumacone": 52, "fantasma": 97, "coccodrillo": 37, "ladroni": 105, "barbablu": 123, "omino": 80, "babajaga": 187, "stregamare": 106, "morgana": 109, "grifone": 107, "spirito": 177, "bestia": 86, "ciclope": 184, "senzatesta": 135, "dracula": 119, "medusa": 114, "pescecane": 73, "alberich": 71, "trollspecchio": 101, "mordred": 127, "lupomannaro": 115, "frankenstein": 133, "hyde": 126, "stregatto": 69, "stregaovest": 92, "sherekhan": 66, "krampus": 136, "jabberwocky": 127, "kraken": 141, "idra": 88, "bandersnatch": 83, "zucca": 116, "marzapane": 107, "gigantegh": 185, "uncino": 136, "mangiafuoco": 162, "tremotino": 82, "reginacattiva": 123, "reginanevi": 128, "basilisco": 120, "cavaliereverde": 162, "diavolo": 146, "dragonero": 120, "gigante": 185, "ecate": 120, "circe": 112, "minotauro": 196, "fenice": 119, "soldatino": 113, "principe": 109, "cacciatore": 128, "spiritista": 116, "porcellino": 88, "fata": 102, "re": 168, "bimbo": 55, "hanselgretel": 54, "nano": 69, "raperonzolo": 106, "pifferaio": 132, "musicanti": 127, "carrozza": 109, "ranocchio": 60, "peterpan": 123, "cappuccetto": 78, "robinhood": 122, "gattostivali": 78, "biancaneve": 104, "pinocchio": 100, "merlino": 146, "alice": 98, "wendy": 102, "giglio": 113, "cappellaio": 130, "brucaliffo": 115, "lepre": 99, "alibaba": 112, "sinbad": 135, "guardia": 139, "renna": 110, "fiammiferaia": 75, "pupazzoneve": 70, "cavcristallo": 124, "gemello": 102, "gemelli": 102, "pisello": 113, "tappeto": 94, "aladino": 113, "kai": 101, "gerda": 104, "pollicino": 57, "dragotempesta": 122, "jack": 113, "jackre": 121, "arpa": 98, "arpaincantata": 106, "gallina": 74, "cavnuvole": 136, "yeti": 154, "cobrabianco": 125, "mowgli": 106, "mowglire": 121, "baloo": 123, "bagheera": 64, "bagheerare": 64, "hathi": 102, "hathire": 102, "momotaro": 114, "momotarore": 139, "cane": 67, "canere": 69, "scimmiamomo": 71, "scimmiare": 71, "fagiano": 97, "reoni": 171, "reonifuria": 180, "topo": 38, "scheletro": 92, "pipsciame": 67, "pipistrello": 67, "lupetto": 46, "scimmia": 115, "capoladroni": 105, "ladrone": 71, "matrigna_m": 138, "sorella": 81, "reginacuori_q": 122, "carta": 95, "burattino": 40, "corvo": 77};
 const NG_OLD = Object.assign({}, DRAW), NG_SKIN = new Set(Object.keys(LOOKS).filter(id => !LOOKS[id].tint && !LOOKS[id].filter));   // le skin con gli accessori restano col disegno di prima
 for (const k of Object.keys(DRAW)) { if (!NG.has(k) || !NG_H[k] || k === 'drago') continue;
   const old = DRAW[k], hk = k;
   DRAW[k] = o => { if (o && o.look && NG_SKIN.has(o.look) && !NG.skin(o.look)) return old(o); const s2 = (HEIGHT[hk] || NG_H[hk]) / NG_H[hk]; ctx.save(); ctx.scale(s2, s2); NG.draw(hk, ctx, o || {}); ctx.restore(); }; }
-function drawIcon(cvs, key, look) {                                         // icona di un personaggio, sempre alla luce del giorno (con il suo aspetto)
+const ICON_MEMO = new Map();                                                // icone già disegnate: si copiano invece di ridisegnarle
+function drawIcon(cvs, key, look) {
+  const lk0 = look !== undefined ? look : DW.U[key] && DW.U[key].side === 0 && save.look ? save.look[key] || null : null, mk = key + '|' + lk0 + '|' + cvs.width + 'x' + cvs.height, hit = ICON_MEMO.get(mk);
+  const ic = cvs.getContext('2d'); ic.setTransform(1, 0, 0, 1, 0, 0);
+  if (hit) { ic.clearRect(0, 0, cvs.width, cvs.height); ic.drawImage(hit, 0, 0); return; }
+  drawIcon0(cvs, key, look); const c2 = document.createElement('canvas'); c2.width = cvs.width; c2.height = cvs.height; c2.getContext('2d').drawImage(cvs, 0, 0);
+  ICON_MEMO.set(mk, c2); if (ICON_MEMO.size > 500) ICON_MEMO.delete(ICON_MEMO.keys().next().value);
+}
+function iconWarm() {                                                       // dopo l'apertura, piano piano: le icone della squadra pronte prima di servire
+  const todo = DW.ROSTER.slice(), scratch = document.createElement('canvas'); scratch.width = 112; scratch.height = 104;
+  const step = () => { const t0 = performance.now(); do drawIcon(scratch, todo.shift()); while (todo.length && performance.now() - t0 < 8); if (todo.length) setTimeout(step, 40); else setTimeout(sqBuildIdle, 200); };   // pochi millesimi alla volta: pezzi piccoli; alla fine si prepara anche la griglia della squadra
+  setTimeout(step, 2500);
+}
+function drawIcon0(cvs, key, look) {                                        // icona di un personaggio, sempre alla luce del giorno (con il suo aspetto)
   const ic = cvs.getContext('2d'), real = ctx, was = L.p;
   ic.setTransform(1, 0, 0, 1, 0, 0); ic.clearRect(0, 0, cvs.width, cvs.height);
   const sc = Math.min(1.05, 88 / HEIGHT[key], 104 / (ICONW[key] || 90));
@@ -11175,13 +11244,18 @@ function toScene() {                                                       // sc
   document.body.classList.add('inMenu'); resize();
   s = DW.create(); particles = []; nums = []; bubbles = []; hooks = []; dragon.fireT = 0; dragon.phase = 'idle';
 }
+function fmtN(n) {                                                          // i numeri come li scrive il telefono: «12.345» (in inglese «1,234»; in italiano e spagnolo quelli di 4 cifre restano «4500»)
+  if (!Number.isInteger(n)) return n.toLocaleString(LOC());
+  const t = String(Math.abs(n)); if (LANG !== 'en' && t.length < 5) return String(n);
+  return (n < 0 ? '-' : '') + t.replace(/\B(?=(\d{3})+$)/g, LANG === 'en' ? ',' : '.');
+}
 function showMenu() {
   TH = 'bosco'; HERO = false; toScene(); $('menu').hidden = false;
-  $('menuGold').textContent = save.gold.toLocaleString(LOC());
+  $('menuGold').textContent = fmtN(save.gold);
   const won = Object.values(save.stars).filter(v => v > 0).length;
   $('menuSub').textContent = `${won}/${DW.TOTAL} castelli · ★ ${totalStars()}`;
   $('menuMiss').querySelector('.dot').hidden = !missReady();
-  $('menuRu').textContent = save.ru.toLocaleString(LOC());
+  $('menuRu').textContent = fmtN(save.ru);
   $('menuShop').querySelector('.dot').hidden = !shopReady();
   paintMenuDots(); clanDot();
   if (calReady() && save.calSeen !== today() && save.seenStory) { save.calSeen = today(); persist(); setTimeout(() => { if (!$('menu').hidden) showCal(); }, 500); }
@@ -11898,29 +11972,47 @@ function showSquad(w, i, opt = {}) {
   musicPreload(w);
   sqOpt = opt; HERO = !!opt.hard; sqMax = opt.cap != null && DW.CAPRICCI[opt.cap].pick || DW.DECK;
   TH = DW.WORLDS[w].theme; toScene(); $('squad').hidden = false; sqLevel = i; sqWorld = w;
+  setTimeout(() => { if (!$('squad').hidden) nwPrepBattle(w, i); }, 250);   // intanto si prepara lo sfondo della battaglia
   $('sqLevel').textContent = opt.inf ? 'Modalità Infinita' : opt.cap != null ? `Capriccio · ${DW.CAPRICCI[opt.cap].name}` : `${opt.hard ? 'Eroica · ' : ''}${w + 1}-${i + 1} · ${DW.levelOf(w, i).name}`;
   sqSel = save.squad.filter(isUnlocked).slice(0, sqMax);
   if (sqMax !== DW.DECK || save.deckI === 0) for (const kk of DW.START.concat(DW.ROSTER)) if (sqSel.length < sqMax && isUnlocked(kk) && !sqSel.includes(kk)) sqSel.push(kk);   // i mazzi 2 e 3 partono vuoti
   renderDecks();
-  if (!Object.keys(sqCards).length) for (const kk of DW.ROSTER) {          // la griglia dei cattivi si costruisce una volta sola
-    const c = document.createElement('button'); c.className = 'card2'; c.dataset.r = RAR[kk] || 0;
-    c.innerHTML = `<span class="badge" hidden></span><canvas width="112" height="104"></canvas><span class="nm">${SHORT[kk]}</span><span class="cs">${DW.U[kk].cost}</span><span class="lk" hidden></span>`;
-    drawIcon(c.querySelector('canvas'), kk);
-    c.onclick = () => pickSquad(kk); longPress(c, () => openUnit(kk, 'squad'));
-    $('sqGrid').appendChild(c); sqCards[kk] = c;
-  }
-  for (const [kk, c] of Object.entries(sqCards)) {
-    c.querySelector('.nm').textContent = dispName(kk); drawCard(c.querySelector('canvas'), kk); c.dataset.r = secretLocked(kk) ? 's' : RAR[kk] || 0; c.classList.toggle('secret', !!secretLocked(kk));
-    const lock = !isUnlocked(kk); c.classList.toggle('lock', lock);
-    const lk = c.querySelector('.lk'); lk.hidden = !lock; lk.textContent = lock ? lockText(kk) : '';
-    c.querySelector('.cs').textContent = lock ? DW.U[kk].cost : `${DW.U[kk].cost} · Liv ${unitLv(kk)}`;
-  }
+  const done = sqBuild(18, forgeFiltered(sqF), 25);                          // la griglia dei cattivi (di solito è già pronta; se no: prima quelli che si vedono)
+  for (const [kk, c] of Object.entries(sqCards)) sqPaint(kk, c);
+  if (!done) setTimeout(sqBuildMore, 30);                                    // gli altri arrivano subito dopo, a pezzetti
   $('sqHint').textContent = sqMax === 1 ? 'Scegli 1 cattivo, uno solo' : 'Scegli 6 carte: in battaglia ne hai 3 in mano, a rotazione';
   $('sqInfo').textContent = sqMax === 1 ? 'Un solo cattivo: scegli quello giusto. Tienilo premuto per vedere cosa fa.' : 'Tocca un cattivo per metterlo in squadra o toglierlo. Tienilo premuto per vedere cosa fa.';
   renderSquad(); sqFilter();
 }
 const DECK_AT = [0, 2, 5], DECK_NAME = ['Mazzo 1', 'Mazzo 2', 'Mazzo 3'];                 // il blu si apre al mondo 3, il verde al mondo 6
 const deckOpen = i => worldOpen(DECK_AT[i]);
+function setTx(el, v) { v = String(v); if (el.textContent !== v) el.textContent = v; }   // scrive solo se il testo cambia (niente lavoro inutile)
+function sqPaint(kk, c) {                                                   // una carta della griglia: nome, lucchetto, costo e livello di adesso
+  const sec = !!secretLocked(kk), lock = !isUnlocked(kk);
+  setTx(c.querySelector('.nm'), dispName(kk)); drawCard(c.querySelector('canvas'), kk); c.dataset.r = sec ? 's' : RAR[kk] || 0; c.classList.toggle('secret', sec);
+  c.classList.toggle('lock', lock);
+  const lk = c.querySelector('.lk'); lk.hidden = !lock; setTx(lk, lock ? lockText(kk) : '');
+  setTx(c.querySelector('.cs'), lock ? DW.U[kk].cost : `${DW.U[kk].cost} · Liv ${unitLv(kk)}`);
+}
+function sqBuildMore() {                                                    // squadra aperta prima che la griglia fosse pronta: 10 carte alla volta, senza bloccare
+  if ($('squad').hidden) return sqBuildIdle();
+  const before = new Set(Object.keys(sqCards)), done = sqBuild(10, forgeFiltered(sqF).concat(DW.ROSTER));
+  for (const [kk, c] of Object.entries(sqCards)) if (!before.has(kk)) sqPaint(kk, c);
+  sqFilter(); renderSquad(); if (!done) setTimeout(sqBuildMore, 30);
+}
+function sqBuild(n, list = DW.ROSTER, ms = 8) {                            // la griglia dei cattivi: si costruisce una volta sola, anche a pezzi (al massimo n carte e pochi millesimi alla volta)
+  const grid = $('sqGrid'), t0 = performance.now();
+  for (const kk of list) {
+    if (sqCards[kk]) continue; if (n-- <= 0 || performance.now() - t0 > ms) return false;
+    const c = document.createElement('button'); c.className = 'card2'; c.dataset.r = RAR[kk] || 0;
+    c.innerHTML = `<span class="badge" hidden></span><canvas width="112" height="104"></canvas><span class="nm">${dispName(kk)}</span><span class="cs">${DW.U[kk].cost}</span><span class="lk" hidden></span>`;
+    drawCard(c.querySelector('canvas'), kk);
+    c.onclick = () => pickSquad(kk); longPress(c, () => openUnit(kk, 'squad'));
+    grid.appendChild(c); sqCards[kk] = c;
+  }
+  return DW.ROSTER.every(k => sqCards[k]);
+}
+function sqBuildIdle() { if (!$('squad').hidden) return; if (!sqBuild(12)) setTimeout(sqBuildIdle, 60); }   // mentre sei nel menu: 12 carte alla volta
 function renderDecks() {
   const box = $('sqDecks'); box.hidden = sqMax !== DW.DECK; box.innerHTML = '';
   DECK_NAME.forEach((nm, i) => {
@@ -11948,7 +12040,7 @@ function pickSquad(kk) {
   renderSquad();
 }
 function renderSquad() {
-  for (const [kk, c] of Object.entries(sqCards)) { const at = sqSel.indexOf(kk), bd = c.querySelector('.badge'); c.classList.toggle('sel', at >= 0); bd.hidden = at < 0; bd.textContent = at + 1; }
+  for (const [kk, c] of Object.entries(sqCards)) { const at = sqSel.indexOf(kk), bd = c.querySelector('.badge'); c.classList.toggle('sel', at >= 0); bd.hidden = at < 0; if (at >= 0) setTx(bd, at + 1); }
   const slots = $('sqSlots'); slots.innerHTML = '';
   for (let i = 0; i < sqMax; i++) {
     const kk = sqSel[i], sl = document.createElement('button'); sl.className = 'slot' + (kk ? ' full' : '');
@@ -12150,6 +12242,7 @@ function battleResume() {                                                  // ri
     tut = null; abCnt = {}; battleCharged = !!d.charged; resize(); buildButtons(); handShown = '';
     const cp = opt.cap != null ? DW.CAPRICCI[opt.cap] : null;
     $('lvlName').textContent = cp ? cp.name : s.lv.name; $('lvlSub').textContent = opt.inf ? `Ondate senza fine · record ${(save.inf && save.inf.best) || 0}` : cp ? 'Capriccio del Drago' : `${opt.hard ? 'Eroica · ' : ''}${DW.WORLDS[d.world].name} · ${d.level + 1}/${DW.WORLDS[d.world].n}`;
+    resize();                                                             // battaglia ripresa: misure finali, uno sfondo solo
     particles = []; nums = []; bubbles = []; hooks = []; seenId = s.id; endT = 0; ended = false; dragon.fireT = 0; dragon.phase = 'idle';
     running = true; countT = 0; viaT = 0; lightP = 0; pause(); setTimeout(musicUpdate, 0);
     return true;
@@ -12180,6 +12273,7 @@ function newBattle(world = curWorld, level = curLevel, opt = curOpt) {
   buildButtons();
   if (secret) setTimeout(() => { if (running) toast('Qualcuno ti osserva dal buio…'); }, 4200);
   $('lvlName').textContent = cp ? cp.name : s.lv.name; $('lvlSub').textContent = opt.inf ? `Ondate senza fine · record ${(save.inf && save.inf.best) || 0}` : cp ? 'Capriccio del Drago' : `${opt.hard ? 'Eroica · ' : ''}${DW.WORLDS[world].name} · ${level + 1}/${DW.WORLDS[world].n}`;
+  resize(); BATTLE_WH = [W, H]; try { localStorage.setItem('dw_bwh', JSON.stringify(BATTLE_WH)); } catch (e) {}   // misure finali, con la barra delle carte già piena: uno sfondo solo invece di due
   particles = []; nums = []; bubbles = []; hooks = []; seenId = 0; endT = 0; ended = false; dragon.fireT = 0; dragon.phase = 'idle';
   running = true; paused = false; countT = 3; viaT = 0; lightP = 0; setTimeout(musicUpdate, 0);
 }
@@ -12319,8 +12413,9 @@ function sndUnlock() {                                                     // il
 Object.assign(VALIAS, {minotauro:'gigante', fenice:'grifone', fuocofatuo:'fantasma', diavoletto:'goblin', rospo:'basilisco', cornacchia:'gattovolpe', lumacone:'orco', ecate:'morgana', circe:'strega'}); Object.assign(VOICE, {minotauro:.7, fenice:1.1, fuocofatuo:1.5, diavoletto:1.4, rospo:.8, cornacchia:1.3, lumacone:.6, ecate:.9, circe:1.05});
 Object.assign(VALIAS, {sciame:'dracula', ragno:'basilisco', zombie:'mummia', lupetti:'lupo', scimmie:'gattovolpe', gargoyle:'orco', stregatto:'gattovolpe', stregaovest:'strega', sherekhan:'bestia'});
 Object.assign(VOICE, {sciame:1.5, ragno:.9, zombie:.8, lupetti:1.35, scimmie:1.3, gargoyle:.7, stregatto:1.1, stregaovest:1, sherekhan:.8});
-  for (const n of SFX_FILES) load('audio/' + n + '.mp3', b => { SND.buf[n] = b; });
-  for (const k of Object.keys(VOICE)) if (!VALIAS[k]) load('audio/v_' + k + '.mp3', b => { SND.vbuf[k] = b; });
+  const Q = SFX_FILES.map(n => ['audio/' + n + '.mp3', b => { SND.buf[n] = b; }]).concat(Object.keys(VOICE).filter(k => !VALIAS[k]).map(k => ['audio/v_' + k + '.mp3', b => { SND.vbuf[k] = b; }]));
+  const go = () => { const j = Q.shift(); if (j) load(j[0], j[1]).finally(() => setTimeout(go, 40)); };   // i suoni arrivano due alla volta: niente blocchi all'apertura
+  setTimeout(() => { go(); go(); }, 1200);
   musicUpdate();
 }
 for (const ev of ['pointerdown', 'pointerup', 'touchend', 'click', 'keydown']) addEventListener(ev, sndUnlock, true);
@@ -13594,8 +13689,12 @@ function drawPearls() {                                                   // le 
   if (!s._toldPearl) { s._toldPearl = 1; toastOnce('Perla di Ryūjin! Chi la prende per primo diventa più forte'); }
 }
 new ResizeObserver(resize).observe($('stage'));
-resize(); if (GALLERY) startGallery(); else if (save.seenStory) { showMenu(); battleResume(); } else startStory();
-if (!GALLERY) netInit();
-requestAnimationFrame(frame);
+if (!GALLERY) iconWarm();
+setTimeout(() => {                                                          // il menu si prepara un attimo dopo il codice: l'apertura non si blocca tutta insieme
+  resize(); if (GALLERY) startGallery(); else if (save.seenStory) { showMenu(); battleResume(); } else startStory();
+  requestAnimationFrame(frame);
+  if (!GALLERY) setTimeout(netInit, 0);                                       // l'online parte subito dopo, a parte
+  setTimeout(() => { try { (1234.5).toLocaleString(LOC()); } catch (e) {} }, 900);   // i numeri «1.234» si preparano mentre non tocchi niente
+}, 0);
 })();
 </script>
