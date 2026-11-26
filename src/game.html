@@ -1031,7 +1031,7 @@ try {
   if (d) { save = Object.assign(save, d); try { localStorage.setItem(SAVE_KEY + '_bak', JSON.stringify(d)); } catch (e) {} }   // a ogni avvio tengo una copia dei progressi
   else { const o = JSON.parse(localStorage.getItem(BETA ? 'dragonwar_beta_v1' : 'dragonwar_v1') || 'null'); if (o) { save.seenStory = o.seenStory; save.tutorialDone = o.tutorialDone; } }
 } catch (e) {}
-try { if (navigator.storage && navigator.storage.persist) navigator.storage.persist().catch(() => {}); } catch (e) {}   // chiedo al telefono di non cancellare mai da solo i dati del gioco
+setTimeout(() => { try { if (navigator.storage && navigator.storage.persist) navigator.storage.persist().catch(() => {}); } catch (e) {} }, 2000);   // chiedo al telefono di non cancellare mai da solo i dati del gioco
 /*I18N*/
 var CLOUD = null;                                                            // salvataggio online (solo nell'app con Firebase)
 const persist = () => { save.savedAt = Date.now(); try { localStorage.setItem(SAVE_KEY, JSON.stringify(save)); } catch (e) {} if (CLOUD) cloudQueue(); };

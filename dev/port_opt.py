@@ -109,6 +109,9 @@ patch('game.html', [
   "  const sig = kk + '|' + (secretLocked(kk) ? '?' : DW.U[kk] && DW.U[kk].side === 0 && save.look ? save.look[kk] || '' : '') + '|' + cv.width + 'x' + cv.height;\n"
   "  if (cv.dwSig === sig) return; cv.dwSig = sig;                              // già disegnata così: niente da rifare\n"
   "  if (!secretLocked(kk)) return drawIcon(cv, kk);", "if (cv.dwSig === sig) return;"),
+ # la richiesta «non cancellare i dati» fatta subito costringeva il telefono a rileggere tutto il codice (0,2 s): ora parte 2 secondi dopo, da sola
+ ("try { if (navigator.storage && navigator.storage.persist) navigator.storage.persist().catch(() => {}); } catch (e) {}",
+  "setTimeout(() => { try { if (navigator.storage && navigator.storage.persist) navigator.storage.persist().catch(() => {}); } catch (e) {} }, 2000);", "setTimeout(() => { try { if (navigator.storage && navigator.storage.persist)"),
  # apertura in due tempi: prima il codice, poi (subito dopo, a parte) il menu: nessun blocco unico lungo
  ("resize(); if (GALLERY) startGallery(); else if (save.seenStory) { showMenu(); battleResume(); } else startStory();\nif (!GALLERY) netInit();\nrequestAnimationFrame(frame);",
   "setTimeout(() => {                                                          // il menu si prepara un attimo dopo il codice: l'apertura non si blocca tutta insieme\n"
