@@ -105,11 +105,31 @@ function i18nFitEl(el) {
   while (el.scrollWidth > w && fs > 8) { fs -= .5; el.style.fontSize = fs + 'px'; }
   if (el.scrollWidth > w) { el.style.whiteSpace = 'normal'; el.style.textAlign = 'center'; }
 }
+function i18nFitAll(list) {                                                 // come i18nFitEl, ma per tante scritte insieme: prima si misura tutto, poi si cambia tutto (la pagina si ricalcola 3 volte, non centinaia)
+  const todo = [];
+  for (const el of list) {
+    const box = el.parentElement; if (!box || !el.isConnected) continue;
+    const w = box.clientWidth - 6; if (w <= 0) { if ((el.i18nTry = (el.i18nTry || 0) + 1) < 20) setTimeout(() => i18nFitLater(el), 250); continue; }
+    el.i18nTry = 0; if (!el.style.fontSize && !el.style.whiteSpace && el.scrollWidth <= w) continue;   // ci sta già
+    todo.push([el, w]);
+  }
+  if (!todo.length) return;
+  for (const [el] of todo) { el.style.fontSize = ''; el.style.whiteSpace = ''; }
+  const m = todo.map(([el, w]) => [el, w, el.scrollWidth, parseFloat(getComputedStyle(el).fontSize) || 12]);
+  let cur = []; const wrap = [];
+  for (const [el, w, sw, fs] of m) if (sw > w) { const f = Math.max(8, Math.floor(fs * w / sw * 2) / 2); el.style.fontSize = f + 'px'; cur.push([el, w, f]); }   // quasi giusto al primo colpo
+  for (let r = 0; r < 12 && cur.length; r++) {                              // poi mezzo punto alla volta, ma tutte insieme (una misura per giro)
+    cur = cur.filter(([el, w]) => el.scrollWidth > w);
+    for (const x of cur) { if (x[2] <= 8) wrap.push(x[0]); else { x[2] -= .5; x[0].style.fontSize = x[2] + 'px'; } }
+    cur = cur.filter(x => !wrap.includes(x[0]));
+  }
+  for (const el of wrap) { el.style.whiteSpace = 'normal'; el.style.textAlign = 'center'; }
+}
 function i18nFitLater(n) {
   const el = n.nodeType === 3 ? n.parentElement : n; if (!el || !el.closest) return;
   const m = el.closest(I18N_FIT_SEL); if (m) I18N_FIT.add(m);
   if (el.querySelectorAll) el.querySelectorAll(I18N_FIT_SEL).forEach(x => I18N_FIT.add(x));
-  if (I18N_FIT.size && !I18N_FIT_RAF) I18N_FIT_RAF = requestAnimationFrame(() => { I18N_FIT_RAF = 0; for (const x of I18N_FIT) i18nFitEl(x); I18N_FIT.clear(); });
+  if (I18N_FIT.size && !I18N_FIT_RAF) I18N_FIT_RAF = requestAnimationFrame(() => { I18N_FIT_RAF = 0; const l = [...I18N_FIT]; I18N_FIT.clear(); i18nFitAll(l); });
 }
 addEventListener('resize', () => document.querySelectorAll(I18N_FIT_SEL).forEach(i18nFitLater));
 const I18N_OBS = new MutationObserver(list => {

@@ -50,8 +50,8 @@ patch('game.html', [
   "  ICON_MEMO.set(mk, c2); if (ICON_MEMO.size > 500) ICON_MEMO.delete(ICON_MEMO.keys().next().value);\n"
   "}\n"
   "function iconWarm() {                                                       // dopo l'apertura, piano piano: le icone della squadra pronte prima di servire\n"
-  "  const todo = DW.ROSTER.slice(), scratch = document.createElement('canvas'); scratch.width = 112; scratch.height = 104;\n"
-  "  const step = () => { const t0 = performance.now(); do drawIcon(scratch, todo.shift()); while (todo.length && performance.now() - t0 < 8); if (todo.length) setTimeout(step, 40); else setTimeout(sqBuildIdle, 200); };   // pochi millesimi alla volta: pezzi piccoli; alla fine si prepara anche la griglia della squadra\n"
+  "  const todo = DW.ROSTER.map(k => [k]).concat(GOODS.concat(Object.keys(DW.ELITE)).map(k => [vis(k)]), Object.entries(LOOKS).map(([id, L]) => [L.k === 'drago' ? 'goblin' : L.k, L.k === 'drago' ? null : id])), scratch = document.createElement('canvas'); scratch.width = 112; scratch.height = 104;   // cattivi, buoni e boss, aspetti speciali\n"
+  "  const step = () => { const t0 = performance.now(); do { const [k, lk] = todo.shift(); if (DW.U[k] || k === 'drago') drawIcon(scratch, k, lk); } while (todo.length && performance.now() - t0 < 8); if (todo.length) setTimeout(step, 40); else setTimeout(sqBuildIdle, 200); };   // pochi millesimi alla volta: pezzi piccoli; alla fine si prepara anche la griglia della squadra\n"
   "  setTimeout(step, 2500);\n"
   "}\n"
   "function drawIcon0(cvs, key, look) {                                        // icona di un personaggio, sempre alla luce del giorno (con il suo aspetto)", 'const ICON_MEMO = new Map();'),
@@ -131,9 +131,68 @@ patch('game.html', [
   "function showMenu() {", 'function fmtN(n)'),
 ])
 patch('i18n.js', [
+ ("I18N_FIT_RAF = requestAnimationFrame(() => { I18N_FIT_RAF = 0; for (const x of I18N_FIT) i18nFitEl(x); I18N_FIT.clear(); });",
+  "I18N_FIT_RAF = requestAnimationFrame(() => { I18N_FIT_RAF = 0; const l = [...I18N_FIT]; I18N_FIT.clear(); i18nFitAll(l); });", 'i18nFitAll(l);'),
+ ("function i18nFitLater(n) {",
+  "function i18nFitAll(list) {                                                 // come i18nFitEl, ma per tante scritte insieme: prima si misura tutto, poi si cambia tutto (la pagina si ricalcola 3 volte, non centinaia)\n"
+  "  const todo = [];\n"
+  "  for (const el of list) {\n"
+  "    const box = el.parentElement; if (!box || !el.isConnected) continue;\n"
+  "    const w = box.clientWidth - 6; if (w <= 0) { if ((el.i18nTry = (el.i18nTry || 0) + 1) < 20) setTimeout(() => i18nFitLater(el), 250); continue; }\n"
+  "    el.i18nTry = 0; if (!el.style.fontSize && !el.style.whiteSpace && el.scrollWidth <= w) continue;   // ci sta già\n"
+  "    todo.push([el, w]);\n"
+  "  }\n"
+  "  if (!todo.length) return;\n"
+  "  for (const [el] of todo) { el.style.fontSize = ''; el.style.whiteSpace = ''; }\n"
+  "  const m = todo.map(([el, w]) => [el, w, el.scrollWidth, parseFloat(getComputedStyle(el).fontSize) || 12]);\n"
+  "  let cur = []; const wrap = [];\n"
+  "  for (const [el, w, sw, fs] of m) if (sw > w) { const f = Math.max(8, Math.floor(fs * w / sw * 2) / 2); el.style.fontSize = f + 'px'; cur.push([el, w, f]); }   // quasi giusto al primo colpo\n"
+  "  for (let r = 0; r < 12 && cur.length; r++) {                              // poi mezzo punto alla volta, ma tutte insieme (una misura per giro)\n"
+  "    cur = cur.filter(([el, w]) => el.scrollWidth > w);\n"
+  "    for (const x of cur) { if (x[2] <= 8) wrap.push(x[0]); else { x[2] -= .5; x[0].style.fontSize = x[2] + 'px'; } }\n"
+  "    cur = cur.filter(x => !wrap.includes(x[0]));\n"
+  "  }\n"
+  "  for (const el of wrap) { el.style.whiteSpace = 'normal'; el.style.textAlign = 'center'; }\n"
+  "}\n"
+  "function i18nFitLater(n) {", 'function i18nFitAll(list)'),
  ("  el.i18nTry = 0;\n  let fs = parseFloat(getComputedStyle(el).fontSize) || 12;",
   "  el.i18nTry = 0;\n  if (!el.style.fontSize && !el.style.whiteSpace && el.scrollWidth <= w) return;   // ci sta già: non si tocca niente (niente ricalcoli della pagina)\n  el.style.fontSize = ''; el.style.whiteSpace = '';\n  let fs = parseFloat(getComputedStyle(el).fontSize) || 12;", 'ci sta già: non si tocca niente'),
  ("  const box = el.parentElement; if (!box || !el.isConnected) return;\n  el.style.fontSize = ''; el.style.whiteSpace = '';\n  const w = box.clientWidth - 6;",
   "  const box = el.parentElement; if (!box || !el.isConnected) return;\n  const w = box.clientWidth - 6;", "if (!box || !el.isConnected) return;\n  const w = box.clientWidth - 6;"),
 ])
+
+# --- schermate del menu più veloci (26 nov 2026) ---
+g = open('game.html').read()
+if 'WANTED_TOK' not in g:
+    a = g.index("  keys.forEach((k, i) => {\n    const n = save.beaten[k]")
+    e = g.index("\n  });\n}", a)
+    body = g[a:e].replace("  keys.forEach((k, i) => {", "  const mk = (k, i) => {", 1)
+    g = g[:a] + body + ("\n  };\n"
+        "  let i = 0; const tok = WANTED_TOK = {};                                    // i manifesti arrivano a pezzi: subito i primi 12, poi gli altri senza bloccare\n"
+        "  const step = first => { if (WANTED_TOK !== tok || $('wanted').hidden) return; const t0 = performance.now(); while (i < keys.length && (first ? i < 12 : performance.now() - t0 < 8)) { mk(keys[i], i); i++; } if (i < keys.length) setTimeout(step, 30); };\n"
+        "  step(true);\n}\nlet WANTED_TOK = null;") + g[e + len("\n  });\n}"):]
+    open('game.html', 'w').write(g)
+if 'FORGE_TOK' not in g:
+    a = g.index("    for (const kk of forgeFiltered()) {\n      const lock = !isUnlocked(kk), c = document.createElement('button');")
+    end_mark = "      grid.appendChild(c);\n    }\n    if (!grid.children.length) {"
+    e = g.index(end_mark, a)
+    body = g[a:e].replace("    for (const kk of forgeFiltered()) {", "    const ks = forgeFiltered(), tok = FORGE_TOK = {}; let fi = 0;\n    const mkF = kk => {", 1)
+    g = g[:a] + body + ("      grid.appendChild(c);\n    };\n"
+        "    const stepF = first => { if (FORGE_TOK !== tok || !grid.isConnected) return; const t0 = performance.now(); while (fi < ks.length && (first ? !fast || fi < 12 : performance.now() - t0 < 8)) mkF(ks[fi++]); if (fi < ks.length) setTimeout(stepF, 30); };   // subito le prime 12 carte, le altre a pezzi\n"
+        "    stepF(true);\n    if (!ks.length) {") + g[e + len(end_mark):]
+    g = g.replace("function renderForge() {", "let FORGE_TOK = null;\nfunction renderForge(fast) {                                               // fast: appena aperta o filtrata (dopo un acquisto si rifà tutto subito, la lista non salta)", 1)
+    for x in ["$('forge').hidden = false; renderForge(); }", "forgeJust = null; renderForge(); });", "fgF.q = $('fgQ').value; renderForge(); };", "fgF.own = $('fgOwn').value; renderForge(); };", "fgF.rar = +$('fgRar').value; renderForge(); };", "fgF.sort = $('fgSort').value; renderForge(); };"]:
+        assert g.count(x) == 1, x; g = g.replace(x, x.replace('renderForge()', 'renderForge(true)'))
+    open('game.html', 'w').write(g)
+if 'ALB_TOK' not in g:
+    a = g.index("  ALB.forEach((pg, i) => {\n    const ks = albKeys(pg)")
+    end_mark = "    list.appendChild(sec);\n  });\n}"
+    e = g.index(end_mark, a)
+    body = g[a:e].replace("  ALB.forEach((pg, i) => {", "  const tok = ALB_TOK = {}; let ai = 0;\n  const mkA = (pg, i) => {", 1)
+    g = g[:a] + body + ("    list.appendChild(sec);\n  };\n"
+        "  const stepA = first => { if (ALB_TOK !== tok || !list.isConnected) return; const t0 = performance.now(); while (ai < ALB.length && (first ? !fast || ai < 2 : performance.now() - t0 < 8)) { mkA(ALB[ai], ai); ai++; } if (ai < ALB.length) setTimeout(stepA, 30); };   // subito le prime 2 pagine, le altre a pezzi\n"
+        "  stepA(true);\n}") + g[e + len(end_mark):]
+    g = g.replace("function renderAlbum() {", "let ALB_TOK = null;\nfunction renderAlbum(fast) {                                                // fast: appena aperto l'Album (dopo un Ritira si rifà tutto subito, la pagina non salta)", 1)
+    g = g.replace("function showAlbum() { toScene(); $('album').hidden = false; renderAlbum(); }", "function showAlbum() { toScene(); $('album').hidden = false; renderAlbum(true); }", 1)
+    open('game.html', 'w').write(g)
 print('ok')

@@ -973,11 +973,31 @@ function i18nFitEl(el) {
   while (el.scrollWidth > w && fs > 8) { fs -= .5; el.style.fontSize = fs + 'px'; }
   if (el.scrollWidth > w) { el.style.whiteSpace = 'normal'; el.style.textAlign = 'center'; }
 }
+function i18nFitAll(list) {                                                 // come i18nFitEl, ma per tante scritte insieme: prima si misura tutto, poi si cambia tutto (la pagina si ricalcola 3 volte, non centinaia)
+  const todo = [];
+  for (const el of list) {
+    const box = el.parentElement; if (!box || !el.isConnected) continue;
+    const w = box.clientWidth - 6; if (w <= 0) { if ((el.i18nTry = (el.i18nTry || 0) + 1) < 20) setTimeout(() => i18nFitLater(el), 250); continue; }
+    el.i18nTry = 0; if (!el.style.fontSize && !el.style.whiteSpace && el.scrollWidth <= w) continue;   // ci sta già
+    todo.push([el, w]);
+  }
+  if (!todo.length) return;
+  for (const [el] of todo) { el.style.fontSize = ''; el.style.whiteSpace = ''; }
+  const m = todo.map(([el, w]) => [el, w, el.scrollWidth, parseFloat(getComputedStyle(el).fontSize) || 12]);
+  let cur = []; const wrap = [];
+  for (const [el, w, sw, fs] of m) if (sw > w) { const f = Math.max(8, Math.floor(fs * w / sw * 2) / 2); el.style.fontSize = f + 'px'; cur.push([el, w, f]); }   // quasi giusto al primo colpo
+  for (let r = 0; r < 12 && cur.length; r++) {                              // poi mezzo punto alla volta, ma tutte insieme (una misura per giro)
+    cur = cur.filter(([el, w]) => el.scrollWidth > w);
+    for (const x of cur) { if (x[2] <= 8) wrap.push(x[0]); else { x[2] -= .5; x[0].style.fontSize = x[2] + 'px'; } }
+    cur = cur.filter(x => !wrap.includes(x[0]));
+  }
+  for (const el of wrap) { el.style.whiteSpace = 'normal'; el.style.textAlign = 'center'; }
+}
 function i18nFitLater(n) {
   const el = n.nodeType === 3 ? n.parentElement : n; if (!el || !el.closest) return;
   const m = el.closest(I18N_FIT_SEL); if (m) I18N_FIT.add(m);
   if (el.querySelectorAll) el.querySelectorAll(I18N_FIT_SEL).forEach(x => I18N_FIT.add(x));
-  if (I18N_FIT.size && !I18N_FIT_RAF) I18N_FIT_RAF = requestAnimationFrame(() => { I18N_FIT_RAF = 0; for (const x of I18N_FIT) i18nFitEl(x); I18N_FIT.clear(); });
+  if (I18N_FIT.size && !I18N_FIT_RAF) I18N_FIT_RAF = requestAnimationFrame(() => { I18N_FIT_RAF = 0; const l = [...I18N_FIT]; I18N_FIT.clear(); i18nFitAll(l); });
 }
 addEventListener('resize', () => document.querySelectorAll(I18N_FIT_SEL).forEach(i18nFitLater));
 const I18N_OBS = new MutationObserver(list => {
@@ -11120,8 +11140,8 @@ function drawIcon(cvs, key, look) {
   ICON_MEMO.set(mk, c2); if (ICON_MEMO.size > 500) ICON_MEMO.delete(ICON_MEMO.keys().next().value);
 }
 function iconWarm() {                                                       // dopo l'apertura, piano piano: le icone della squadra pronte prima di servire
-  const todo = DW.ROSTER.slice(), scratch = document.createElement('canvas'); scratch.width = 112; scratch.height = 104;
-  const step = () => { const t0 = performance.now(); do drawIcon(scratch, todo.shift()); while (todo.length && performance.now() - t0 < 8); if (todo.length) setTimeout(step, 40); else setTimeout(sqBuildIdle, 200); };   // pochi millesimi alla volta: pezzi piccoli; alla fine si prepara anche la griglia della squadra
+  const todo = DW.ROSTER.map(k => [k]).concat(GOODS.concat(Object.keys(DW.ELITE)).map(k => [vis(k)]), Object.entries(LOOKS).map(([id, L]) => [L.k === 'drago' ? 'goblin' : L.k, L.k === 'drago' ? null : id])), scratch = document.createElement('canvas'); scratch.width = 112; scratch.height = 104;   // cattivi, buoni e boss, aspetti speciali
+  const step = () => { const t0 = performance.now(); do { const [k, lk] = todo.shift(); if (DW.U[k] || k === 'drago') drawIcon(scratch, k, lk); } while (todo.length && performance.now() - t0 < 8); if (todo.length) setTimeout(step, 40); else setTimeout(sqBuildIdle, 200); };   // pochi millesimi alla volta: pezzi piccoli; alla fine si prepara anche la griglia della squadra
   setTimeout(step, 2500);
 }
 function drawIcon0(cvs, key, look) {                                        // icona di un personaggio, sempre alla luce del giorno (con il suo aspetto)
@@ -11595,10 +11615,12 @@ const albKeys = pg => DW.ROSTER.filter(k => pg.sec ? albSecret(k) : (RAR[k] || 0
 const albDone = i => albKeys(ALB[i]).every(k => save.unlocked.includes(k));
 const albReady = () => !BETA && ALB.some((_, i) => albDone(i) && !save.album.includes(i));
 const albPrizeTxt = p => p.gold ? `${p.gold} oro` : p.ru ? `${p.ru} Rubini` : p.eggs && p.eggs.leg ? 'Uovo Leggendario' : 'Uovo Grande';
-function showAlbum() { toScene(); $('album').hidden = false; renderAlbum(); }
-function renderAlbum() {
+function showAlbum() { toScene(); $('album').hidden = false; renderAlbum(true); }
+let ALB_TOK = null;
+function renderAlbum(fast) {                                                // fast: appena aperto l'Album (dopo un Ritira si rifà tutto subito, la pagina non salta)
   const list = $('albumList'); list.innerHTML = '';
-  ALB.forEach((pg, i) => {
+  const tok = ALB_TOK = {}; let ai = 0;
+  const mkA = (pg, i) => {
     const ks = albKeys(pg), have = ks.filter(k => save.unlocked.includes(k)).length, done = have === ks.length, got = save.album.includes(i), L = LOOKS[pg.look];
     const sec = document.createElement('div'); sec.className = 'albPage'; sec.style.setProperty('--rc', pg.sec ? '#2a1a3a' : RCOL[pg.r][1]);
     sec.innerHTML = `<div class="albHead"><b></b><em>${have}/${ks.length}</em></div><div class="albGrid"></div><div class="albPrize"><canvas width="112" height="104"></canvas><span class="tx"><b></b><br><small></small></span><button class="upBtn"></button></div>`;
@@ -11611,14 +11633,16 @@ function renderAlbum() {
     const bt = sec.querySelector('.albPrize .upBtn'); bt.textContent = got ? 'Preso' : 'Ritira'; bt.disabled = got || !done; if (done && !got) bt.classList.add('ready');
     bt.onclick = () => { if (got || !albDone(i)) return; save.album.push(i); lookGive(pg.look); persist(); passGive(Object.assign({look:pg.look}, pg.prize), `Album · ${pg.n}`); renderAlbum(); paintMenuDots(); };
     list.appendChild(sec);
-  });
+  };
+  const stepA = first => { if (ALB_TOK !== tok || !list.isConnected) return; const t0 = performance.now(); while (ai < ALB.length && (first ? !fast || ai < 2 : performance.now() - t0 < 8)) { mkA(ALB[ai], ai); ai++; } if (ai < ALB.length) setTimeout(stepA, 30); };   // subito le prime 2 pagine, le altre a pezzi
+  stepA(true);
 }
 $('menuAlbum').onclick = showAlbum; $('drLeave').onclick = () => leaveGame(); $('albumBack').onclick = () => showMenu();
 function showWanted() {
   toScene(); $('wanted').hidden = false;
   const grid = $('wantedGrid'); grid.innerHTML = '';
   const keys = GOODS.concat(Object.keys(DW.ELITE));
-  keys.forEach((k, i) => {
+  const mk = (k, i) => {
     const n = save.beaten[k] || 0, seen = BETA || n > 0, el = DW.U[k] && DW.U[k].elite, d = document.createElement('div');
     d.className = 'poster' + (el || k === 're' ? ' boss' : '') + (seen ? '' : ' unk'); d.style.setProperty('--r', ((hashStr(k) % 7) - 3) * .6 + 'deg');
     const name = el ? el.name : WNAME[k], bounty = ((DW.U[k] && DW.U[k].bounty) || 100) * 10;
@@ -11626,8 +11650,12 @@ function showWanted() {
       <small>Taglia: ${bounty} oro</small><small>Battuto ${n} ${n === 1 ? 'volta' : 'volte'}</small>`;
     drawIcon(d.querySelector('canvas'), vis(k));
     grid.appendChild(d);
-  });
+  };
+  let i = 0; const tok = WANTED_TOK = {};                                    // i manifesti arrivano a pezzi: subito i primi 12, poi gli altri senza bloccare
+  const step = first => { if (WANTED_TOK !== tok || $('wanted').hidden) return; const t0 = performance.now(); while (i < keys.length && (first ? i < 12 : performance.now() - t0 < 8)) { mk(keys[i], i); i++; } if (i < keys.length) setTimeout(step, 30); };
+  step(true);
 }
+let WANTED_TOK = null;
 /* ---------- Uova di Drago ---------- */
 const RAR = {pupazzo:1, zucca:3, gothel:1, marzapane:3, alberich:2, sirena:1, bandersnatch:3, ladroni:1, gigantegh:3, trollspecchio:2, dragonero:4, krampus:3, jabberwocky:3, kraken:3, idra:3, mordred:2, lupomannaro:2, frankenstein:2, hyde:2, trollponte:0, scheletri:0, goblin:0, topi:0, fionda:0, orco:1, lupo:0, strega:2, gattovolpe:1, gnomo:1, spaventapasseri:1, matrigna:1, retopi:1, fantasma:2, coccodrillo:2, barbablu:2, omino:2, babajaga:2, stregamare:2, uncino:3, mangiafuoco:3, gigante:4, tremotino:4, reginacattiva:4, reginanevi:4, pandizenzero:1, mummia:1, morgana:2, grifone:2, spirito:2, bestia:2, ciclope:2, senzatesta:2, dracula:2, basilisco:4, cavaliereverde:4, medusa:2, reginacuori:1, stregone:1, pescecane:2, diavolo:4};
 Object.assign(RAR, {minotauro:4, fenice:4, fuocofatuo:0, diavoletto:0, rospo:0, cornacchia:0, lumacone:1, circe:3, ecate:4});
@@ -12048,13 +12076,14 @@ const BASE_UP = {
   drago:[{id:'dmg', name:'Fiato rovente', desc:'+8% di danno della fiammata'}, {id:'charge', name:'Fiato lungo', desc:'La fiammata si ricarica il 6% prima'}, {id:'wall', name:'Fiato sulle mura', desc:'La fiammata toglie al castello il 3,5% della vita, +0,7% per livello'}]
 };
 let forgeTab = 'cattivi', forgeSel = 'goblin', forgeFrom = 'menu', forgeJust = null;
-function showForge(from) { forgeFrom = from; toScene(); $('forge').hidden = false; renderForge(); }
+function showForge(from) { forgeFrom = from; toScene(); $('forge').hidden = false; renderForge(true); }
 function statsOf(kk, lv) {
   const d = DW.U[kk], b = d.group ? DW.U[d.group.k || d.group.ks[0]] : d, m = (1 + .08 * (lv - 1)) * (DW.LEG.has(kk) ? 1.25 : 1);
   return {hp:Math.round(b.hp * m), dmg:Math.round(b.dmg * m * 10) / 10, n:d.group ? (d.group.n || d.group.ks.length) : 1};
 }
 function buy(cost, apply, msg) { if (save.gold < cost) return UIS.err(); UIS.up(); save.gold -= cost; save.stat.ups++; apply(); persist(); toast(msg); vibrate(20); renderForge(); }
-function renderForge() {
+let FORGE_TOK = null;
+function renderForge(fast) {                                               // fast: appena aperta o filtrata (dopo un acquisto si rifà tutto subito, la lista non salta)
   $('forgeGold').textContent = save.gold.toLocaleString(LOC());
   document.querySelectorAll('#forgeTabs button').forEach(b => b.setAttribute('aria-selected', String(b.dataset.t === forgeTab)));
   const list = $('forgeList'); list.innerHTML = '';
@@ -12064,15 +12093,18 @@ function renderForge() {
     prog.className = 'fgProg'; prog.innerHTML = `<b>Cattivi sbloccati <em>${nU}/${nT}</em></b><span class="bar"><i style="width:${Math.round(nU / nT * 100)}%"></i></span><small>${nU >= nT ? 'Collezione completa: le fiabe tremano.' : 'Ne mancano ' + (nT - nU) + '. Le fiabe non si rovinano da sole.'}</small>`;
     list.appendChild(prog); list.onscroll = () => prog.classList.toggle('stuck', list.scrollTop > 6);   // la barra resta in alto mentre scorri
     const grid = document.createElement('div'); grid.className = 'fgGrid'; list.appendChild(grid);
-    for (const kk of forgeFiltered()) {
+    const ks = forgeFiltered(), tok = FORGE_TOK = {}; let fi = 0;
+    const mkF = kk => {
       const lock = !isUnlocked(kk), c = document.createElement('button');
       c.className = 'card2' + (lock ? ' lock' : '') + (secretLocked(kk) ? ' secret' : '') + (kk === forgeJust ? ' just' : ''); c.dataset.r = secretLocked(kk) ? 's' : RAR[kk] || 0;
       c.innerHTML = `${secretLocked(kk) ? '' : `<span class="mana" title="Costo in Cattiveria">${DW.costOf(kk)}</span>`}<canvas width="112" height="104"></canvas><span class="nm">${dispName(kk)}</span><span class="lv">${secretLocked(kk) ? 'Segreto' : lock ? 'Bloccato' : 'Liv ' + unitLv(kk) + ' · ' + (save.shards[kk] || 0) + ' fr'}</span>`;
       drawCard(c.querySelector('canvas'), kk); if (evoOf(kk)) { const st = document.createElement('i'); st.className = 'evoS'; st.textContent = '★'.repeat(evoOf(kk)); c.appendChild(st); }
       c.onclick = () => openUnit(kk, 'forge');
       grid.appendChild(c);
-    }
-    if (!grid.children.length) { const n = document.createElement('p'); n.className = 'fgNone'; n.textContent = 'Nessun cattivo con questi filtri.'; grid.appendChild(n); }
+    };
+    const stepF = first => { if (FORGE_TOK !== tok || !grid.isConnected) return; const t0 = performance.now(); while (fi < ks.length && (first ? !fast || fi < 12 : performance.now() - t0 < 8)) mkF(ks[fi++]); if (fi < ks.length) setTimeout(stepF, 30); };   // subito le prime 12 carte, le altre a pezzi
+    stepF(true);
+    if (!ks.length) { const n = document.createElement('p'); n.className = 'fgNone'; n.textContent = 'Nessun cattivo con questi filtri.'; grid.appendChild(n); }
   } else {
     const store = save.up[forgeTab];
     for (const it of BASE_UP[forgeTab]) {
@@ -12092,7 +12124,7 @@ function renderForge() {
     }
   }
 }
-document.querySelectorAll('#forgeTabs button').forEach(b => b.onclick = () => { forgeTab = b.dataset.t; forgeJust = null; renderForge(); });
+document.querySelectorAll('#forgeTabs button').forEach(b => b.onclick = () => { forgeTab = b.dataset.t; forgeJust = null; renderForge(true); });
 /* ---------- filtri della Fucina: nome, sbloccati, rarità, ordine ---------- */
 const fgF = {q:'', own:'all', rar:-1, sort:'cost'}, sqF = {q:'', own:'all', rar:-1, sort:'cost'};
 function forgeFiltered(F = fgF) {
@@ -12110,10 +12142,10 @@ function forgeFiltered(F = fgF) {
   else if (fgF.sort === 'lv') ks = ks.slice().sort((a, b) => lvOf(b) - lvOf(a));
   return ks;
 }
-$('fgQ').oninput = () => { fgF.q = $('fgQ').value; renderForge(); };
-$('fgOwn').onchange = () => { fgF.own = $('fgOwn').value; renderForge(); };
-$('fgRar').onchange = () => { fgF.rar = +$('fgRar').value; renderForge(); };
-$('fgSort').onchange = () => { fgF.sort = $('fgSort').value; renderForge(); };
+$('fgQ').oninput = () => { fgF.q = $('fgQ').value; renderForge(true); };
+$('fgOwn').onchange = () => { fgF.own = $('fgOwn').value; renderForge(true); };
+$('fgRar').onchange = () => { fgF.rar = +$('fgRar').value; renderForge(true); };
+$('fgSort').onchange = () => { fgF.sort = $('fgSort').value; renderForge(true); };
 function sqFilter() {                                                      // nel mazzo: le carte che non c'entrano si nascondono, le altre si mettono in ordine
   const ks = forgeFiltered(sqF), pos = new Map(ks.map((k, i) => [k, i]));
   for (const [kk, c] of Object.entries(sqCards)) { c.hidden = !pos.has(kk); c.style.order = pos.has(kk) ? pos.get(kk) : 999; }
