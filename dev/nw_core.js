@@ -151,3 +151,15 @@ function nwFront(c, p, t) {                                                  // 
     else { for (const [dx, r] of [[-26, 30], [22, 34], [0, 44]]) { const p = E(x + dx + sw * .3, H + 6 - r * .3, r, r * .9); F(p, dk(fg0, .1)); c.save(); c.clip(p); F(E(x + dx - r * .3, H - r * .9, r * .8, r * .5), 'rgba(120,180,90,.28)'); c.restore(); } } }
   c.restore(); g = null; RAW = 0;
 }
+
+function nwLightList() {                                                      // le luci dello sfondo (torce, finestre, lava…) in coordinate del gioco: per il buio e gli aloni
+  if (!NWS || !NWS.sets.some(Boolean)) return []; nwApply(NWS.P); const s0 = nwSet0(), out = [];
+  for (const l of s0.lights) { if (!l.rgb) l.rgb = (String(l.c).match(/\d+\s*,\s*\d+\s*,\s*\d+/) || ['255,190,110'])[0].replace(/\s/g, '');
+    for (const o of l.own ? NWS.ow[l.own] : [null]) { let x = l.x, y = l.y, r = l.r; if (o) { x = o.TX + o.sg * o.sc * (l.x - o.AX); y = BASE + o.dy + o.sc * (l.y - BASE); r *= o.sc; }
+      out.push({ x: NWS.P.l + NW_SX * x, y: NW_SX * (y - G0), r: r * NW_SX, rgb: l.rgb }); } }
+  return out;
+}
+function nwSunPos() {                                                         // dove sono il sole di giorno e quello del tramonto (come nel cielo disegnato)
+  if (!NWS || !NWS.sets.some(Boolean)) return null; nwApply(NWS.P); const W = WD();
+  return { day: { x: NWS.P.l + NW_SX * VW * .78, y: NW_SX * (70 - G0) }, set: { x: NWS.P.l + NW_SX * VW * .6, y: NW_SX * (262 - G0) }, moon: { x: NWS.P.l + NW_SX * VW * .72, y: NW_SX * (96 - G0) }, noSun: !!W.noSun };
+}

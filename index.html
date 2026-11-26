@@ -641,6 +641,7 @@ button:focus-visible{outline:3px solid #5aa0ff;outline-offset:2px}
 .langBtns{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
 .langBtns .upBtn{padding:7px 4px;font-size:14px;background:var(--parch2);white-space:nowrap}
 .langBtns .upBtn[aria-pressed="true"]{background:var(--gold2)}
+.langBtns.q4{grid-template-columns:repeat(4,1fr)}
 .cnRules{font:700 14px/1.4 var(--body);margin:0;padding-left:18px}
 .cnRules li{margin:3px 0}
 .cnPickGrid{max-height:52vh;overflow-y:auto;padding:4px}
@@ -933,6 +934,7 @@ button:focus-visible{outline:3px solid #5aa0ff;outline-offset:2px}
         <label class="setRow"><span>💥 Effetti</span><input type="range" id="setSfx" min="0" max="100" step="5"></label>
         <label class="setRow"><span>👹 Versi</span><input type="range" id="setVox" min="0" max="100" step="5"></label>
         <div class="setRow"><span>📳 Vibrazione</span><button class="upBtn" id="setVib" aria-pressed="true">Sì</button></div>
+        <div class="setRow lang"><span>✨ Luci</span><div class="langBtns q4" id="setLuci"><button class="upBtn" data-q="auto">Auto</button><button class="upBtn" data-q="3">Alte</button><button class="upBtn" data-q="2">Medie</button><button class="upBtn" data-q="1">Basse</button></div></div>
         <div class="setRow lang"><span>🌐 Lingua</span><div class="langBtns" id="setLang" data-noi18n><button class="upBtn" data-lang="en">English</button><button class="upBtn" data-lang="it">Italiano</button><button class="upBtn" data-lang="es">Español</button></div></div>
         <div class="cloudBox" id="cloudBox">
           <h3>☁️ Salvataggio online</h3>
@@ -1033,4 +1035,4 @@ button:focus-visible{outline:3px solid #5aa0ff;outline-offset:2px}
   <div class="tutHand" id="tutHand" hidden><svg viewBox="0 0 48 56" aria-hidden="true"><path d="M17 4c3 0 5 2 5 5v16l2-.6c1-4.8 8.4-4.6 8.8.6l.6-.2c1.4-4.2 8.2-3.6 8.4 1.4l.4-.1c1.8-3.4 7-2.4 7 2.6V40c0 9-6.6 14-14.6 14h-6c-6 0-9.6-3-12.6-8L7 35.4c-2-3.2 1.6-6.8 5-4.8V9c0-3 2-5 5-5z" fill="#fffaf0" stroke="#1c1a24" stroke-width="3" stroke-linejoin="round"/></svg></div>
 </div>
 
-<script src="js/g1-61fa2d3dea.js"></script>
+<script src="js/g1-449e7ad65c.js"></script>
