@@ -21,7 +21,7 @@ def cut(m):
     h = hashlib.sha1(body.encode('utf-8')).hexdigest()[:10]; n = len(js) + 1; fn = f'js/g{n}-{h}.js'   # il nome cambia con il contenuto: una pagina vecchia trova sempre il suo codice
     open(d + '/' + fn, 'w', encoding='utf-8').write(body); js.append('./' + fn)
     old = sorted((f for f in os.listdir(d + '/js') if re.fullmatch(rf'g{n}(-[0-9a-f]+)?\.js', f) and f != os.path.basename(fn)), key=lambda f: -os.path.getmtime(d + '/js/' + f))
-    for f in old[1:]: os.remove(d + '/js/' + f)                        # si tiene solo la versione precedente
+    for f in old[4:]: os.remove(d + "/js/" + f)                        # si tengono le ultime versioni (per chi ha ancora la pagina vecchia)
     return f'<script{attrs} src="{fn}"></script>'
 page = re.sub(r'<script([^>]*)>(.*?)</script>', cut, page, flags=re.S)
 open(out, 'w', encoding='utf-8').write(page)
