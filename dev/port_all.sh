@@ -16,4 +16,6 @@ python3 port_opt.py
 python3 port_luci.py
 # python3 port_capr.py   # Capricci 11-18: pronti, si accendono dopo il bilanciamento
 python3 port_fucina.py
+python3 port_res.py
+python3 port_bil.py
 python3 build.py

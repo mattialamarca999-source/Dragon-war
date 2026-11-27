@@ -305,6 +305,7 @@ const DW = (() => {
   const pace = k => { const d = U[k]; return d.group ? 30 : Math.max(8, 4 + (d.bounty || 20) * .35); };   // ogni quanto il castello manda quel buono
   const EK = {a:.018, b:.00007};                               // quanto crescono i buoni di castello in castello
   const cache = {};
+  const WTUNE = Object.assign({15:{iv:1.3, e:.88}}, typeof process !== 'undefined' && process.env && process.env.DW_TUNE ? JSON.parse(process.env.DW_TUNE) : {});   // correzioni per mondo (indice da 0)
   function levelOf(w, c) {
     if (w === 0) return Object.assign(LEVELS[c], {world:0, castle:c, g:c, eMul:1, semi:null, shardN:LEVELS[c].boss ? 6 : 4});
     const key = w + ':' + c; if (cache[key]) return cache[key];
@@ -330,6 +331,8 @@ const DW = (() => {
       lv.eMul *= (1 - EASE.s * r) * (w >= 8 ? EASE.late : 1);            // dal mondo 9 è il finale: un po' più tosto
       lv.waves = lv.waves.map((x, i) => [x[0], x[1] + 4 * r + i * (EASE.gap - 10) * r, last || isSemi ? x[2] : x[2] * q / qe]);
     }
+    const TU = WTUNE[w];                                                    // correzione del mondo, misurata col backtest
+    if (TU) { lv.eMul *= TU.e || 1; if (TU.iv) lv.waves = lv.waves.map(x => [x[0], x[1], last || isSemi ? x[2] : x[2] * TU.iv]); }
     return (cache[key] = lv);
   }
 

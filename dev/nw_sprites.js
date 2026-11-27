@@ -1,5 +1,6 @@
 // --- immagini pronte (sprite): ogni posa si disegna una volta sola, poi si incolla; ombre e lampi di colore si ricavano dalla stessa immagine ---
-let SPR_PROBE = null, SPR_FIX = 0, SPR_OFF = 0; const SPR_DAY = { shadow: '#2a2140', amtC: .36, amtB: .55 };   // la luce fissa con cui si disegnano le immagini pronte
+let SPR_PROBE = null, SPR_FIX = 0, SPR_OFF = 0, SPR_RES = 1;   // SPR_RES: quanto la tela è più piccola del massimo (risoluzione automatica)
+const SPR_DAY = { shadow: '#2a2140', amtC: .36, amtB: .55 };   // la luce fissa con cui si disegnano le immagini pronte
 const TAU = Math.PI * 2, SPR = new Map(), KB = {}; let SPR_PX = 0, SPR_NEW = 0;
 const SPR_MAX = 1.8e7, SPR_BUDGET = 8;                                       // memoria massima (pixel) e pose nuove per fotogramma
 function sprPose(k, o) {                                                    // la posa "arrotondata": pochi fotogrammi per camminata, respiro e attacco
@@ -30,7 +31,7 @@ function sprSil(e, col) {                                                     //
 }
 function sprDraw(k, c, o, fn) {
   if (SPR_OFF) return false;                                                   // icone: disegnate una volta sola, l'immagine pronta non serve
-  const m = NG_MODE(), tm = c.getTransform(), sc = Math.hypot(tm.a, tm.b); if (!(sc > 0)) return false;
+  const m = NG_MODE(), tm = c.getTransform(), sc = Math.hypot(tm.a, tm.b) / SPR_RES; if (!(sc > 0)) return false;   // le immagini pronte restano quelle a piena risoluzione
   const qi = Math.ceil(Math.log2(sc) * 3 - .15), qs = Math.pow(2, qi / 3), Lt = NG_LIGHT();   // 3 grandezze per raddoppio, sempre un po' più nitida del necessario: meno immagini da tenere
   const [p, pk] = sprPose(k, o), key = k + '|' + pk + '|' + qi;              // la luce del momento NON entra nel nome: l'immagine resta buona dal giorno alla notte
   let e = SPR.get(key);
