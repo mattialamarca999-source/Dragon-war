@@ -18,4 +18,5 @@ python3 port_luci.py
 python3 port_fucina.py
 python3 port_res.py
 python3 port_bil.py
+python3 port_fluido.py
 python3 build.py

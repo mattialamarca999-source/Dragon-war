@@ -71,7 +71,7 @@ body.inMenu .top, body.inMenu .hud{display:none}
   padding-block:8px calc(8px + env(safe-area-inset-bottom,0px));padding-left:max(12px,env(safe-area-inset-left,0px));padding-right:max(12px,env(safe-area-inset-right,0px))}
 .cat{display:flex;gap:8px;align-items:stretch}
 .catbar{flex:1;min-width:0;position:relative;height:40px;border:2px solid var(--ink);border-radius:12px;background:#3a2a4a;overflow:hidden}
-#catFill{position:absolute;inset:0 auto 0 0;width:0;background:linear-gradient(180deg,var(--evil2),var(--evil))}
+#catFill{position:absolute;inset:0 auto 0 0;width:100%;transform-origin:0 50%;transform:scaleX(0);will-change:transform;background:linear-gradient(180deg,var(--evil2),var(--evil))}
 #catTxt{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;gap:6px;font-family:var(--display);font-size:18px;color:#fff;text-shadow:0 2px 0 var(--ink);font-variant-numeric:tabular-nums}
 .horn{width:16px;height:16px;flex:none}
 #walletBtn{font-family:var(--display);font-size:15px;line-height:1;border:2px solid var(--ink);border-radius:12px;background:var(--gold);color:var(--ink);padding:4px 10px;cursor:pointer;box-shadow:0 3px 0 var(--ink);display:flex;flex-direction:column;justify-content:center;gap:3px;min-width:112px}
@@ -2948,6 +2948,7 @@ function drawThemeFx() {                                                   // ne
 function sun() { return {x:640, y:-300 + L.p * 420}; }
 function moonPos() { return {x:380, y:lerp(80, -300, ease(clamp01((L.p - .45) / .55)))}; }
 function drawSkyScreen() {
+  if (NWON && NG.nw && NG.nw.ready && NG.nw.ready()) return;                 // lo sfondo dei mondi copre già tutto lo schermo
   const hy = Math.max(10, groundY - 80 * k);
   const g = ctx.createLinearGradient(0, 0, 0, hy);
   g.addColorStop(0, L.sky[0]); g.addColorStop(.4, L.sky[1]); g.addColorStop(.75, L.sky[2]); g.addColorStop(1, L.sky[3]);
@@ -4378,14 +4379,16 @@ const lightCv = document.createElement('canvas'); const lctx = lightCv.getContex
    Qualità: 3 alte, 2 medie, 1 basse; «auto» misura la fluidità in battaglia e si regola da sola. */
 let LQ_SET = (() => { try { return localStorage.getItem('dw_luci') || 'auto'; } catch (e) { return 'auto'; } })();
 let LQ = LQ_SET === 'auto' ? 2 : +LQ_SET || 2;                                  // in automatico si parte dalle medie: sale solo se il telefono è fluido
-const LQ_FT = [];
+const LQ_FT = []; let LQ_NEXT = null;
+const LIVE = () => typeof running !== 'undefined' && running && !paused && !ended && !inMenu && countT <= 0;   // si sta combattendo: niente cambi visibili
 function lqTick(rdt) {                                                       // automatico: se i fotogrammi rallentano, luci più leggere (e viceversa)
   if (LQ_SET !== 'auto' || document.hidden || !NWON) { LQ_FT.length = 0; return; }   // anche nel menu, non solo in battaglia
   LQ_FT.push(rdt); if (LQ_FT.length < 60) return;
   const a = LQ_FT.slice().sort((x, y) => x - y), med = a[30]; LQ_FT.length = 0;
-  if (med > 1 / 42 && LQ > 1) LQ--; else if (med < 1 / 57 && LQ < 3) LQ++;
+  const cur = LQ_NEXT ?? LQ; if (med > 1 / 42 && cur > 1) LQ_NEXT = cur - 1; else if (med < 1 / 57 && cur < 3) LQ_NEXT = cur + 1;
 }
-function lqSet(v) { LQ_SET = v; LQ = v === 'auto' ? 2 : +v; try { localStorage.setItem('dw_luci', v); } catch (e) {} }
+function lqLater() { if (LQ_NEXT != null && !LIVE()) { if (LQ_SET === 'auto') LQ = LQ_NEXT; LQ_NEXT = null; } }   // il cambio deciso si fa al momento giusto
+function lqSet(v) { LQ_SET = v; LQ_NEXT = null; LQ = v === 'auto' ? 2 : +v; try { localStorage.setItem('dw_luci', v); } catch (e) {} }
 const LX_SPR = {};
 function lxSpr(rgb, kind) {                                                  // gli aloni pronti: «led» (nucleo bianco + colore + bagliore), «soft», «hole» (per bucare il buio), «pool» (pozza a terra)
   const key = rgb + '|' + kind; let c = LX_SPR[key]; if (c) return c;
@@ -4549,10 +4552,13 @@ function resTick(rdt) {                                                    // fo
   if (document.hidden || paused || GALLERY) { RES_FT.length = 0; return; }
   RES_FT.push(rdt); if (RES_FT.length < 40) return;
   const a = RES_FT.sort((x, y) => x - y), med = a[20], p80 = a[32]; RES_FT.length = 0;
-  if (p80 > 1 / 45 && RES > .6) { RES = Math.round((RES - .1) * 10) / 10; RES_GOOD = 0; resApply(); }
-  else if (med < 1 / 57 && p80 < 1 / 50 && RES < 1) { if (++RES_GOOD >= 4) { RES = Math.round((RES + .1) * 10) / 10; RES_GOOD = 0; resApply(); } }
-  else RES_GOOD = 0;
+  const cur = RES_NEXT ?? RES;
+  if (p80 > 1 / 45 && cur > .6) { if (++RES_BAD >= 2) { RES_NEXT = Math.round((cur - .1) * 10) / 10; RES_BAD = 0; } RES_GOOD = 0; }   // due misure lente di fila, non uno scatto solo
+  else if (med < 1 / 57 && p80 < 1 / 50 && cur < 1) { RES_BAD = 0; if (++RES_GOOD >= 4) { RES_NEXT = Math.round((cur + .1) * 10) / 10; RES_GOOD = 0; } }
+  else { RES_GOOD = 0; RES_BAD = 0; }
 }
+let RES_NEXT = null, RES_BAD = 0;
+function resLater() { if (RES_NEXT != null && !LIVE()) { if (RES_NEXT !== RES) { RES = RES_NEXT; resApply(); } RES_NEXT = null; } }   // la nitidezza cambia solo fuori dal combattimento
 function resApply() { try { localStorage.setItem('dw_res', String(RES)); } catch (e) {} if (NG.setRes) NG.setRes(RES); resize(); }
 let DY = 28, P34 = false;                                                 // profondità del campo: in battaglia la telecamera è alzata (vista 3/4)
 const PATH = x => { if (x == null || isNaN(x)) return .5; const b = s && s.base ? s.base.x : 70, c = s && s.castle ? s.castle.x : 930; return Math.sin(Math.PI * Math.max(0, Math.min(1, (x - b) / (c - b)))); };
@@ -4652,8 +4658,9 @@ const toasted = new Set();
 function toastOnce(t) { if (!toasted.has(t)) { toasted.add(t); toast(t); } }   // spiega un'abilità la prima volta che succede
 
 /* ================= dimensioni ================= */
-function resize() {
+function resize(ro) {
   const r = $('stage').getBoundingClientRect();
+  if (Array.isArray(ro) && running && !inMenu && W > 0 && Math.abs(r.width - W) < 2 && Math.abs(r.height - H) < Math.max(24, H * .06)) return;   // pochi pixel: la tela si allarga da sola, senza rifare la scena
   DPR0 = Math.min(2, window.devicePixelRatio || 1); dpr = Math.max(.75, DPR0 * RES); if (NG.setRes) NG.setRes(dpr / DPR0);
   W = r.width; H = r.height;
   cv.width = Math.max(1, Math.round(W * dpr)); cv.height = Math.max(1, Math.round(H * dpr));
@@ -11146,11 +11153,33 @@ function nwFront(c, p, t) {                                                  // 
   else if (W.frozen) for (let i = 0; i < 60; i++) { const x = ((i * 97.3 + Math.sin(T * .7 + i) * 20) % (VW + 40) + VW + 40) % (VW + 40) - 20, y = ((i * 53 + T * (24 + i % 4 * 8)) % (H + 20)) - 10; c.fillStyle = 'rgba(255,255,255,.8)'; c.beginPath(); c.arc(x, y, 1 + (i % 3) * .7, 0, 7); c.fill(); }
   else for (let i = 0; i < 26; i++) { const x = ((i * 137.5 + T * (6 + i % 5)) % (VW + 40) + VW + 40) % (VW + 40) - 20, y = 300 + ((i * 71) % 220) + Math.sin(T * .8 + i) * 12, a = .25 + .25 * Math.sin(T * 1.7 + i * 2); c.fillStyle = `rgba(255,236,160,${a})`; c.beginPath(); c.arc(x, y, 1.2 + (i % 3) * .7, 0, 7); c.fill(); }
   c.restore();
-  const nd = wts[2] * .45 + wts[1] * .15, fg0 = mix(W.fg[0], '#0d0a18', nd), fg1 = mix(W.fg[1], '#0d0a18', nd);   // l'erba davanti si scurisce con la sera
+  const nd = wts[2] * .45 + wts[1] * .15;                                      // l'erba davanti si scurisce con la sera
+  if (!nwFgDraw(c, T, nd, W)) nwFgPaint(T, nd, W, c);
+  c.restore(); g = null; RAW = 0;
+}
+function nwFgPaint(T, nd, W, c) {                                              // l'erba e i cespugli in primo piano (che ondeggiano)
+  const fg0 = mix(W.fg[0], '#0d0a18', nd), fg1 = mix(W.fg[1], '#0d0a18', nd);
   for (const [x, a, b] of NWS.fg) { const sw = Math.sin(T * 1.2 + x) * 5;
     if (a < .55) { const n = 5 + Math.floor(b * 4); for (let i = 0; i < n; i++) { const o = (i - n / 2) * 9, hh = 46 + ((i * 53 + x) % 40), p = SP(`M${x + o - 5},${H + 4} Q${x + o - 2},${H - hh * .6} ${x + o + sw + o * .3},${H - hh} Q${x + o + 5},${H - hh * .5} ${x + o + 6},${H + 4}Z`); F(p, i % 2 ? fg0 : fg1); } }
     else { for (const [dx, r] of [[-26, 30], [22, 34], [0, 44]]) { const p = E(x + dx + sw * .3, H + 6 - r * .3, r, r * .9); F(p, dk(fg0, .1)); c.save(); c.clip(p); F(E(x + dx - r * .3, H - r * .9, r * .8, r * .5), 'rgba(120,180,90,.28)'); c.restore(); } } }
-  c.restore(); g = null; RAW = 0;
+}
+const NW_FGN = 24, NW_FG = { key: '', st: [], sil: [] };                     // l'erba davanti pronta in 24 momenti del suo ondeggiare (una striscia ciascuno)
+function nwFgDraw(c, T, nd, W) {                                              // incolla la striscia giusta invece di ridisegnare cento fili d'erba a ogni fotogramma
+  const tm = c.getTransform(), sc = Math.hypot(tm.a, tm.b); if (!(sc > 0)) return false;
+  const key = NWS.key + '|' + Math.round(sc * 200); if (NW_FG.key !== key) { NW_FG.key = key; NW_FG.st = []; NW_FG.sil = []; }
+  const PER = Math.PI * 2 / 1.2, i = Math.round((((T % PER) + PER) % PER) / PER * NW_FGN) % NW_FGN, x0 = -130, y0 = H - 96, w = WW + 340, h = 112;
+  let st = NW_FG.st[i];
+  if (!st) {
+    st = document.createElement('canvas'); st.width = Math.max(1, Math.ceil(w * sc)); st.height = Math.max(1, Math.ceil(h * sc));
+    const x = st.getContext('2d'), old = g; x.setTransform(sc, 0, 0, sc, -x0 * sc, -y0 * sc); g = x;
+    try { nwFgPaint(i / NW_FGN * PER, 0, W, x); } finally { g = old; }
+    NW_FG.st[i] = st;
+  }
+  c.drawImage(st, x0, y0, w, h);
+  if (nd > .004) { let sl = NW_FG.sil[i];
+    if (!sl) { sl = document.createElement('canvas'); sl.width = st.width; sl.height = st.height; const x = sl.getContext('2d'); x.drawImage(st, 0, 0); x.globalCompositeOperation = 'source-in'; x.fillStyle = '#0d0a18'; x.fillRect(0, 0, sl.width, sl.height); NW_FG.sil[i] = sl; }
+    const a0 = c.globalAlpha; c.globalAlpha = a0 * nd; c.drawImage(sl, x0, y0, w, h); c.globalAlpha = a0; }
+  return true;
 }
 
 function nwLightList() {                                                      // le luci dello sfondo (torce, finestre, lava…) in coordinate del gioco: per il buio e gli aloni
@@ -11215,7 +11244,13 @@ function ngDragon(c, o) {                                                    // 
 let SPR_PROBE = null, SPR_FIX = 0, SPR_OFF = 0, SPR_RES = 1;   // SPR_RES: quanto la tela è più piccola del massimo (risoluzione automatica)
 const SPR_DAY = { shadow: '#2a2140', amtC: .36, amtB: .55 };   // la luce fissa con cui si disegnano le immagini pronte
 const TAU = Math.PI * 2, SPR = new Map(), KB = {}; let SPR_PX = 0, SPR_NEW = 0;
-const SPR_MAX = 1.8e7, SPR_BUDGET = 8;                                       // memoria massima (pixel) e pose nuove per fotogramma
+const SPR_MAX = 1.8e7, SPR_BUDGET = 8, SPR_MSMAX = 2.5; let SPR_MS = 0;
+const SPR_ALT = new Map(), SPR_UL = new Map();                               // per ogni posa: le grandezze già pronte; per ogni personaggio: l'ultima immagine usata
+function sprAlt(base, qi, ul) {                                              // un'immagine già pronta da usare al posto di quella che manca (per uno o due fotogrammi)
+  const m = SPR_ALT.get(base); let best = null, bd = 1e9;
+  if (m) for (const [q, key] of m) { const e = SPR.get(key); if (!e) { m.delete(q); continue; } const d = Math.abs(q - qi) + (q < qi ? .5 : 0); if (d < bd) { bd = d; best = e; } }
+  if (best) return best; const k2 = SPR_UL.get(ul); return (k2 && SPR.get(k2)) || null;
+}                                       // memoria massima (pixel) e pose nuove per fotogramma
 function sprPose(k, o) {                                                    // la posa "arrotondata": pochi fotogrammi per camminata, respiro e attacco
   const a = o.arm || 0, u0 = a < 0 ? Math.min(1, -a / 1.5) : a > 0 ? -Math.min(1, a / 1.3) : 0, mood = o.hit ? 4 : a < -.3 ? 2 : a > .3 ? 3 : o.walking ? 1 : 0;
   let t, ph = 0, u = 0, blink = 1, fk;
@@ -11246,16 +11281,18 @@ function sprDraw(k, c, o, fn) {
   if (SPR_OFF) return false;                                                   // icone: disegnate una volta sola, l'immagine pronta non serve
   const m = NG_MODE(), tm = c.getTransform(), sc = Math.hypot(tm.a, tm.b) / SPR_RES; if (!(sc > 0)) return false;   // le immagini pronte restano quelle a piena risoluzione
   const qi = Math.ceil(Math.log2(sc) * 3 - .15), qs = Math.pow(2, qi / 3), Lt = NG_LIGHT();   // 3 grandezze per raddoppio, sempre un po' più nitida del necessario: meno immagini da tenere
-  const [p, pk] = sprPose(k, o), key = k + '|' + pk + '|' + qi;              // la luce del momento NON entra nel nome: l'immagine resta buona dal giorno alla notte
+  const [p, pk] = sprPose(k, o), base = k + '|' + pk, key = base + '|' + qi, ul = k + '|' + (o.look || '') + '|' + (SUB[k] ? (o.id || 0) % 6 : '');   // la luce del momento NON entra nel nome: l'immagine resta buona dal giorno alla notte
   let e = SPR.get(key);
   if (e) { SPR.delete(key); SPR.set(key, e); }
+  else if (m !== 'normal' || SPR_MS >= SPR_MSMAX || SPR_NEW >= SPR_BUDGET) { e = sprAlt(base, qi, ul); if (!e) return false; }   // tempo finito: si usa quella più vicina, la nuova arriva nei prossimi fotogrammi
   else {
-    if (m !== 'normal' || SPR_NEW >= SPR_BUDGET) return false;                // niente immagine pronta: si disegna come prima
-    SPR_NEW++; const b = sprBox(k, o, fn), cv = document.createElement('canvas'); cv.width = Math.max(1, Math.ceil((b[2] - b[0]) * qs)); cv.height = Math.max(1, Math.ceil((b[3] - b[1]) * qs));
+    const t0 = performance.now(); SPR_NEW++; const b = sprBox(k, o, fn), cv = document.createElement('canvas'); cv.width = Math.max(1, Math.ceil((b[2] - b[0]) * qs)); cv.height = Math.max(1, Math.ceil((b[3] - b[1]) * qs));
     const g2 = cv.getContext('2d'), old = g; g2.setTransform(qs, 0, 0, qs, -b[0] * qs, -b[1] * qs); g = g2; SPR_FIX = 1; try { fn(p); } finally { g = old; SPR_FIX = 0; }   // sempre coi colori del giorno: di sera e di notte scurisce il velo delle luci
-    e = { cv, b, sil: {} }; SPR.set(key, e); SPR_PX += cv.width * cv.height;
+    e = { cv, b, sil: {}, key }; SPR.set(key, e); SPR_PX += cv.width * cv.height; SPR_MS += performance.now() - t0;
+    let am = SPR_ALT.get(base); if (!am) SPR_ALT.set(base, am = new Map()); am.set(qi, key);
     for (const [k2, e2] of SPR) { if (SPR_PX <= SPR_MAX) break; SPR.delete(k2); SPR_PX -= e2.cv.width * e2.cv.height; for (const s of Object.values(e2.sil)) SPR_PX -= s.width * s.height; }
   }
+  if (e.key) SPR_UL.set(ul, e.key);
   const b = e.b; c.save(); c.rotate((o.lean || 0) * .5); const sq = o.sq || 0; c.scale(1 + sq, 1 - sq);
   if (m === 'normal') c.drawImage(e.cv, b[0], b[1], b[2] - b[0], b[3] - b[1]);
   else { const [fc, fa] = NG_FC(), a0 = c.globalAlpha; c.globalAlpha = a0 * (m === 'shadow' ? .3 : fa); c.drawImage(sprSil(e, m === 'shadow' ? '20,12,36' : fc), b[0], b[1], b[2] - b[0], b[3] - b[1]); c.globalAlpha = a0; }
@@ -11291,7 +11328,7 @@ function draw(k, c, o) {                                                    // o
   const m = NG_MODE(); if (m === 'normal') g = c; else { PCOL = m === 'shadow' ? 'rgba(20,12,36,.22)' : NG_FLASH(); g = proxyOf(c); }
   c.save(); c.rotate((o.lean || 0) * .5); const sq = o.sq || 0; c.scale(1 + sq, 1 - sq); fn(p); c.restore(); g = null; return true;
 }
-return { draw, has: k => !!(SUB[k] || DRAW[k]), nw: { ensure: nwEnsure, prep: nwPrep, ready: () => !!NWS && NWS.sets.some(Boolean), back: nwBack, owned: nwOwned, front: nwFront, pt: nwPt, lights: nwLightList, sun: nwSunPos }, sprOff: v => { SPR_OFF = v; }, setRes: v => { SPR_RES = v > 0 ? v : 1; }, dragon: ngDragon, skin: id => !!SKINS[id], frame: () => { SPR_NEW = 0; }, sprInfo: () => ({ n: SPR.size, px: SPR_PX }) };
+return { draw, has: k => !!(SUB[k] || DRAW[k]), nw: { ensure: nwEnsure, prep: nwPrep, ready: () => !!NWS && NWS.sets.some(Boolean), back: nwBack, owned: nwOwned, front: nwFront, pt: nwPt, lights: nwLightList, sun: nwSunPos }, sprOff: v => { SPR_OFF = v; }, setRes: v => { SPR_RES = v > 0 ? v : 1; }, dragon: ngDragon, skin: id => !!SKINS[id], frame: () => { SPR_NEW = 0; SPR_MS = 0; }, sprInfo: () => ({ n: SPR.size, px: SPR_PX }) };
 })();
 const NG_H = {"goblin": 72, "orco": 158, "strega": 141, "cavaliere": 126, "arciere": 102, "fionda": 84, "topi": 48, "lupo": 113, "scheletri": 92, "trollponte": 112, "ragno": 50, "zombie": 101, "fuocofatuo": 79, "diavoletto": 82, "rospo": 36, "cornacchia": 77, "gargoyle": 86, "sciame": 90, "lupetti": 55, "scimmie": 115, "gattovolpe": 99, "gnomo": 86, "spaventapasseri": 122, "retopi": 112, "pandizenzero": 57, "mummia": 102, "pupazzo": 79, "matrigna": 138, "reginacuori": 122, "stregone": 147, "gothel": 122, "sirena": 94, "lumacone": 52, "fantasma": 97, "coccodrillo": 37, "ladroni": 105, "barbablu": 123, "omino": 80, "babajaga": 187, "stregamare": 106, "morgana": 109, "grifone": 107, "spirito": 177, "bestia": 86, "ciclope": 184, "senzatesta": 135, "dracula": 119, "medusa": 114, "pescecane": 73, "alberich": 71, "trollspecchio": 101, "mordred": 127, "lupomannaro": 115, "frankenstein": 133, "hyde": 126, "stregatto": 69, "stregaovest": 92, "sherekhan": 66, "krampus": 136, "jabberwocky": 127, "kraken": 141, "idra": 88, "bandersnatch": 83, "zucca": 116, "marzapane": 107, "gigantegh": 185, "uncino": 136, "mangiafuoco": 162, "tremotino": 82, "reginacattiva": 123, "reginanevi": 128, "basilisco": 120, "cavaliereverde": 162, "diavolo": 146, "dragonero": 120, "gigante": 185, "ecate": 120, "circe": 112, "minotauro": 196, "fenice": 119, "soldatino": 113, "principe": 109, "cacciatore": 128, "spiritista": 116, "porcellino": 88, "fata": 102, "re": 168, "bimbo": 55, "hanselgretel": 54, "nano": 69, "raperonzolo": 106, "pifferaio": 132, "musicanti": 127, "carrozza": 109, "ranocchio": 60, "peterpan": 123, "cappuccetto": 78, "robinhood": 122, "gattostivali": 78, "biancaneve": 104, "pinocchio": 100, "merlino": 146, "alice": 98, "wendy": 102, "giglio": 113, "cappellaio": 130, "brucaliffo": 115, "lepre": 99, "alibaba": 112, "sinbad": 135, "guardia": 139, "renna": 110, "fiammiferaia": 75, "pupazzoneve": 70, "cavcristallo": 124, "gemello": 102, "gemelli": 102, "pisello": 113, "tappeto": 94, "aladino": 113, "kai": 101, "gerda": 104, "pollicino": 57, "dragotempesta": 122, "jack": 113, "jackre": 121, "arpa": 98, "arpaincantata": 106, "gallina": 74, "cavnuvole": 136, "yeti": 154, "cobrabianco": 125, "mowgli": 106, "mowglire": 121, "baloo": 123, "bagheera": 64, "bagheerare": 64, "hathi": 102, "hathire": 102, "momotaro": 114, "momotarore": 139, "cane": 67, "canere": 69, "scimmiamomo": 71, "scimmiare": 71, "fagiano": 97, "reoni": 171, "reonifuria": 180, "topo": 38, "scheletro": 92, "pipsciame": 67, "pipistrello": 67, "lupetto": 46, "scimmia": 115, "capoladroni": 105, "ladrone": 71, "matrigna_m": 138, "sorella": 81, "reginacuori_q": 122, "carta": 95, "burattino": 40, "corvo": 77};
 const NG_OLD = Object.assign({}, DRAW), NG_SKIN = new Set(Object.keys(LOOKS).filter(id => !LOOKS[id].tint && !LOOKS[id].filter));   // le skin con gli accessori restano col disegno di prima
@@ -11384,19 +11421,20 @@ document.addEventListener('keydown', e => {
   if (e.key === ' ') { e.preventDefault(); act('fire', () => netAct('f')); }
   if (e.key === 'u' || e.key === 'U') act('wallet', () => netAct('w'));
 });
+const HUD = (el, k, v, f) => { if (el['_h' + k] !== v) { el['_h' + k] = v; f(el, v); } };   // scrive solo se il valore è cambiato
 function updateHud() {
   const me = ME(), w = me.wallet, max = DW.walletCap(s, MYPI());
-  $('catFill').style.width = (100 * w.cur / max) + '%';
-  $('catNum').textContent = `${Math.floor(w.cur)} / ${max}`;
+  HUD($('catFill'), 'w', Math.round(1000 * Math.min(1, w.cur / max)) / 1000, (el, v) => { el.style.transform = 'scaleX(' + v + ')'; });
+  HUD($('catNum'), 't', `${Math.floor(w.cur)} / ${max}`, (el, v) => { el.textContent = v; });
   const c = DW.walletCost(s, MYPI());
   $('walletBtn').disabled = !isFinite(c) || w.cur < c; $('walletBtn').classList.toggle('ready', !$('walletBtn').disabled);
-  $('walletInfo').textContent = isFinite(c) ? `Liv ${w.lv} → ${w.lv + 1} · ${c}` : `Liv ${w.lv} · al massimo`;
+  HUD($('walletInfo'), 't', isFinite(c) ? `Liv ${w.lv} → ${w.lv + 1} · ${c}` : `Liv ${w.lv} · al massimo`, (el, v) => { el.textContent = v; });
   renderHand();
   for (const b of unitBtns) { const d = DW.U[b.dataset.k]; if (!d) continue; const poor = w.cur < DW.costIn(s, b.dataset.k, MYPI()); b.classList.toggle('poor', poor); b.classList.toggle('ok', !poor); }
   const fb = $('fireBtn'), p = Math.floor(me.fire.v * 100), noF = s.rule.noFire || me.fire.charge === Infinity;
-  fb.style.setProperty('--p', p + '%'); fb.classList.toggle('ready', p >= 100);
-  $('fireTxt').innerHTML = noF ? tr(NET.g || s.mp || s.guest ? 'Niente fiammata' : 'In sciopero').replace(' ', '<br>') : p >= 100 ? 'Fiammata!' : `Fiammata<br>${p}%`;
-  $('goldTxt').textContent = save.gold.toLocaleString(LOC());
+  HUD(fb, 'p', p, (el, v) => { el.style.setProperty('--p', v + '%'); el.classList.toggle('ready', v >= 100); });
+  HUD($('fireTxt'), 'h', noF ? tr(NET.g || s.mp || s.guest ? 'Niente fiammata' : 'In sciopero').replace(' ', '<br>') : p >= 100 ? 'Fiammata!' : `Fiammata<br>${p}%`, (el, v) => { el.innerHTML = v; });
+  HUD($('goldTxt'), 'g', save.gold + LANG, el => { el.textContent = save.gold.toLocaleString(LOC()); });
 }
 
 /* ================= menu, partita, pausa ================= */
@@ -12764,7 +12802,7 @@ function battleLight() {                                                    // g
 let last = performance.now(), acc = 0;
 function frame(now) {
   requestAnimationFrame(frame);                                            // il prossimo fotogramma è prenotato anche se questo dovesse fallire
-  const rdt = Math.min(.1, (now - last) / 1000); last = now; time += rdt; lqTick(rdt); resTick(rdt);
+  const rdt = Math.min(.1, (now - last) / 1000); last = now; time += rdt; lqTick(rdt); resTick(rdt); lqLater(); resLater();
   let dt = rdt;
   if (hitstop > 0) { hitstop -= rdt; dt = rdt * .08; }                     // il mondo si ferma un istante sul colpo
   hitCd -= rdt;

@@ -155,11 +155,33 @@ function nwFront(c, p, t) {                                                  // 
   else if (W.frozen) for (let i = 0; i < 60; i++) { const x = ((i * 97.3 + Math.sin(T * .7 + i) * 20) % (VW + 40) + VW + 40) % (VW + 40) - 20, y = ((i * 53 + T * (24 + i % 4 * 8)) % (H + 20)) - 10; c.fillStyle = 'rgba(255,255,255,.8)'; c.beginPath(); c.arc(x, y, 1 + (i % 3) * .7, 0, 7); c.fill(); }
   else for (let i = 0; i < 26; i++) { const x = ((i * 137.5 + T * (6 + i % 5)) % (VW + 40) + VW + 40) % (VW + 40) - 20, y = 300 + ((i * 71) % 220) + Math.sin(T * .8 + i) * 12, a = .25 + .25 * Math.sin(T * 1.7 + i * 2); c.fillStyle = `rgba(255,236,160,${a})`; c.beginPath(); c.arc(x, y, 1.2 + (i % 3) * .7, 0, 7); c.fill(); }
   c.restore();
-  const nd = wts[2] * .45 + wts[1] * .15, fg0 = mix(W.fg[0], '#0d0a18', nd), fg1 = mix(W.fg[1], '#0d0a18', nd);   // l'erba davanti si scurisce con la sera
+  const nd = wts[2] * .45 + wts[1] * .15;                                      // l'erba davanti si scurisce con la sera
+  if (!nwFgDraw(c, T, nd, W)) nwFgPaint(T, nd, W, c);
+  c.restore(); g = null; RAW = 0;
+}
+function nwFgPaint(T, nd, W, c) {                                              // l'erba e i cespugli in primo piano (che ondeggiano)
+  const fg0 = mix(W.fg[0], '#0d0a18', nd), fg1 = mix(W.fg[1], '#0d0a18', nd);
   for (const [x, a, b] of NWS.fg) { const sw = Math.sin(T * 1.2 + x) * 5;
     if (a < .55) { const n = 5 + Math.floor(b * 4); for (let i = 0; i < n; i++) { const o = (i - n / 2) * 9, hh = 46 + ((i * 53 + x) % 40), p = SP(`M${x + o - 5},${H + 4} Q${x + o - 2},${H - hh * .6} ${x + o + sw + o * .3},${H - hh} Q${x + o + 5},${H - hh * .5} ${x + o + 6},${H + 4}Z`); F(p, i % 2 ? fg0 : fg1); } }
     else { for (const [dx, r] of [[-26, 30], [22, 34], [0, 44]]) { const p = E(x + dx + sw * .3, H + 6 - r * .3, r, r * .9); F(p, dk(fg0, .1)); c.save(); c.clip(p); F(E(x + dx - r * .3, H - r * .9, r * .8, r * .5), 'rgba(120,180,90,.28)'); c.restore(); } } }
-  c.restore(); g = null; RAW = 0;
+}
+const NW_FGN = 24, NW_FG = { key: '', st: [], sil: [] };                     // l'erba davanti pronta in 24 momenti del suo ondeggiare (una striscia ciascuno)
+function nwFgDraw(c, T, nd, W) {                                              // incolla la striscia giusta invece di ridisegnare cento fili d'erba a ogni fotogramma
+  const tm = c.getTransform(), sc = Math.hypot(tm.a, tm.b); if (!(sc > 0)) return false;
+  const key = NWS.key + '|' + Math.round(sc * 200); if (NW_FG.key !== key) { NW_FG.key = key; NW_FG.st = []; NW_FG.sil = []; }
+  const PER = Math.PI * 2 / 1.2, i = Math.round((((T % PER) + PER) % PER) / PER * NW_FGN) % NW_FGN, x0 = -130, y0 = H - 96, w = WW + 340, h = 112;
+  let st = NW_FG.st[i];
+  if (!st) {
+    st = document.createElement('canvas'); st.width = Math.max(1, Math.ceil(w * sc)); st.height = Math.max(1, Math.ceil(h * sc));
+    const x = st.getContext('2d'), old = g; x.setTransform(sc, 0, 0, sc, -x0 * sc, -y0 * sc); g = x;
+    try { nwFgPaint(i / NW_FGN * PER, 0, W, x); } finally { g = old; }
+    NW_FG.st[i] = st;
+  }
+  c.drawImage(st, x0, y0, w, h);
+  if (nd > .004) { let sl = NW_FG.sil[i];
+    if (!sl) { sl = document.createElement('canvas'); sl.width = st.width; sl.height = st.height; const x = sl.getContext('2d'); x.drawImage(st, 0, 0); x.globalCompositeOperation = 'source-in'; x.fillStyle = '#0d0a18'; x.fillRect(0, 0, sl.width, sl.height); NW_FG.sil[i] = sl; }
+    const a0 = c.globalAlpha; c.globalAlpha = a0 * nd; c.drawImage(sl, x0, y0, w, h); c.globalAlpha = a0; }
+  return true;
 }
 
 function nwLightList() {                                                      // le luci dello sfondo (torce, finestre, lava…) in coordinate del gioco: per il buio e gli aloni
