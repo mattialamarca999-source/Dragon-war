@@ -53,7 +53,7 @@ Object.assign(VALIAS, {cobrabianco:'basilisco', mowgli:'pollicino', mowglire:'po
 THEMES.giungla = {sky:'#78c0cc', amt:.42, hill1:'#3a7a3a', hill2:'#2a6a34', tree:'#2a7a34', tt:'palm', g1:'#a8c060', g2:'#3a7a34', stone:'#a8a088', roof:['#c8603a', '#e8b830'], fx:'sparkle', card:['#1a4a2a', '#8ad070']};
 OBST.giungla = ['waingunga', 'rovine', 'fico']; ROADC.giungla = '#b89a60';
 OBST_BY_NAME.unshift([/waingunga/i, 'waingunga'], [/tane fredde|scimmie/i, 'rovine'], [/fico|rupe|lucciole/i, 'fico']);
-MUS_FILE.w17 = 'w13'; MUS_BOSS.w17 = 'w13b';                               // la giungla usa la musica del Deserto di Aladino (e la sua musica del boss)
+MUS_FILE.w17 = 'w17'; MUS_BOSS.w17 = 'w13b';                               // la giungla: "Bamboo Blitz" (Tsorthan Grove, CC0); il boss usa ancora quella del Deserto
 { const NAT = {cobrabianco:125, mowgli:106, mowglire:121, baloo:123, bagheera:64, bagheerare:64, hathi:102, hathire:102};   // altezza vera dei disegni nuovi
   Object.assign(HEIGHT, {cobrabianco:86, mowgli:84, mowglire:92, baloo:100, bagheera:56, bagheerare:58, hathi:100, hathire:102});
   Object.assign(SC, {cobrabianco:.9, mowgli:.86, mowglire:.88, baloo:.9, bagheera:.9, bagheerare:.92, hathi:.92, hathire:.92});

@@ -82,7 +82,7 @@ Object.assign(VALIAS, {reoni:'orco', momotaro:'robinhood', momotarore:'robinhood
 THEMES.oni = {sky:'#6ab0e8', amt:.42, hill1:'#3a6a4a', hill2:'#4a7a44', tree:'#2a5a3a', tt:'palm', g1:'#e8d8a8', g2:'#5a8a4a', stone:'#6a6260', roof:['#d8303a', '#2a3a4a'], fx:'sparkle', card:['#7a1a2a', '#f8b8c8']};
 OBST.oni = ['torii', 'sakura', 'onsen']; ROADC.oni = '#d8c8a0';
 OBST_BY_NAME.unshift([/drago|perle|tesoro/i, 'torii'], [/sbarco|marea|onde|fagiano/i, 'torii'], [/cane|scimmia|cancello/i, 'sakura'], [/luna/i, 'onsen']);
-MUS_FILE.w18 = 'w5'; MUS_BOSS.w18 = 'w11b';                                // l'isola usa la musica del Regno sotto il mare, e per Momotaro quella del boss dell'Isola che non c'è
+MUS_FILE.w18 = 'w18'; MUS_BOSS.w18 = 'w18b';                               // l'isola degli oni: "House of the Shogun's Son" (jomusic, CC0); Momotaro: "Boss Koto" (G_P, CC0)
 { const NAT = {reoni:171, momotaro:114, momotarore:139, cane:67, canere:69, scimmiamomo:71, scimmiare:71, fagiano:97};   // altezza vera dei disegni nuovi
   Object.assign(HEIGHT, {reoni:128, momotaro:88, momotarore:100, cane:56, canere:58, scimmiamomo:60, scimmiare:62, fagiano:76});
   Object.assign(SC, {reoni:.9, momotaro:.86, momotarore:.88, cane:.9, canere:.92, scimmiamomo:.9, scimmiare:.92, fagiano:.9});

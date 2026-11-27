@@ -7,3 +7,4 @@ Suoni e musiche di Dragon War: tutti CC0 (pubblico dominio, gratuiti anche per u
 - Versi di cattivi e buoni: raccolte CC0 (80 CC0 creature SFX 1 e 2, 30 CC0 weird SFX, 100 CC0 SFX, Micro Pack Organic Wooshes e Cat Meows, angerdog), Kenney Impact e Interface Sounds (CC0)
 - Suoni dei tasti, monete, vittoria e sconfitta: creati dal gioco (Web Audio)
 - Mondi 11-15: 11 "Bonfire" e boss "Jethro on the Run", 12 "Managing Mischief", 13 "Desert Conflict" e boss "The Desert", 14 "The Ice Giants" (FreePD, CC0); 15 usa il brano del mondo 10 ("Fight, run, breath deeply")
+- Mondi 16-18 (OpenGameArt, CC0): 16 "Skypole Gorge" (album "Chasing the Leviathan") di John Oestmann (jomusic); 17 "Bamboo Blitz" di Tsorthan Grove, il boss usa "The Desert" del mondo 13; 18 "House of the Shogun's Son" (album "minimal_worlds") di John Oestmann (jomusic) e boss Momotaro "Boss_Koto" di G_P

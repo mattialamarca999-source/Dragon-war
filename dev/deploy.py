@@ -13,6 +13,10 @@ top = ('<!doctype html>\n<html lang="it">\n<head>\n<meta charset="utf-8">\n'
 import sys, re, os, hashlib
 out = sys.argv[1] if len(sys.argv) > 1 else '/home/claude/dw-repo/index.html'
 page = top + src.replace('<title>Dragon War</title>', '<title>Dragon War</title>\n' + head)
+# i caratteri stanno sul nostro sito (fonts/): nessun dato dei giocatori va a Google per i font
+GF = ['<link rel="preconnect" href="https://fonts.googleapis.com">\n', '<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>\n', '<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lilita+One&family=Nunito:wght@600;800;900&display=swap">\n']
+for l in GF: assert page.count(l) == 1, l; page = page.replace(l, '')
+page = page.replace('<title>Dragon War</title>', '<title>Dragon War</title>\n<style>@font-face{font-family:"Lilita One";src:url(fonts/lilita-one.woff) format("woff");font-weight:400;font-display:swap}@font-face{font-family:"Nunito";src:url(fonts/nunito.woff) format("woff");font-weight:600 900;font-display:swap}</style>', 1)
 # Il codice grande va in un file a parte: così il telefono se lo ricorda già "tradotto" e il gioco si apre molto prima.
 d = os.path.dirname(out); os.makedirs(d + '/js', exist_ok=True); js = []
 def cut(m):

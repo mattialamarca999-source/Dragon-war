@@ -1,10 +1,10 @@
 // Dragon War: tiene il gioco nel telefono per giocare anche senza internet.
 // Con internet scarica sempre l'ultima versione del gioco; senza, usa quella salvata.
 // Musica, effetti e versi invece si scaricano una volta sola e poi partono subito dal telefono.
-const CACHE = 'dragon-war-v50';
+const CACHE = 'dragon-war-v51';
 const AUDIO = 'dragon-war-audio-v1';                 // cambia nome solo se cambiano i file audio
-const JS = ['./js/g1-e46ecc9631.js'];                                       // lo riempie deploy.py: il codice del gioco col suo numero di versione
-const FILES = ['./', './index.html', './manifest.webmanifest', './icon-192.png', './icon-512.png'];
+const JS = ['./js/g1-a165912cca.js'];                                       // lo riempie deploy.py: il codice del gioco col suo numero di versione
+const FILES = ['./', './index.html', './manifest.webmanifest', './icon-192.png', './icon-512.png', './fonts/lilita-one.woff', './fonts/nunito.woff'];
 const FIRST = ['audio/mus_menu.mp3', 'audio/mus_story.mp3', 'audio/mus_w1.mp3'];   // la prima musica è pronta già all'installazione
 self.addEventListener('install', e => {
   e.waitUntil(Promise.all([caches.open(CACHE).then(c => c.addAll(FILES)), caches.open(AUDIO).then(c => Promise.all(FIRST.map(f => c.add(f).catch(() => {}))))]));
@@ -32,6 +32,7 @@ self.addEventListener('fetch', e => {
   if (font) { e.respondWith(caches.match(r).then(hit => hit || fetch(r).then(res => { const cp = res.clone(); caches.open(CACHE).then(c => c.put(r, cp)); return res; }))); return; }
   const u = new URL(r.url); if (u.origin !== location.origin) return;
   if (u.pathname.includes('/rpg/')) return;             // la cartella /rpg/ è un altro gioco col suo service worker
+  if (/\/fonts\/[^/]+\.woff2?$/.test(u.pathname)) { e.respondWith(caches.match(r).then(hit => hit || fetch(r).then(res => { if (res.status === 200) { const cp = res.clone(); caches.open(CACHE).then(c => c.put(r, cp)); } return res; }))); return; }   // i caratteri: scaricati una volta
   if (/\/js\/g\d+-[0-9a-f]+\.js$/.test(u.pathname)) { e.respondWith(caches.match(r).then(hit => hit || fetch(r).then(res => { if (res.status === 200) { const cp = res.clone(); caches.open(CACHE).then(c => c.put(r, cp)); } return res; }))); return; }   // il codice ha la versione nel nome: se c'è già, parte subito
   if (/\/audio\/[^/]+\.mp3$/.test(u.pathname)) { e.respondWith(audio(r).catch(() => fetch(r))); return; }
   e.respondWith(fetch(r, {cache: 'no-cache'}).then(res => { if (res.status === 200) { const cp = res.clone(); caches.open(CACHE).then(c => c.put(r, cp)); } return res; }).catch(() => caches.match(r).then(hit => hit || caches.match('./index.html'))));

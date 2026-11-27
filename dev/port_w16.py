@@ -49,7 +49,7 @@ Object.assign(VALIAS, {dragotempesta:'grifone', jack:'robinhood', arpa:'fata', g
 THEMES.nuvole = {sky:'#8ac0f0', amt:.4, hill1:'#e8f0ff', hill2:'#c8d4f0', tree:'#5ab84a', tt:'goldtree', g1:'#f4f8ff', g2:'#c8d4f0', stone:'#ffffff', roof:['#3a6ad8', '#e8b83a'], fx:'sparkle', card:['#2a4a9a', '#bfe0ff']};
 OBST.nuvole = ['fagiolo', 'voragine', 'nido']; ROADC.nuvole = '#e8eef8';
 OBST_BY_NAME.unshift([/fagiolo|scala di foglie/i, 'fagiolo'], [/nido/i, 'nido'], [/buco tra le nuvole|arcobaleno/i, 'voragine']);
-MUS_FILE.w16 = 'w12';                                                     // il Regno delle Nuvole usa la musica dell'Isola che non c'è
+MUS_FILE.w16 = 'w16';                                                     // il Regno delle Nuvole: "Skypole Gorge" (jomusic, CC0)
 { const NAT = {dragotempesta:122, jack:113, jackre:121, arpa:98, arpaincantata:106, gallina:74, cavnuvole:136};   // altezza vera dei disegni nuovi
   Object.assign(HEIGHT, {dragotempesta:112, jack:88, jackre:92, arpa:80, arpaincantata:84, gallina:62, cavnuvole:104});
   Object.assign(SC, {dragotempesta:.92, jack:.84, jackre:.86, arpa:.86, arpaincantata:.9, gallina:.88, cavnuvole:.86});
