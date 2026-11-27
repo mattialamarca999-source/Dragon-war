@@ -306,6 +306,7 @@ const DW = (() => {
   const pace = k => { const d = U[k]; return d.group ? 30 : Math.max(8, 4 + (d.bounty || 20) * .35); };   // ogni quanto il castello manda quel buono
   const EK = {a:.018, b:.00007};                               // quanto crescono i buoni di castello in castello
   const cache = {};
+  const WTUNE = Object.assign({15:{iv:1.3, e:.88}}, typeof process !== 'undefined' && process.env && process.env.DW_TUNE ? JSON.parse(process.env.DW_TUNE) : {});   // correzioni per mondo (indice da 0)
   function levelOf(w, c) {
     if (w === 0) return Object.assign(LEVELS[c], {world:0, castle:c, g:c, eMul:1, semi:null, shardN:LEVELS[c].boss ? 6 : 4});
     const key = w + ':' + c; if (cache[key]) return cache[key];
@@ -331,6 +332,8 @@ const DW = (() => {
       lv.eMul *= (1 - EASE.s * r) * (w >= 8 ? EASE.late : 1);            // dal mondo 9 è il finale: un po' più tosto
       lv.waves = lv.waves.map((x, i) => [x[0], x[1] + 4 * r + i * (EASE.gap - 10) * r, last || isSemi ? x[2] : x[2] * q / qe]);
     }
+    const TU = WTUNE[w];                                                    // correzione del mondo, misurata col backtest
+    if (TU) { lv.eMul *= TU.e || 1; if (TU.iv) lv.waves = lv.waves.map(x => [x[0], x[1], last || isSemi ? x[2] : x[2] * TU.iv]); }
     return (cache[key] = lv);
   }
 
@@ -2942,6 +2945,7 @@ function drawThemeFx() {                                                   // ne
 function sun() { return {x:640, y:-300 + L.p * 420}; }
 function moonPos() { return {x:380, y:lerp(80, -300, ease(clamp01((L.p - .45) / .55)))}; }
 function drawSkyScreen() {
+  if (NWON && NG.nw && NG.nw.ready && NG.nw.ready()) return;                 // lo sfondo dei mondi copre già tutto lo schermo
   const hy = Math.max(10, groundY - 80 * k);
   const g = ctx.createLinearGradient(0, 0, 0, hy);
   g.addColorStop(0, L.sky[0]); g.addColorStop(.4, L.sky[1]); g.addColorStop(.75, L.sky[2]); g.addColorStop(1, L.sky[3]);
@@ -2966,6 +2970,7 @@ const OBST_BY_NAME = [                                                     // se
 const ROADC = {bosco:'#a07a50', brema:'#b08850', ghiaccio:'#f4f8ff', miniera:'#6a5e58', mare:'#e8d4a0', balocchi:'#f0b8d0', ballo:'#e8e2d8', torre:'#8a7258', marzapane:'#f2c8a0',
   lietofine:'#d8c8a0', isola:'#e8d4a0', meraviglie:'#c8b4d8', deserto:'#e8c888', ghiaccioeterno:'#e8f4ff', specchi:'#d8dcec'};
 const OBST_OFF = new Set(['campo', 'crepa', 'cristalli', 'gelo', 'alghe', 'siepe', 'fossato', 'rovi', 'dune', 'argento']);   // tolti: al loro posto c'è uno di quelli buoni del mondo
+const obSeed = () => { const lv = s && s.lv; return lv ? 1 + (lv.world || 0) * 37 + (lv.castle || 0) * 11 : 0; };   // ogni castello la sua forma d'ostacolo
 function obstKind() {
   const lv = s && s.lv; if (!lv) return null;
   const nm = lv.name || '', hit = OBST_BY_NAME.find(([re]) => re.test(nm)); if (hit && !OBST_OFF.has(hit[1])) return hit[1];
@@ -3086,12 +3091,12 @@ function drawObstacle() {
 let NWON = false, nwHeadW = null, nwDS = 1, dragonHead = {x:110, y:172};
 function nwOn() {                                                          // in battaglia: sfondo, tana e castello nuovi
   if (GALLERY || !s || !s.base || !s.castle || !NG.nw || !(P34 ? s.lv : inMenu || inStory)) return false;   // anche nel menu, dietro i pulsanti
-  return NG.nw.ensure({lazy:inMenu && !inStory && time < 4, th:TH, ob:P34 ? obstKind() : null, l:cam.x - 30, r:cam.x + W / k + 30, t:-groundY / k - 30, b:(H - groundY) / k + 2, dy:DY, px:k * dpr, p:lightP, spr:Math.max(1, BS / .78)});
+  return NG.nw.ensure({lazy:inMenu && !inStory && time < 4, th:TH, ob:P34 ? obstKind() : null, sd:P34 ? obSeed() : 0, l:cam.x - 30, r:cam.x + W / k + 30, t:-groundY / k - 30, b:(H - groundY) / k + 2, dy:DY, px:k * DPR0, p:lightP, spr:Math.max(1, BS / .78)});
 }
 let BATTLE_WH = (() => { try { return JSON.parse(localStorage.getItem('dw_bwh') || 'null'); } catch (e) { return null; } })();   // misure del campo nell'ultima battaglia (con la barra delle carte), ricordate anche alla prossima apertura
 function battleView(w2, h2) {                                              // la stessa vista che calcola resize() in battaglia, senza cambiare niente
   const k2 = Math.min(w2 / 1150, (h2 - 40) / 420), cs = Math.min(2.1, Math.max(1, .64 / k2)), bs = Math.min(1.45, cs * .78), dpx = Math.max(50, Math.min(300, h2 * .4)), gy = Math.min(h2 - 40 - dpx, Math.max(h2 * .42, 420 * k2 + 30)), cx = 495 - (w2 / k2) / 2;
-  return {l:cx - 30, r:cx + w2 / k2 + 30, t:-gy / k2 - 30, b:(h2 - gy) / k2 + 2, dy:dpx / k2, px:k2 * dpr, spr:Math.max(1, bs / .78)};
+  return {l:cx - 30, r:cx + w2 / k2 + 30, t:-gy / k2 - 30, b:(h2 - gy) / k2 + 2, dy:dpx / k2, px:k2 * DPR0, spr:Math.max(1, bs / .78)};
 }
 function nwPrepBattle(w, c) {                                               // mentre scegli la squadra, lo sfondo della battaglia si disegna a pezzi: al «Via» è già pronto
   if (!NG.nw || !NG.nw.prep || GALLERY) return;
@@ -3099,8 +3104,8 @@ function nwPrepBattle(w, c) {                                               // m
   if (!wh) { let tmp = null; if (!$('unitRow').querySelector('.ub')) { tmp = document.createElement('button'); tmp.className = 'ub'; tmp.innerHTML = '<kbd>1</kbd><canvas width="112" height="104"></canvas><span class="nm">x</span><span class="cs">1</span>'; $('unitRow').insertBefore(tmp, $('fireBtn')); }   // la prima volta la barra delle carte è vuota: una carta finta per misurarla giusta
     document.body.classList.remove('inMenu'); const r = $('stage').getBoundingClientRect(); wh = [r.width, r.height]; document.body.classList.add('inMenu'); if (tmp) tmp.remove(); }   // si misura il campo come sarà in battaglia (niente si vede: si rimette subito)
   const sv = s.lv, lv = DW.levelOf(w, c), p = sqOpt.hard || lv.night ? 1 : w === 7 ? .5 : 0;
-  let ob; try { s.lv = lv; ob = obstKind(); } finally { s.lv = sv; }
-  NG.nw.prep(Object.assign({th:DW.WORLDS[w].theme, ob, p}, battleView(wh[0], wh[1])));
+  let ob, sd; try { s.lv = lv; ob = obstKind(); sd = obSeed(); } finally { s.lv = sv; }
+  NG.nw.prep(Object.assign({th:DW.WORLDS[w].theme, ob, sd, p}, battleView(wh[0], wh[1])));
 }
 function nwPlace(xs, floor, need) {                                       // la soglia della grotta / del portone dove nascono i personaggi; e tutto dentro lo schermo
   const sp = dyAt(xs, .5), s = Math.min(Math.max(1, BS / .78), Math.max(.3, (sp + groundY / k - 34) / need));
@@ -4372,20 +4377,25 @@ const lightCv = document.createElement('canvas'); const lctx = lightCv.getContex
    Qualità: 3 alte, 2 medie, 1 basse; «auto» misura la fluidità in battaglia e si regola da sola. */
 let LQ_SET = (() => { try { return localStorage.getItem('dw_luci') || 'auto'; } catch (e) { return 'auto'; } })();
 let LQ = LQ_SET === 'auto' ? 2 : +LQ_SET || 2;                                  // in automatico si parte dalle medie: sale solo se il telefono è fluido
-const LQ_FT = [];
+const LQ_FT = []; let LQ_NEXT = null;
+const LIVE = () => typeof running !== 'undefined' && running && !paused && !ended && !inMenu && countT <= 0;   // si sta combattendo: niente cambi visibili
 function lqTick(rdt) {                                                       // automatico: se i fotogrammi rallentano, luci più leggere (e viceversa)
   if (LQ_SET !== 'auto' || document.hidden || !NWON) { LQ_FT.length = 0; return; }   // anche nel menu, non solo in battaglia
   LQ_FT.push(rdt); if (LQ_FT.length < 60) return;
   const a = LQ_FT.slice().sort((x, y) => x - y), med = a[30]; LQ_FT.length = 0;
-  if (med > 1 / 42 && LQ > 1) LQ--; else if (med < 1 / 57 && LQ < 3) LQ++;
+  const cur = LQ_NEXT ?? LQ; if (med > 1 / 42 && cur > 1) LQ_NEXT = cur - 1; else if (med < 1 / 57 && cur < 3) LQ_NEXT = cur + 1;
 }
-function lqSet(v) { LQ_SET = v; LQ = v === 'auto' ? 2 : +v; try { localStorage.setItem('dw_luci', v); } catch (e) {} }
+function lqLater() { if (LQ_NEXT != null && !LIVE()) { if (LQ_SET === 'auto') LQ = LQ_NEXT; LQ_NEXT = null; } }   // il cambio deciso si fa al momento giusto
+function lqSet(v) { LQ_SET = v; LQ_NEXT = null; LQ = v === 'auto' ? 2 : +v; try { localStorage.setItem('dw_luci', v); } catch (e) {} }
 const LX_SPR = {};
 function lxSpr(rgb, kind) {                                                  // gli aloni pronti: «led» (nucleo bianco + colore + bagliore), «soft», «hole» (per bucare il buio), «pool» (pozza a terra)
   const key = rgb + '|' + kind; let c = LX_SPR[key]; if (c) return c;
   c = document.createElement('canvas'); c.width = c.height = 128; const x = c.getContext('2d'), gr = x.createRadialGradient(64, 64, 0, 64, 64, 64);
   if (kind === 'led') { gr.addColorStop(0, 'rgba(255,255,255,1)'); gr.addColorStop(.07, `rgba(${rgb},1)`); gr.addColorStop(.2, `rgba(${rgb},.5)`); gr.addColorStop(.5, `rgba(${rgb},.14)`); gr.addColorStop(1, `rgba(${rgb},0)`); }
   else if (kind === 'hole') { gr.addColorStop(0, 'rgba(0,0,0,1)'); gr.addColorStop(.3, 'rgba(0,0,0,.8)'); gr.addColorStop(.65, 'rgba(0,0,0,.3)'); gr.addColorStop(1, 'rgba(0,0,0,0)'); }
+  else if (kind === 'warm') { gr.addColorStop(0, 'rgba(255,222,165,.95)'); gr.addColorStop(.1, 'rgba(255,180,95,.75)'); gr.addColorStop(.3, 'rgba(240,128,55,.32)'); gr.addColorStop(.6, 'rgba(200,90,40,.09)'); gr.addColorStop(1, 'rgba(160,70,30,0)'); }
+  else if (kind === 'fall') { for (const [o, v] of [[0, 1], [.12, .9], [.25, .62], [.4, .34], [.6, .13], [.8, .04], [1, 0]]) gr.addColorStop(o, `rgba(0,0,0,${v})`); }
+  else if (kind === 'flame') { gr.addColorStop(0, 'rgba(255,240,205,1)'); gr.addColorStop(.18, `rgba(${rgb},.85)`); gr.addColorStop(.45, `rgba(${rgb},.22)`); gr.addColorStop(1, `rgba(${rgb},0)`); }
   else { gr.addColorStop(0, `rgba(${rgb},.85)`); gr.addColorStop(.35, `rgba(${rgb},.32)`); gr.addColorStop(.7, `rgba(${rgb},.08)`); gr.addColorStop(1, `rgba(${rgb},0)`); }
   x.fillStyle = gr; x.fillRect(0, 0, 128, 128); return LX_SPR[key] = c;
 }
@@ -4422,62 +4432,62 @@ function lxFlash(f, t) {                                                     // 
 }
 let LXM = null, LXMC = null, LXA = null, LXAC = null;
 function lxBuf(c, x, lw, lh) { if (c.width !== lw || c.height !== lh) { c.width = lw; c.height = lh; } x.setTransform(1, 0, 0, 1, 0, 0); x.globalCompositeOperation = 'source-over'; x.globalAlpha = 1; x.clearRect(0, 0, lw, lh); }
-function nwLights() {                                                         // due fogli a bassa risoluzione (ombra e luce) + pochi punti nitidi: 3 passate sullo schermo in tutto
+function nwLights() {                                                         // luce «a candela»: sorgenti piccole, alone caldo corto, ombre fredde mai nere; due fogli a bassa risoluzione
   const d = L.dark, S = L.S, day = 1 - d, fire = dragon.fireT > 0 ? Math.min(1, dragon.fireT) : 0, q = LQ, t = time;
   const src = (NG.nw && NG.nw.lights && NG.nw.lights()) || [], sp = NG.nw && NG.nw.sun ? NG.nw.sun() : null;
-  const fl = l => .88 + .1 * Math.sin(t * 7 + l.x) + .05 * Math.sin(t * 19 + l.y * .3);   // le fiamme tremolano
+  const fl = l => .9 + .07 * Math.sin(t * 7 + l.x) + .04 * Math.sin(t * 19 + l.y * .3);   // le fiamme tremolano piano
   const ffN = d > .22 ? (q >= 3 ? 48 : q === 2 ? 30 : 15) : 0, ffA = clamp01((d - .22) * 1.7), FX = 480, FY = -60;
   const ffPos = []; for (let i = 0; i < ffN; i++) { const f = LX_FF[i]; let [x, y] = lxFly(f, t); if (fire) { const dx = x - FX, dy = y - FY, dd = Math.hypot(dx, dy) + 1; x += dx / dd * 90 * fire; y += dy / dd * 60 * fire; } ffPos.push([x, y, lxFlash(f, t) * ffA, f]); }
   const sc = q >= 3 ? .5 : q === 2 ? .34 : .25, lw = Math.max(1, Math.ceil(W * sc)), lh = Math.max(1, Math.ceil(H * sc)), world = c => c.setTransform(k * sc, 0, 0, k * sc, -cam.x * k * sc, groundY * sc);
   if (!LXM) { LXM = document.createElement('canvas'); LXMC = LXM.getContext('2d'); LXA = document.createElement('canvas'); LXAC = LXA.getContext('2d'); }
-  // 2) il foglio dell'ombra: buio vero bucato dalle luci, più i bordi scuri
-  const m = LXMC; lxBuf(LXM, m, lw, lh);
+  // 1) il foglio dell'ombra: di notte un buio grigio-verde (mai nero), più leggero lontano (foschia); le luci lo bucano e il buio torna in fretta
+  const m = LXMC; lxBuf(LXM, m, lw, lh); const hy = Math.max(0, Math.min(lh, groundY * sc));
   if (d > .02) {
-    m.fillStyle = `rgba(6,9,40,${.42 * d})`; m.fillRect(0, 0, lw, lh);
-    world(m); m.globalCompositeOperation = 'destination-out'; const hole = lxSpr('0,0,0', 'hole');
-    for (const l of src) lxDraw(m, hole, l.x, l.y, l.r * 2.6 * fl(l), 1);
-    if (sp && !sp.noSun) lxDraw(m, hole, sp.moon.x, sp.moon.y, 260, .7);
-    if (fire) lxDraw(m, hole, FX, FY, 640, fire);
-    if (q >= 2) for (const [x, y, a] of ffPos) lxDraw(m, hole, x, y, 46, a * .6);
-    for (const u of s.units) if (!u.dead) lxDraw(m, hole, u.x, dyAt(u.x, u.y) - 30 * CS, 64 * CS, .5);   // la luna illumina un po' chi combatte: si vede sempre bene
+    const gg = m.createLinearGradient(0, 0, 0, lh); gg.addColorStop(0, `rgba(28,34,42,${.32 * d})`); gg.addColorStop(hy / lh * .9, `rgba(22,28,32,${.4 * d})`); gg.addColorStop(1, `rgba(10,13,16,${.55 * d})`);
+    m.fillStyle = gg; m.fillRect(0, 0, lw, lh);
+    world(m); m.globalCompositeOperation = 'destination-out'; const hole = lxSpr('0,0,0', 'fall');
+    for (const l of src) lxDraw(m, hole, l.x, l.y, l.r * 3.2 * fl(l), .95);
+    if (sp && !sp.noSun) lxDraw(m, hole, sp.moon.x, sp.moon.y, 220, .45);
+    if (fire) lxDraw(m, hole, FX, FY, 600, fire);
+    if (q >= 2) for (const [x, y, a] of ffPos) lxDraw(m, hole, x, y, 30, a * .45);
+    for (const u of s.units) if (!u.dead) lxDraw(m, hole, u.x, dyAt(u.x, u.y) - 30 * CS, 56 * CS, .38);   // un filo di luna su chi combatte: si legge sempre
     m.setTransform(1, 0, 0, 1, 0, 0); m.globalCompositeOperation = 'source-over';
   }
-  if (S > .02) { m.fillStyle = `rgba(110,40,90,${.1 * S})`; m.fillRect(0, 0, lw, lh); }   // il colore dell'ora dentro il foglio dell'ombra: tramonto viola-rosa
-  m.globalAlpha = lerp(.32, .62, d) + .08 * S; m.drawImage(lxVig(), 0, 0, lw, lh); m.globalAlpha = 1;
+  if (S > .02) { const gs = m.createLinearGradient(0, 0, 0, lh); gs.addColorStop(0, `rgba(255,120,60,${.05 * S})`); gs.addColorStop(Math.min(.9, hy / lh + .05), `rgba(220,90,80,${.05 * S})`); gs.addColorStop(1, `rgba(60,26,70,${.16 * S})`); m.fillStyle = gs; m.fillRect(0, 0, lw, lh); }   // al tramonto: aria arancio in alto, ombre viola in basso   // al tramonto le ombre diventano viola
+  m.globalAlpha = lerp(.22, .58, d) + .1 * S; m.drawImage(lxVig(), 0, 0, lw, lh); m.globalAlpha = 1;
   ctx.save(); ctx.drawImage(LXM, 0, 0, lw, lh, 0, 0, W, H); ctx.restore();
-  // 3) il foglio della luce (si somma): sole, raggi, riflessi, aloni, luce sui personaggi, lucciole
+  // 2) il foglio della luce, fuso «morbido» (screen: scalda senza mai bruciare il bianco)
   const a = LXAC; lxBuf(LXA, a, lw, lh); a.globalCompositeOperation = 'lighter';
-  const wd0 = day * (1 - S);                                                  // il colore dell'ora dentro il foglio della luce: mattina dorata, tramonto arancio
-  if (wd0 > .02) { a.fillStyle = `rgba(255,190,110,${.07 * wd0})`; a.fillRect(0, 0, lw, lh); }
-  if (S > .02) { const gg = a.createLinearGradient(0, 0, 0, lh); gg.addColorStop(0, `rgba(255,120,70,${.2 * S})`); gg.addColorStop(1, `rgba(255,90,90,${.04 * S})`); a.fillStyle = gg; a.fillRect(0, 0, lw, lh); }
+  if (S > .02) { const gw = a.createLinearGradient(0, 0, 0, lh); gw.addColorStop(0, `rgba(255,150,90,${.14 * S})`); gw.addColorStop(Math.min(.95, hy / lh + .05), `rgba(255,120,70,${.08 * S})`); gw.addColorStop(1, 'rgba(200,80,70,0)'); a.fillStyle = gw; a.fillRect(0, 0, lw, lh); }   // aria arancio e rosa
+  const wd = day * (1 - S);
+  if (wd > .02) { const gd = a.createLinearGradient(0, 0, 0, lh); gd.addColorStop(0, `rgba(255,226,180,${.07 * wd})`); gd.addColorStop(.6, 'rgba(255,226,180,0)'); a.fillStyle = gd; a.fillRect(0, 0, lw, lh); }   // di giorno solo un filo di calore in alto
   let sunS = null;
-  if (sp && !sp.noSun && d < .95) {
-    const ws = S * (1 - d), wd = (1 - S) * (1 - d), A = clamp01(ws + wd);
-    if (A > .02) { const sx = (sp.day.x * wd + sp.set.x * ws) / A, sy = (sp.day.y * wd + sp.set.y * ws) / A, x = (sx - cam.x) * k * sc, y = (groundY + sy * k) * sc, col = S > .5 ? '255,150,80' : '255,220,150', M = Math.max(lw, lh);
-      sunS = [(sx - cam.x) * k, groundY + sy * k, A];
-      lxDraw(a, lxSpr(col, 'soft'), x, y, M * (.55 + .2 * S), (.18 + .14 * S) * A);
-      if (q >= 2) { a.save(); a.translate(x, y); a.rotate(t * .025); const R = M * (.9 + .3 * S); a.globalAlpha = (.09 + .06 * S) * A * (.85 + .15 * Math.sin(t * .7)); a.drawImage(lxRays(), -R, -R, R * 2, R * 2); a.restore(); }
-      if (q >= 3) { const cx = lw / 2, cy = lh / 2;                             // i riflessi dell'obiettivo, come piccole luci colorate
-        for (const [f, r, c2, al] of [[.35, 13, '255,200,120', .18], [.6, 7, '150,220,255', .22], [.85, 20, '255,140,200', .1], [1.2, 9, '200,255,170', .16]]) lxDraw(a, lxSpr(c2, 'soft'), x + (cx - x) * f * 2, y + (cy - y) * f * 2, r, al * A); }
-      if (q >= 2) { world(a); for (const p of DUST) lxDraw(a, lxSpr('255,225,160', 'soft'), ((p.x + t * 9) % 1300) - 100, p.y + Math.sin(t + p.p) * 7, 6, (.25 + .3 * Math.sin(t * 2 + p.p)) * wd * .9); a.setTransform(1, 0, 0, 1, 0, 0); } }   // pulviscolo dorato nel sole
+  if (sp && !sp.noSun && d < .9) {
+    const ws = S * (1 - d), wd2 = (1 - S) * (1 - d), A = clamp01(ws + wd2);
+    if (A > .02) { const sx = (sp.day.x * wd2 + sp.set.x * ws) / A, sy = (sp.day.y * wd2 + sp.set.y * ws) / A, x = (sx - cam.x) * k * sc, y = (groundY + sy * k) * sc, M = Math.max(lw, lh);
+      sunS = [(sx - cam.x) * k, groundY + sy * k, ws];
+      lxDraw(a, lxSpr(S > .5 ? '255,150,80' : '255,214,160', 'soft'), x, y, M * (.3 + .2 * S), (.08 + .34 * S) * A);   // alone del sole: piccolo di giorno, largo e caldo al tramonto
+      if (q >= 2) { a.save(); a.translate(x, y); a.rotate(t * .02); const R = M * (.75 + .3 * S); a.globalAlpha = (.035 + .1 * S) * A; a.drawImage(lxRays(), -R, -R, R * 2, R * 2); a.restore(); }
+      if (q >= 2) { world(a); for (const p of DUST) lxDraw(a, lxSpr('255,215,150', 'soft'), ((p.x + t * 9) % 1300) - 100, p.y + Math.sin(t + p.p) * 7, 5, (.16 + .2 * Math.sin(t * 2 + p.p)) * A * .8); a.setTransform(1, 0, 0, 1, 0, 0); } }   // pulviscolo nel sole
   }
-  world(a); const nl = .18 + .82 * d;
-  for (const l of src) lxDraw(a, lxSpr(l.rgb, 'soft'), l.x, l.y, l.r * 2.2 * fl(l), .5 * nl);
-  if (fire) lxDraw(a, lxSpr('255,130,40', 'soft'), FX, FY, 560, .5 * fire);
-  if (q >= 2 && (d > .1 || fire)) for (const u of s.units) { if (u.dead) continue; const uy = dyAt(u.x, u.y) - 34 * CS; let best = 0, rgb = '255,170,90';   // luce calda su chi sta vicino a una luce
-    for (const l of src) { const dd = Math.hypot(u.x - l.x, uy - l.y) / (l.r * 2.4); if (dd < 1 && 1 - dd > best) { best = 1 - dd; rgb = l.rgb; } }
-    if (fire) { const dd = Math.hypot(u.x - FX, uy - FY) / 700; if (dd < 1 && (1 - dd) * fire > best) { best = (1 - dd) * fire; rgb = '255,150,60'; } }
-    if (best > .03) lxDraw(a, lxSpr(rgb, 'soft'), u.x, uy, 46 * CS, best * (.35 + .25 * d)); }
-  for (const [x, y, al, f] of ffPos) { lxDraw(a, lxSpr(f.c[0], 'soft'), x, y, 52 * f.sz, al * .65);
-    if (q >= 3) { for (let j = 1; j <= 3; j++) { const [px, py] = lxFly(f, t - j * .07); lxDraw(a, lxSpr(f.c[0], 'soft'), px, py, (9 - j) * f.sz, al * .45 / j); }
-      if (y > -40) lxDraw(a, lxSpr(f.c[0], 'soft'), x, Math.max(y + 26, 4), 44 * f.sz, al * .3, .32); } }
-  ctx.save(); ctx.globalCompositeOperation = 'lighter'; ctx.drawImage(LXA, 0, 0, lw, lh, 0, 0, W, H);
-  // 4) i punti nitidi, a piena risoluzione: nuclei LED delle luci, del sole e delle lucciole
-  if (sunS) lxDraw(ctx, lxSpr('255,240,200', 'led'), sunS[0], sunS[1], 90 * k + 40, .45 * sunS[2]);
+  world(a); const nl = .12 + .88 * d;
+  for (const l of src) lxDraw(a, lxSpr('', 'warm'), l.x, l.y, l.r * 3 * fl(l), .8 * nl);      // alone caldo corto
+  if (fire) lxDraw(a, lxSpr('', 'warm'), FX, FY, 520, .7 * fire);
+  if (q >= 2 && (d > .1 || fire)) for (const u of s.units) { if (u.dead) continue; const uy = dyAt(u.x, u.y) - 34 * CS; let best = 0, lx = 0;   // luce di lato: si scalda solo la parte che guarda la fiamma
+    for (const l of src) { const dd = Math.hypot(u.x - l.x, uy - l.y) / (l.r * 2.6); if (dd < 1 && (1 - dd) * (1 - dd) > best) { best = (1 - dd) * (1 - dd); lx = l.x; } }
+    if (fire) { const dd = Math.hypot(u.x - FX, uy - FY) / 700; if (dd < 1 && (1 - dd) * fire > best) { best = (1 - dd) * fire; lx = FX; } }
+    if (best > .02) { const side = lx > u.x ? 1 : -1; a.save(); a.translate(u.x + side * 14 * CS, uy); a.scale(.42, 1); lxDraw(a, lxSpr('', 'warm'), 0, 0, 52 * CS, best * (.55 + .3 * d)); a.restore(); } }
+  for (const [x, y, al, f] of ffPos) { lxDraw(a, lxSpr(f.c[0], 'soft'), x, y, 40 * f.sz, al * .5);
+    if (q >= 3) { for (let j = 1; j <= 2; j++) { const [px, py] = lxFly(f, t - j * .08); lxDraw(a, lxSpr(f.c[0], 'soft'), px, py, (8 - j) * f.sz, al * .35 / j); }
+      if (y > -40) lxDraw(a, lxSpr(f.c[0], 'soft'), x, Math.max(y + 26, 4), 38 * f.sz, al * .22, .32); } }
+  ctx.save(); ctx.globalCompositeOperation = 'screen'; ctx.drawImage(LXA, 0, 0, lw, lh, 0, 0, W, H);
+  // 3) i punti nitidi: fiammelle piccole color crema (mai bianco pieno), il sole basso del tramonto, le lucciole
+  ctx.globalCompositeOperation = 'lighter';
+  if (sunS && sunS[2] > .05) lxDraw(ctx, lxSpr('255,170,90', 'flame'), sunS[0], sunS[1], 70 * k + 30, .5 * sunS[2]);
   ctx.translate(-cam.x * k, groundY); ctx.scale(k, k);
-  if (q >= 2) for (const l of src) lxDraw(ctx, lxSpr(l.rgb, 'led'), l.x, l.y, l.r * .7 * fl(l), .85 * nl);
-  if (fire) lxDraw(ctx, lxSpr('255,190,90', 'led'), FX - 60, FY, 220, .6 * fire);
-  for (const [x, y, al, f] of ffPos) lxDraw(ctx, lxSpr(f.c[1], 'led'), x, y, 16 * f.sz, al);
+  if (q >= 2) for (const l of src) lxDraw(ctx, lxSpr('255,170,80', 'flame'), l.x, l.y, l.r * .38 * fl(l), .6 * nl);
+  if (fire) lxDraw(ctx, lxSpr('255,170,80', 'flame'), FX - 60, FY, 160, .45 * fire);
+  for (const [x, y, al, f] of ffPos) lxDraw(ctx, lxSpr(f.c[0], 'flame'), x, y, 11 * f.sz, al * .85);
   ctx.restore();
   // farfalle di giorno (come prima)
   if (day > .1) { ctx.save(); ctx.translate(-cam.x * k, groundY); ctx.scale(k, k);
@@ -4534,6 +4544,20 @@ let frostT = 0, countT = 0, viaT = 0, firstGame = true, endT = 0, time = 0, hits
 let lightP = 0, lightOverride = null, bubbles = [], seenId = 0, toastT = 0;
 const cam = {x:0};
 let W = 0, H = 0, k = .6, dpr = 1, groundY = 0, CS = 1;
+let DPR0 = 1, RES = (() => { try { const v = +localStorage.getItem('dw_res'); return v >= .6 && v <= 1 ? v : 1; } catch (e) { return 1; } })(), RES_GOOD = 0;   // risoluzione: il telefono se la ricorda
+const RES_FT = [];
+function resTick(rdt) {                                                    // fotogrammi lenti → meno pixel; di nuovo fluido per un po' → più pixel
+  if (document.hidden || paused || GALLERY) { RES_FT.length = 0; return; }
+  RES_FT.push(rdt); if (RES_FT.length < 40) return;
+  const a = RES_FT.sort((x, y) => x - y), med = a[20], p80 = a[32]; RES_FT.length = 0;
+  const cur = RES_NEXT ?? RES;
+  if (p80 > 1 / 45 && cur > .6) { if (++RES_BAD >= 2) { RES_NEXT = Math.round((cur - .1) * 10) / 10; RES_BAD = 0; } RES_GOOD = 0; }   // due misure lente di fila, non uno scatto solo
+  else if (med < 1 / 57 && p80 < 1 / 50 && cur < 1) { RES_BAD = 0; if (++RES_GOOD >= 4) { RES_NEXT = Math.round((cur + .1) * 10) / 10; RES_GOOD = 0; } }
+  else { RES_GOOD = 0; RES_BAD = 0; }
+}
+let RES_NEXT = null, RES_BAD = 0;
+function resLater() { if (RES_NEXT != null && !LIVE()) { if (RES_NEXT !== RES) { RES = RES_NEXT; resApply(); } RES_NEXT = null; } }   // la nitidezza cambia solo fuori dal combattimento
+function resApply() { try { localStorage.setItem('dw_res', String(RES)); } catch (e) {} if (NG.setRes) NG.setRes(RES); resize(); }
 let DY = 28, P34 = false;                                                 // profondità del campo: in battaglia la telecamera è alzata (vista 3/4)
 const PATH = x => { if (x == null || isNaN(x)) return .5; const b = s && s.base ? s.base.x : 70, c = s && s.castle ? s.castle.x : 930; return Math.sin(Math.PI * Math.max(0, Math.min(1, (x - b) / (c - b)))); };
 const dep = (x, y) => P34 ? PATH(x) * .78 + (y || 0) * .22 : (y || 0);   // in 3/4 la strada curva: lontana alla tana e al castello, vicina al centro
@@ -4632,9 +4656,10 @@ const toasted = new Set();
 function toastOnce(t) { if (!toasted.has(t)) { toasted.add(t); toast(t); } }   // spiega un'abilità la prima volta che succede
 
 /* ================= dimensioni ================= */
-function resize() {
+function resize(ro) {
   const r = $('stage').getBoundingClientRect();
-  dpr = Math.min(2, window.devicePixelRatio || 1);
+  if (Array.isArray(ro) && running && !inMenu && W > 0 && Math.abs(r.width - W) < 2 && Math.abs(r.height - H) < Math.max(24, H * .06)) return;   // pochi pixel: la tela si allarga da sola, senza rifare la scena
+  DPR0 = Math.min(2, window.devicePixelRatio || 1); dpr = Math.max(.75, DPR0 * RES); if (NG.setRes) NG.setRes(dpr / DPR0);
   W = r.width; H = r.height;
   cv.width = Math.max(1, Math.round(W * dpr)); cv.height = Math.max(1, Math.round(H * dpr));
   k = Math.min(W / 1150, (H - 40) / 420);                                  // tutto il campo sempre visibile
@@ -5074,10 +5099,12 @@ const dk = (c, k = .5) => mix(c, '#1b1238', k), lt = (c, k = .4) => mix(c, '#fff
 const E = (x, y, rx, ry, rot = 0) => { const p = new Path2D(); p.ellipse(x, y, rx, ry, rot, 0, 7); return p; };
 const SP = s => new Path2D(s);
 const PL = a => { const p = new Path2D(); p.moveTo(a[0], a[1]); for (let i = 2; i < a.length; i += 2) p.lineTo(a[i], a[i + 1]); p.closePath(); return p; };
-function F(p, col, glow) { if (glow) { g.save(); g.shadowColor = glow; g.shadowBlur = 14; } g.fillStyle = col; g.fill(p); if (glow) g.restore(); }
+function F(p, col, glow) { if (p && p._ob && typeof col === 'string' && !glow) { g.save(); g.filter = `blur(${((col.charCodeAt(3) === 97 ? 15 : 2.6) * S).toFixed(1)}px)`; g.fillStyle = col; g.fill(p); g.restore(); return; }   // ombre larghe e sfumate, rive con il bordo morbido
+  if (glow) { g.save(); g.shadowColor = glow; g.shadowBlur = 14; } g.fillStyle = col; g.fill(p); if (glow) g.restore(); }
 function L(p, col, w) { g.lineCap = 'round'; g.lineJoin = 'round'; g.strokeStyle = col; g.lineWidth = w; g.stroke(p); }
 // volume: contorno pulito + colore + luce in alto a sinistra + ombra viola in basso a destra
 function V(p, col, cx, cy, r, ow = 2.4) {
+  if (p && p._ob && !ow) { g.save(); g.filter = `blur(${(2.6 * S).toFixed(1)}px)`; g.fillStyle = col; g.fill(p); g.restore(); return; }   // la riva dell'ostacolo: bordo morbido
   g.lineJoin = 'round'; if (ow) { g.strokeStyle = dk(col, .7); g.lineWidth = ow * 2; g.stroke(p); }
   g.fillStyle = col; g.fill(p); g.save(); g.clip(p);
   const gr = g.createRadialGradient(cx - r * .45, cy - r * .55, r * .05, cx, cy, r * 1.25);
@@ -10166,16 +10193,26 @@ function buildLayers() {
 }
 // ---------- l'ostacolo in mezzo alla curva: la sua forma (sempre la stessa) e 26 modi di riempirla ----------
 let OBG = { inside: () => false };
-function obGeo() {
-  let q = 11; const R = () => (q = (q * 16807) % 2147483647) / 2147483647;
-  const yT = G0 + 16, bot = x => G0 + (.78 * DEP(x, 0) - .09) * DY, xs = [];
-  for (let x = LX + 40; x <= CX - 40; x += 12) if (bot(x) > yT + 26) xs.push(x);
-  const x0 = xs[0], x1 = xs[xs.length - 1], cx = (x0 + x1) / 2, cy = (yT + bot(cx)) / 2, wob = xs.map((_, i) => Math.sin(i * .9 + R() * 6) * 3 + Math.sin(i * .37) * 5);
-  const shape = (sh, jag = 1, dy = 0) => { const p = new Path2D(), pt = (x, y) => [cx + (x - cx) * sh, cy + (y - cy) * sh + dy];
-    xs.forEach((x, i) => { const [a, b] = pt(x, yT + wob[i] * .4 * jag); i ? p.lineTo(a, b) : p.moveTo(a, b); });
-    for (let i = xs.length - 1; i >= 0; i--) { const [a, b] = pt(xs[i], bot(xs[i]) + wob[i] * jag); p.lineTo(a, b); } p.closePath(); return p; };
-  const inside = (x, y, sh = 1) => { if (x < cx + (x0 - cx) * sh || x > cx + (x1 - cx) * sh) return false; return y > cy + (yT - cy) * sh && y < cy + (bot(x) - cy) * sh; };
-  const pts = (n, sh, ring) => { const out = []; for (let t = 0; out.length < n && t < n * 60; t++) { const x = x0 + R() * (x1 - x0), y = yT - 6 + R() * (bot(cx) - yT + 12); if (inside(x, y, sh) && (!ring || !inside(x, y, ring))) out.push({ x, y, r: R() }); } return out.sort((a, b) => a.y - b.y); };
+function obGeo() {                                                            // la forma dell'ostacolo: dentro la curva della strada, diversa per ogni castello (OBSD)
+  let q = 11 + ((OBSD | 0) * 7919) % 2000000; const R = () => (q = (q * 16807) % 2147483647) / 2147483647; for (let i = 0; i < 5; i++) R();
+  const yT = G0 + 16, bot0 = x => G0 + (.78 * DEP(x, 0) - .09) * DY, all = [];
+  for (let x = LX + 40; x <= CX - 40; x += 12) if (bot0(x) > yT + 26) all.push(x);
+  const tl = R() * 70, tr = R() * 70, xs = all.filter(x => x >= all[0] + tl && x <= all[all.length - 1] - tr);   // più corta da una parte o dall'altra
+  const x0 = xs[0], x1 = xs[xs.length - 1], cx = (x0 + x1) / 2, cy = (yT + bot0(cx)) / 2;
+  const aT = 6 + R() * 22, aB = 6 + R() * 26, f1 = .6 + R() * .9, f2 = .8 + R() * 1.1, p1 = R() * 6.3, p2 = R() * 6.3, pw = .45 + R() * .3;   // gobbe sopra e sotto
+  const wob = xs.map((_, i) => Math.sin(i * .9 + R() * 6) * 3 + Math.sin(i * .37 + p1) * 5);
+  const RX = Math.max(1, (x1 - x0) / 2), RB = (bot0(cx) - cy) * (.5 + R() * .4), RT = (cy - yT) * (.75 + R() * .25);   // un ovale storto: niente punta a «V» in fondo
+  const edge = (i, jag) => { const x = xs[i], u = (x - x0) / Math.max(1, x1 - x0), env = Math.pow(Math.max(0, Math.sin(Math.PI * u)), pw), mid = (yT + bot0(x)) / 2;   // a lente: le punte si chiudono morbide
+    const t = yT + aT * (.5 + .5 * Math.sin(u * 6.283 * f1 + p1)) + wob[i] * .6 * jag, b = bot0(x) - aB * (.5 + .5 * Math.sin(u * 6.283 * f2 + p2)) + wob[i] * jag;
+    const e = Math.sqrt(Math.max(0, 1 - Math.pow((x - cx) / RX, 2))), t2 = Math.max(t, cy - RT * e + wob[i] * .6 * jag), b2 = Math.min(b, cy + RB * e + wob[i] * jag);
+    return [mid - (mid - t2) * env, mid + (Math.max(t2 + 4, b2) - mid) * env]; };
+  const E1 = xs.map((_, i) => edge(i, 1)), at = x => { const f = Math.max(0, Math.min(xs.length - 1, (x - x0) / 12)), i = Math.floor(f), j = Math.min(xs.length - 1, i + 1), w = f - i; return [E1[i][0] * (1 - w) + E1[j][0] * w, E1[i][1] * (1 - w) + E1[j][1] * w]; };
+  const bot = x => at(x)[1];
+  const shape = (sh, jag = 1, dy = 0) => { const p = new Path2D(), pt = (x, y) => [cx + (x - cx) * sh, cy + (y - cy) * sh + dy], E = xs.map((_, i) => edge(i, jag));
+    xs.forEach((x, i) => { const [a, b] = pt(x, E[i][0]); i ? p.lineTo(a, b) : p.moveTo(a, b); });
+    for (let i = xs.length - 1; i >= 0; i--) { const [a, b] = pt(xs[i], E[i][1]); p.lineTo(a, b); } p.closePath(); p._ob = 1; return p; };
+  const inside = (x, y, sh = 1) => { if (x < cx + (x0 - cx) * sh || x > cx + (x1 - cx) * sh) return false; const [t, b] = at(cx + (x - cx) / sh); return y > cy + (t - cy) * sh && y < cy + (b - cy) * sh; };
+  const pts = (n, sh, ring) => { const out = []; for (let t = 0; out.length < n && t < n * 60; t++) { const x = x0 + R() * (x1 - x0), y = yT - 6 + R() * (bot0(cx) - yT + 12); if (inside(x, y, sh) && (!ring || !inside(x, y, ring))) out.push({ x, y, r: R() }); } return out.sort((a, b) => a.y - b.y); };
   OBG = { x0, x1, cx, cy, yT, bot, shape, inside, pts, R, ps: y => .5 + (y - G0) / DY * .7 };
 }
 const OBS = {};
@@ -10971,8 +11008,8 @@ WORLDS.oni = { name: 'Isola degli Oni', seed: 203, ob: ['torii', 'sakura', 'onse
 
 // --- i mondi nel gioco: lo sfondo si disegna una volta per ogni ora del giorno; tana e castello in fogli a parte (così tremano, sprofondano, si girano) ---
 const NW_SX = 860 / 980;                                                     // 1 unità del prototipo = 0,8776 unità del gioco (tana→castello: 980 → 860)
-let NWS = null, OBK = null, LO = [0, 0];
-function nwApply(P) { ({ LX, CX, WW, VW, G0, HOR, BASE, DY, OY, H, S } = P); WORLD = P.th; OBK = P.ob; }
+let NWS = null, OBK = null, OBSD = 0, LO = [0, 0];
+function nwApply(P) { ({ LX, CX, WW, VW, G0, HOR, BASE, DY, OY, H, S } = P); WORLD = P.th; OBK = P.ob; OBSD = P.sd || 0; }
 function nwGround(w) {                                                       // il terreno del prototipo, senza tana e castello
   const W = WD();
   const gg = g.createLinearGradient(0, HOR, 0, H); W.gr.forEach((c, i) => gg.addColorStop([0, .16, .55, 1][i], c)); g.fillStyle = gg; g.fillRect(0, HOR, w, H - HOR);
@@ -10988,6 +11025,15 @@ const nwFree = st => { for (const z of st.sets) if (z) for (const c of [z.bg, z.
 const nwSnap = () => ({ g, RAW, TIME, seed, LIGHTS, FLAMES, FLAGS, OBA, LITOK, S, H, WW, VW, HOR, LX, CX, BASE, G0, DY, OY });
 const nwPut = o => { g = o.g; RAW = o.RAW; TIME = o.TIME; seed = o.seed; LIGHTS = o.LIGHTS; FLAMES = o.FLAMES; FLAGS = o.FLAGS; OBA = o.OBA; LITOK = o.LITOK; S = o.S; H = o.H; WW = o.WW; VW = o.VW; HOR = o.HOR; LX = o.LX; CX = o.CX; BASE = o.BASE; G0 = o.G0; DY = o.DY; OY = o.OY; };
 function* nwPause(st) { st.mine = nwSnap(); nwPut(st.outer); yield; st.outer = nwSnap(); nwApply(st.P); nwPut(st.mine); }   // pausa: il gioco ritrova tutto com'era, poi si riprende da qui
+function nwGrade(cv, t, opaque) {                                            // il colore dell'ora «cotto» nello sfondo una volta sola (soft-light): caldo di giorno, arancio-rosa al tramonto, freddo grigio-verde di notte
+  const G = [['255,205,135', .22], ['255,100,70', .38], ['45,75,95', .36]][t]; if (!G || !cv || !cv.width) return;
+  const x = cv.getContext('2d'); x.save(); x.setTransform(1, 0, 0, 1, 0, 0); let keep = null;
+  if (!opaque) { keep = document.createElement('canvas'); keep.width = cv.width; keep.height = cv.height; keep.getContext('2d').drawImage(cv, 0, 0); }
+  x.globalCompositeOperation = 'soft-light'; x.fillStyle = `rgba(${G[0]},${G[1]})`; x.fillRect(0, 0, cv.width, cv.height);
+  if (t === 1) { const gg = x.createLinearGradient(0, cv.height * .45, 0, cv.height); gg.addColorStop(0, 'rgba(90,40,120,0)'); gg.addColorStop(1, 'rgba(90,40,120,.34)'); x.fillStyle = gg; x.fillRect(0, 0, cv.width, cv.height); }   // ombre viola in basso
+  if (keep) { x.globalCompositeOperation = 'destination-in'; x.drawImage(keep, 0, 0); keep.width = keep.height = 0; }
+  x.restore();
+}
 function* nwBuildG(t, P) {                                                   // costruisce giorno, tramonto o notte a pezzi (un livello alla volta)
   const st = { outer: nwSnap(), P }; nwApply(P); TIME = t; const W = WD(); seed = W.seed || 7; LIGHTS = []; FLAMES = []; FLAGS = []; OBA = null; RAW = 1;
   try {
@@ -10998,6 +11044,7 @@ function* nwBuildG(t, P) {                                                   // 
     const hzc = hex(W.sky[t][3]).join(','), hz = g.createLinearGradient(0, 210, 0, HOR + 30); hz.addColorStop(0, `rgba(${hzc},0)`); hz.addColorStop(.8, `rgba(${hzc},${t === 2 ? .2 : .36})`); hz.addColorStop(1, `rgba(${hzc},0)`); g.fillStyle = hz; g.fillRect(0, 200, WW, 160);
     g.drawImage(gr, 0, OY, WW, H - OY);
     for (const c of [sky, far, hill, gr]) c.width = c.height = 0;
+    nwGrade(bg, t, true);
     yield* nwPause(st);
     const n0 = [LIGHTS.length, FLAMES.length, FLAGS.length];
     const S0 = S; S = Math.min(3, S * (P.spr || 1));                     // tana e castello si possono ingrandire: più definiti
@@ -11005,16 +11052,16 @@ function* nwBuildG(t, P) {                                                   // 
     yield* nwPause(st);
     const n1 = [LIGHTS.length, FLAMES.length, FLAGS.length];
     const castle = layer(WW, () => { g.save(); g.translate(CX, BASE); W.castle(); g.restore(); }, 1, [CX - 310, BASE - 660, CX + 330, BASE + 130]);
-    S = S0;
+    S = S0; nwGrade(lair, t, false); nwGrade(castle, t, false);
     [LIGHTS, FLAMES, FLAGS].forEach((arr, j) => { for (let i = n0[j]; i < arr.length; i++) arr[i].own = i < n1[j] ? 'L' : 'C'; });
     return { bg, lair, castle, lights: LIGHTS, flames: FLAMES, flags: FLAGS, oba: OBA };
   } finally { const o = st.outer, keep = [LIGHTS, FLAMES, FLAGS, OBA]; nwPut(o); [LIGHTS, FLAMES, FLAGS, OBA] = keep; }   // luci, fiamme e bandiere restano quelle appena fatte, come prima
 }
 function nwBuild(t, P = NWS.P) { const it = nwBuildG(t, P); let r; while (!(r = it.next()).done); return r.value; }   // tutto in una volta (serve per il primo disegno)
-const nwKey = v => [v.th, v.ob, Math.round(v.l), Math.round(v.r), Math.round(v.t), Math.round(v.b), Math.round(v.dy), Math.round(v.px * 100), Math.round((v.spr || 1) * 20)].join('|');
+const nwKey = v => [v.th, v.ob, v.sd || 0, Math.round(v.l), Math.round(v.r), Math.round(v.t), Math.round(v.b), Math.round(v.dy), Math.round(v.px * 100), Math.round((v.spr || 1) * 20)].join('|');
 function nwMake(v, key) {                                                   // un mondo nuovo, ancora da disegnare
   const LXn = (70 - v.l) / NW_SX, ww = (v.r - v.l) / NW_SX;
-  const P = { th: v.th, ob: v.ob, LX: LXn, CX: LXn + 980, WW: ww, VW: ww, G0: 372, HOR: 318, BASE: 400, DY: Math.max(60, v.dy / NW_SX), OY: Math.min(0, 372 + v.t / NW_SX), H: Math.max(560, 372 + v.b / NW_SX), S: Math.min(2.2, v.px * NW_SX), spr: v.spr || 1, l: v.l };
+  const P = { th: v.th, ob: v.ob, sd: v.sd || 0, LX: LXn, CX: LXn + 980, WW: ww, VW: ww, G0: 372, HOR: 318, BASE: 400, DY: Math.max(60, v.dy / NW_SX), OY: Math.min(0, 372 + v.t / NW_SX), H: Math.max(560, 372 + v.b / NW_SX), S: Math.min(2.2, v.px * NW_SX), spr: v.spr || 1, l: v.l };
   const fg = []; { let sd = 99; const r = () => (sd = (sd * 16807) % 2147483647) / 2147483647; for (let x = -40; x < ww + 120; x += 60 + r() * 110) fg.push([x, r(), r()]); }
   return { key, P, sets: [null, null, null], fg, ow: { L: [], C: [] } };
 }
@@ -11116,11 +11163,33 @@ function nwFront(c, p, t) {                                                  // 
   else if (W.frozen) for (let i = 0; i < 60; i++) { const x = ((i * 97.3 + Math.sin(T * .7 + i) * 20) % (VW + 40) + VW + 40) % (VW + 40) - 20, y = ((i * 53 + T * (24 + i % 4 * 8)) % (H + 20)) - 10; c.fillStyle = 'rgba(255,255,255,.8)'; c.beginPath(); c.arc(x, y, 1 + (i % 3) * .7, 0, 7); c.fill(); }
   else for (let i = 0; i < 26; i++) { const x = ((i * 137.5 + T * (6 + i % 5)) % (VW + 40) + VW + 40) % (VW + 40) - 20, y = 300 + ((i * 71) % 220) + Math.sin(T * .8 + i) * 12, a = .25 + .25 * Math.sin(T * 1.7 + i * 2); c.fillStyle = `rgba(255,236,160,${a})`; c.beginPath(); c.arc(x, y, 1.2 + (i % 3) * .7, 0, 7); c.fill(); }
   c.restore();
-  const nd = wts[2] * .45 + wts[1] * .15, fg0 = mix(W.fg[0], '#0d0a18', nd), fg1 = mix(W.fg[1], '#0d0a18', nd);   // l'erba davanti si scurisce con la sera
+  const nd = wts[2] * .45 + wts[1] * .15;                                      // l'erba davanti si scurisce con la sera
+  if (!nwFgDraw(c, T, nd, W)) nwFgPaint(T, nd, W, c);
+  c.restore(); g = null; RAW = 0;
+}
+function nwFgPaint(T, nd, W, c) {                                              // l'erba e i cespugli in primo piano (che ondeggiano)
+  const fg0 = mix(W.fg[0], '#0d0a18', nd), fg1 = mix(W.fg[1], '#0d0a18', nd);
   for (const [x, a, b] of NWS.fg) { const sw = Math.sin(T * 1.2 + x) * 5;
     if (a < .55) { const n = 5 + Math.floor(b * 4); for (let i = 0; i < n; i++) { const o = (i - n / 2) * 9, hh = 46 + ((i * 53 + x) % 40), p = SP(`M${x + o - 5},${H + 4} Q${x + o - 2},${H - hh * .6} ${x + o + sw + o * .3},${H - hh} Q${x + o + 5},${H - hh * .5} ${x + o + 6},${H + 4}Z`); F(p, i % 2 ? fg0 : fg1); } }
     else { for (const [dx, r] of [[-26, 30], [22, 34], [0, 44]]) { const p = E(x + dx + sw * .3, H + 6 - r * .3, r, r * .9); F(p, dk(fg0, .1)); c.save(); c.clip(p); F(E(x + dx - r * .3, H - r * .9, r * .8, r * .5), 'rgba(120,180,90,.28)'); c.restore(); } } }
-  c.restore(); g = null; RAW = 0;
+}
+const NW_FGN = 24, NW_FG = { key: '', st: [], sil: [] };                     // l'erba davanti pronta in 24 momenti del suo ondeggiare (una striscia ciascuno)
+function nwFgDraw(c, T, nd, W) {                                              // incolla la striscia giusta invece di ridisegnare cento fili d'erba a ogni fotogramma
+  const tm = c.getTransform(), sc = Math.hypot(tm.a, tm.b); if (!(sc > 0)) return false;
+  const key = NWS.key + '|' + Math.round(sc * 200); if (NW_FG.key !== key) { NW_FG.key = key; NW_FG.st = []; NW_FG.sil = []; }
+  const PER = Math.PI * 2 / 1.2, i = Math.round((((T % PER) + PER) % PER) / PER * NW_FGN) % NW_FGN, x0 = -130, y0 = H - 96, w = WW + 340, h = 112;
+  let st = NW_FG.st[i];
+  if (!st) {
+    st = document.createElement('canvas'); st.width = Math.max(1, Math.ceil(w * sc)); st.height = Math.max(1, Math.ceil(h * sc));
+    const x = st.getContext('2d'), old = g; x.setTransform(sc, 0, 0, sc, -x0 * sc, -y0 * sc); g = x;
+    try { nwFgPaint(i / NW_FGN * PER, 0, W, x); } finally { g = old; }
+    NW_FG.st[i] = st;
+  }
+  c.drawImage(st, x0, y0, w, h);
+  if (nd > .004) { let sl = NW_FG.sil[i];
+    if (!sl) { sl = document.createElement('canvas'); sl.width = st.width; sl.height = st.height; const x = sl.getContext('2d'); x.drawImage(st, 0, 0); x.globalCompositeOperation = 'source-in'; x.fillStyle = '#0d0a18'; x.fillRect(0, 0, sl.width, sl.height); NW_FG.sil[i] = sl; }
+    const a0 = c.globalAlpha; c.globalAlpha = a0 * nd; c.drawImage(sl, x0, y0, w, h); c.globalAlpha = a0; }
+  return true;
 }
 
 function nwLightList() {                                                      // le luci dello sfondo (torce, finestre, lava…) in coordinate del gioco: per il buio e gli aloni
@@ -11182,9 +11251,16 @@ function ngDragon(c, o) {                                                    // 
   return [16 + 30 * cr - 13 * sr, -58 + bob + 30 * sr + 13 * cr, 16 + 10 * cr + 6 * sr, -58 + bob - 6 * cr + 10 * sr];   // bocca e occhiali
 }
 // --- immagini pronte (sprite): ogni posa si disegna una volta sola, poi si incolla; ombre e lampi di colore si ricavano dalla stessa immagine ---
-let SPR_PROBE = null, SPR_FIX = 0, SPR_OFF = 0; const SPR_DAY = { shadow: '#2a2140', amtC: .36, amtB: .55 };   // la luce fissa con cui si disegnano le immagini pronte
+let SPR_PROBE = null, SPR_FIX = 0, SPR_OFF = 0, SPR_RES = 1;   // SPR_RES: quanto la tela è più piccola del massimo (risoluzione automatica)
+const SPR_DAY = { shadow: '#2a2140', amtC: .36, amtB: .55 };   // la luce fissa con cui si disegnano le immagini pronte
 const TAU = Math.PI * 2, SPR = new Map(), KB = {}; let SPR_PX = 0, SPR_NEW = 0;
-const SPR_MAX = 1.8e7, SPR_BUDGET = 8;                                       // memoria massima (pixel) e pose nuove per fotogramma
+const SPR_MAX = 1.8e7, SPR_BUDGET = 8, SPR_MSMAX = 2.5; let SPR_MS = 0;
+const SPR_ALT = new Map(), SPR_UL = new Map();                               // per ogni posa: le grandezze già pronte; per ogni personaggio: l'ultima immagine usata
+function sprAlt(base, qi, ul) {                                              // un'immagine già pronta da usare al posto di quella che manca (per uno o due fotogrammi)
+  const m = SPR_ALT.get(base); let best = null, bd = 1e9;
+  if (m) for (const [q, key] of m) { const e = SPR.get(key); if (!e) { m.delete(q); continue; } const d = Math.abs(q - qi) + (q < qi ? .5 : 0); if (d < bd) { bd = d; best = e; } }
+  if (best) return best; const k2 = SPR_UL.get(ul); return (k2 && SPR.get(k2)) || null;
+}                                       // memoria massima (pixel) e pose nuove per fotogramma
 function sprPose(k, o) {                                                    // la posa "arrotondata": pochi fotogrammi per camminata, respiro e attacco
   const a = o.arm || 0, u0 = a < 0 ? Math.min(1, -a / 1.5) : a > 0 ? -Math.min(1, a / 1.3) : 0, mood = o.hit ? 4 : a < -.3 ? 2 : a > .3 ? 3 : o.walking ? 1 : 0;
   let t, ph = 0, u = 0, blink = 1, fk;
@@ -11213,18 +11289,20 @@ function sprSil(e, col) {                                                     //
 }
 function sprDraw(k, c, o, fn) {
   if (SPR_OFF) return false;                                                   // icone: disegnate una volta sola, l'immagine pronta non serve
-  const m = NG_MODE(), tm = c.getTransform(), sc = Math.hypot(tm.a, tm.b); if (!(sc > 0)) return false;
+  const m = NG_MODE(), tm = c.getTransform(), sc = Math.hypot(tm.a, tm.b) / SPR_RES; if (!(sc > 0)) return false;   // le immagini pronte restano quelle a piena risoluzione
   const qi = Math.ceil(Math.log2(sc) * 3 - .15), qs = Math.pow(2, qi / 3), Lt = NG_LIGHT();   // 3 grandezze per raddoppio, sempre un po' più nitida del necessario: meno immagini da tenere
-  const [p, pk] = sprPose(k, o), key = k + '|' + pk + '|' + qi;              // la luce del momento NON entra nel nome: l'immagine resta buona dal giorno alla notte
+  const [p, pk] = sprPose(k, o), base = k + '|' + pk, key = base + '|' + qi, ul = k + '|' + (o.look || '') + '|' + (SUB[k] ? (o.id || 0) % 6 : '');   // la luce del momento NON entra nel nome: l'immagine resta buona dal giorno alla notte
   let e = SPR.get(key);
   if (e) { SPR.delete(key); SPR.set(key, e); }
+  else if (m !== 'normal' || SPR_MS >= SPR_MSMAX || SPR_NEW >= SPR_BUDGET) { e = sprAlt(base, qi, ul); if (!e) return false; }   // tempo finito: si usa quella più vicina, la nuova arriva nei prossimi fotogrammi
   else {
-    if (m !== 'normal' || SPR_NEW >= SPR_BUDGET) return false;                // niente immagine pronta: si disegna come prima
-    SPR_NEW++; const b = sprBox(k, o, fn), cv = document.createElement('canvas'); cv.width = Math.max(1, Math.ceil((b[2] - b[0]) * qs)); cv.height = Math.max(1, Math.ceil((b[3] - b[1]) * qs));
+    const t0 = performance.now(); SPR_NEW++; const b = sprBox(k, o, fn), cv = document.createElement('canvas'); cv.width = Math.max(1, Math.ceil((b[2] - b[0]) * qs)); cv.height = Math.max(1, Math.ceil((b[3] - b[1]) * qs));
     const g2 = cv.getContext('2d'), old = g; g2.setTransform(qs, 0, 0, qs, -b[0] * qs, -b[1] * qs); g = g2; SPR_FIX = 1; try { fn(p); } finally { g = old; SPR_FIX = 0; }   // sempre coi colori del giorno: di sera e di notte scurisce il velo delle luci
-    e = { cv, b, sil: {} }; SPR.set(key, e); SPR_PX += cv.width * cv.height;
+    e = { cv, b, sil: {}, key }; SPR.set(key, e); SPR_PX += cv.width * cv.height; SPR_MS += performance.now() - t0;
+    let am = SPR_ALT.get(base); if (!am) SPR_ALT.set(base, am = new Map()); am.set(qi, key);
     for (const [k2, e2] of SPR) { if (SPR_PX <= SPR_MAX) break; SPR.delete(k2); SPR_PX -= e2.cv.width * e2.cv.height; for (const s of Object.values(e2.sil)) SPR_PX -= s.width * s.height; }
   }
+  if (e.key) SPR_UL.set(ul, e.key);
   const b = e.b; c.save(); c.rotate((o.lean || 0) * .5); const sq = o.sq || 0; c.scale(1 + sq, 1 - sq);
   if (m === 'normal') c.drawImage(e.cv, b[0], b[1], b[2] - b[0], b[3] - b[1]);
   else { const [fc, fa] = NG_FC(), a0 = c.globalAlpha; c.globalAlpha = a0 * (m === 'shadow' ? .3 : fa); c.drawImage(sprSil(e, m === 'shadow' ? '20,12,36' : fc), b[0], b[1], b[2] - b[0], b[3] - b[1]); c.globalAlpha = a0; }
@@ -11260,7 +11338,7 @@ function draw(k, c, o) {                                                    // o
   const m = NG_MODE(); if (m === 'normal') g = c; else { PCOL = m === 'shadow' ? 'rgba(20,12,36,.22)' : NG_FLASH(); g = proxyOf(c); }
   c.save(); c.rotate((o.lean || 0) * .5); const sq = o.sq || 0; c.scale(1 + sq, 1 - sq); fn(p); c.restore(); g = null; return true;
 }
-return { draw, has: k => !!(SUB[k] || DRAW[k]), nw: { ensure: nwEnsure, prep: nwPrep, ready: () => !!NWS && NWS.sets.some(Boolean), back: nwBack, owned: nwOwned, front: nwFront, pt: nwPt, lights: nwLightList, sun: nwSunPos }, sprOff: v => { SPR_OFF = v; }, dragon: ngDragon, skin: id => !!SKINS[id], frame: () => { SPR_NEW = 0; }, sprInfo: () => ({ n: SPR.size, px: SPR_PX }) };
+return { draw, has: k => !!(SUB[k] || DRAW[k]), nw: { ensure: nwEnsure, prep: nwPrep, ready: () => !!NWS && NWS.sets.some(Boolean), back: nwBack, owned: nwOwned, front: nwFront, pt: nwPt, lights: nwLightList, sun: nwSunPos }, sprOff: v => { SPR_OFF = v; }, setRes: v => { SPR_RES = v > 0 ? v : 1; }, dragon: ngDragon, skin: id => !!SKINS[id], frame: () => { SPR_NEW = 0; SPR_MS = 0; }, sprInfo: () => ({ n: SPR.size, px: SPR_PX }) };
 })();
 const NG_H = {"goblin": 72, "orco": 158, "strega": 141, "cavaliere": 126, "arciere": 102, "fionda": 84, "topi": 48, "lupo": 113, "scheletri": 92, "trollponte": 112, "ragno": 50, "zombie": 101, "fuocofatuo": 79, "diavoletto": 82, "rospo": 36, "cornacchia": 77, "gargoyle": 86, "sciame": 90, "lupetti": 55, "scimmie": 115, "gattovolpe": 99, "gnomo": 86, "spaventapasseri": 122, "retopi": 112, "pandizenzero": 57, "mummia": 102, "pupazzo": 79, "matrigna": 138, "reginacuori": 122, "stregone": 147, "gothel": 122, "sirena": 94, "lumacone": 52, "fantasma": 97, "coccodrillo": 37, "ladroni": 105, "barbablu": 123, "omino": 80, "babajaga": 187, "stregamare": 106, "morgana": 109, "grifone": 107, "spirito": 177, "bestia": 86, "ciclope": 184, "senzatesta": 135, "dracula": 119, "medusa": 114, "pescecane": 73, "alberich": 71, "trollspecchio": 101, "mordred": 127, "lupomannaro": 115, "frankenstein": 133, "hyde": 126, "stregatto": 69, "stregaovest": 92, "sherekhan": 66, "krampus": 136, "jabberwocky": 127, "kraken": 141, "idra": 88, "bandersnatch": 83, "zucca": 116, "marzapane": 107, "gigantegh": 185, "uncino": 136, "mangiafuoco": 162, "tremotino": 82, "reginacattiva": 123, "reginanevi": 128, "basilisco": 120, "cavaliereverde": 162, "diavolo": 146, "dragonero": 120, "gigante": 185, "ecate": 120, "circe": 112, "minotauro": 196, "fenice": 119, "soldatino": 113, "principe": 109, "cacciatore": 128, "spiritista": 116, "porcellino": 88, "fata": 102, "re": 168, "bimbo": 55, "hanselgretel": 54, "nano": 69, "raperonzolo": 106, "pifferaio": 132, "musicanti": 127, "carrozza": 109, "ranocchio": 60, "peterpan": 123, "cappuccetto": 78, "robinhood": 122, "gattostivali": 78, "biancaneve": 104, "pinocchio": 100, "merlino": 146, "alice": 98, "wendy": 102, "giglio": 113, "cappellaio": 130, "brucaliffo": 115, "lepre": 99, "alibaba": 112, "sinbad": 135, "guardia": 139, "renna": 110, "fiammiferaia": 75, "pupazzoneve": 70, "cavcristallo": 124, "gemello": 102, "gemelli": 102, "pisello": 113, "tappeto": 94, "aladino": 113, "kai": 101, "gerda": 104, "pollicino": 57, "dragotempesta": 122, "jack": 113, "jackre": 121, "arpa": 98, "arpaincantata": 106, "gallina": 74, "cavnuvole": 136, "yeti": 154, "cobrabianco": 125, "mowgli": 106, "mowglire": 121, "baloo": 123, "bagheera": 64, "bagheerare": 64, "hathi": 102, "hathire": 102, "momotaro": 114, "momotarore": 139, "cane": 67, "canere": 69, "scimmiamomo": 71, "scimmiare": 71, "fagiano": 97, "reoni": 171, "reonifuria": 180, "topo": 38, "scheletro": 92, "pipsciame": 67, "pipistrello": 67, "lupetto": 46, "scimmia": 115, "capoladroni": 105, "ladrone": 71, "matrigna_m": 138, "sorella": 81, "reginacuori_q": 122, "carta": 95, "burattino": 40, "corvo": 77};
 const NG_OLD = Object.assign({}, DRAW), NG_SKIN = new Set(Object.keys(LOOKS).filter(id => !LOOKS[id].tint && !LOOKS[id].filter));   // le skin con gli accessori restano col disegno di prima
@@ -11353,19 +11431,20 @@ document.addEventListener('keydown', e => {
   if (e.key === ' ') { e.preventDefault(); act('fire', () => netAct('f')); }
   if (e.key === 'u' || e.key === 'U') act('wallet', () => netAct('w'));
 });
+const HUD = (el, k, v, f) => { if (el['_h' + k] !== v) { el['_h' + k] = v; f(el, v); } };   // scrive solo se il valore è cambiato
 function updateHud() {
   const me = ME(), w = me.wallet, max = DW.walletCap(s, MYPI());
-  $('catFill').style.width = (100 * w.cur / max) + '%';
-  $('catNum').textContent = `${Math.floor(w.cur)} / ${max}`;
+  HUD($('catFill'), 'w', Math.round(1000 * Math.min(1, w.cur / max)) / 1000, (el, v) => { el.style.transform = 'scaleX(' + v + ')'; });
+  HUD($('catNum'), 't', `${Math.floor(w.cur)} / ${max}`, (el, v) => { el.textContent = v; });
   const c = DW.walletCost(s, MYPI());
   $('walletBtn').disabled = !isFinite(c) || w.cur < c; $('walletBtn').classList.toggle('ready', !$('walletBtn').disabled);
-  $('walletInfo').textContent = isFinite(c) ? `Liv ${w.lv} → ${w.lv + 1} · ${c}` : `Liv ${w.lv} · al massimo`;
+  HUD($('walletInfo'), 't', isFinite(c) ? `Liv ${w.lv} → ${w.lv + 1} · ${c}` : `Liv ${w.lv} · al massimo`, (el, v) => { el.textContent = v; });
   renderHand();
   for (const b of unitBtns) { const d = DW.U[b.dataset.k]; if (!d) continue; const poor = w.cur < DW.costIn(s, b.dataset.k, MYPI()); b.classList.toggle('poor', poor); b.classList.toggle('ok', !poor); }
   const fb = $('fireBtn'), p = Math.floor(me.fire.v * 100), noF = s.rule.noFire || me.fire.charge === Infinity;
-  fb.style.setProperty('--p', p + '%'); fb.classList.toggle('ready', p >= 100);
-  $('fireTxt').innerHTML = noF ? tr(NET.g || s.mp || s.guest ? 'Niente fiammata' : 'In sciopero').replace(' ', '<br>') : p >= 100 ? 'Fiammata!' : `Fiammata<br>${p}%`;
-  $('goldTxt').textContent = save.gold.toLocaleString(LOC());
+  HUD(fb, 'p', p, (el, v) => { el.style.setProperty('--p', v + '%'); el.classList.toggle('ready', v >= 100); });
+  HUD($('fireTxt'), 'h', noF ? tr(NET.g || s.mp || s.guest ? 'Niente fiammata' : 'In sciopero').replace(' ', '<br>') : p >= 100 ? 'Fiammata!' : `Fiammata<br>${p}%`, (el, v) => { el.innerHTML = v; });
+  HUD($('goldTxt'), 'g', save.gold + LANG, el => { el.textContent = save.gold.toLocaleString(LOC()); });
 }
 
 /* ================= menu, partita, pausa ================= */
@@ -12733,7 +12812,7 @@ function battleLight() {                                                    // g
 let last = performance.now(), acc = 0;
 function frame(now) {
   requestAnimationFrame(frame);                                            // il prossimo fotogramma è prenotato anche se questo dovesse fallire
-  const rdt = Math.min(.1, (now - last) / 1000); last = now; time += rdt; lqTick(rdt);
+  const rdt = Math.min(.1, (now - last) / 1000); last = now; time += rdt; lqTick(rdt); resTick(rdt); lqLater(); resLater();
   let dt = rdt;
   if (hitstop > 0) { hitstop -= rdt; dt = rdt * .08; }                     // il mondo si ferma un istante sul colpo
   hitCd -= rdt;
@@ -14372,7 +14451,7 @@ Object.assign(VALIAS, {dragotempesta:'grifone', jack:'robinhood', arpa:'fata', g
 THEMES.nuvole = {sky:'#8ac0f0', amt:.4, hill1:'#e8f0ff', hill2:'#c8d4f0', tree:'#5ab84a', tt:'goldtree', g1:'#f4f8ff', g2:'#c8d4f0', stone:'#ffffff', roof:['#3a6ad8', '#e8b83a'], fx:'sparkle', card:['#2a4a9a', '#bfe0ff']};
 OBST.nuvole = ['fagiolo', 'voragine', 'nido']; ROADC.nuvole = '#e8eef8';
 OBST_BY_NAME.unshift([/fagiolo|scala di foglie/i, 'fagiolo'], [/nido/i, 'nido'], [/buco tra le nuvole|arcobaleno/i, 'voragine']);
-MUS_FILE.w16 = 'w12';                                                     // il Regno delle Nuvole usa la musica dell'Isola che non c'è
+MUS_FILE.w16 = 'w16';                                                     // il Regno delle Nuvole: "Skypole Gorge" (jomusic, CC0)
 { const NAT = {dragotempesta:122, jack:113, jackre:121, arpa:98, arpaincantata:106, gallina:74, cavnuvole:136};   // altezza vera dei disegni nuovi
   Object.assign(HEIGHT, {dragotempesta:112, jack:88, jackre:92, arpa:80, arpaincantata:84, gallina:62, cavnuvole:104});
   Object.assign(SC, {dragotempesta:.92, jack:.84, jackre:.86, arpa:.86, arpaincantata:.9, gallina:.88, cavnuvole:.86});
@@ -14392,7 +14471,7 @@ Object.assign(VALIAS, {cobrabianco:'basilisco', mowgli:'pollicino', mowglire:'po
 THEMES.giungla = {sky:'#78c0cc', amt:.42, hill1:'#3a7a3a', hill2:'#2a6a34', tree:'#2a7a34', tt:'palm', g1:'#a8c060', g2:'#3a7a34', stone:'#a8a088', roof:['#c8603a', '#e8b830'], fx:'sparkle', card:['#1a4a2a', '#8ad070']};
 OBST.giungla = ['waingunga', 'rovine', 'fico']; ROADC.giungla = '#b89a60';
 OBST_BY_NAME.unshift([/waingunga/i, 'waingunga'], [/tane fredde|scimmie/i, 'rovine'], [/fico|rupe|lucciole/i, 'fico']);
-MUS_FILE.w17 = 'w13'; MUS_BOSS.w17 = 'w13b';                               // la giungla usa la musica del Deserto di Aladino (e la sua musica del boss)
+MUS_FILE.w17 = 'w17'; MUS_BOSS.w17 = 'w13b';                               // la giungla: "Bamboo Blitz" (Tsorthan Grove, CC0); il boss usa ancora quella del Deserto
 { const NAT = {cobrabianco:125, mowgli:106, mowglire:121, baloo:123, bagheera:64, bagheerare:64, hathi:102, hathire:102};   // altezza vera dei disegni nuovi
   Object.assign(HEIGHT, {cobrabianco:86, mowgli:84, mowglire:92, baloo:100, bagheera:56, bagheerare:58, hathi:100, hathire:102});
   Object.assign(SC, {cobrabianco:.9, mowgli:.86, mowglire:.88, baloo:.9, bagheera:.9, bagheerare:.92, hathi:.92, hathire:.92});
@@ -14412,7 +14491,7 @@ Object.assign(VALIAS, {reoni:'orco', momotaro:'robinhood', momotarore:'robinhood
 THEMES.oni = {sky:'#6ab0e8', amt:.42, hill1:'#3a6a4a', hill2:'#4a7a44', tree:'#2a5a3a', tt:'palm', g1:'#e8d8a8', g2:'#5a8a4a', stone:'#6a6260', roof:['#d8303a', '#2a3a4a'], fx:'sparkle', card:['#7a1a2a', '#f8b8c8']};
 OBST.oni = ['torii', 'sakura', 'onsen']; ROADC.oni = '#d8c8a0';
 OBST_BY_NAME.unshift([/drago|perle|tesoro/i, 'torii'], [/sbarco|marea|onde|fagiano/i, 'torii'], [/cane|scimmia|cancello/i, 'sakura'], [/luna/i, 'onsen']);
-MUS_FILE.w18 = 'w5'; MUS_BOSS.w18 = 'w11b';                                // l'isola usa la musica del Regno sotto il mare, e per Momotaro quella del boss dell'Isola che non c'è
+MUS_FILE.w18 = 'w18'; MUS_BOSS.w18 = 'w18b';                               // l'isola degli oni: "House of the Shogun's Son" (jomusic, CC0); Momotaro: "Boss Koto" (G_P, CC0)
 { const NAT = {reoni:171, momotaro:114, momotarore:139, cane:67, canere:69, scimmiamomo:71, scimmiare:71, fagiano:97};   // altezza vera dei disegni nuovi
   Object.assign(HEIGHT, {reoni:128, momotaro:88, momotarore:100, cane:56, canere:58, scimmiamomo:60, scimmiare:62, fagiano:76});
   Object.assign(SC, {reoni:.9, momotaro:.86, momotarore:.88, cane:.9, canere:.92, scimmiamomo:.9, scimmiare:.92, fagiano:.9});
