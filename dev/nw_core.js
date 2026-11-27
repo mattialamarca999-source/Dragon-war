@@ -17,6 +17,15 @@ const nwFree = st => { for (const z of st.sets) if (z) for (const c of [z.bg, z.
 const nwSnap = () => ({ g, RAW, TIME, seed, LIGHTS, FLAMES, FLAGS, OBA, LITOK, S, H, WW, VW, HOR, LX, CX, BASE, G0, DY, OY });
 const nwPut = o => { g = o.g; RAW = o.RAW; TIME = o.TIME; seed = o.seed; LIGHTS = o.LIGHTS; FLAMES = o.FLAMES; FLAGS = o.FLAGS; OBA = o.OBA; LITOK = o.LITOK; S = o.S; H = o.H; WW = o.WW; VW = o.VW; HOR = o.HOR; LX = o.LX; CX = o.CX; BASE = o.BASE; G0 = o.G0; DY = o.DY; OY = o.OY; };
 function* nwPause(st) { st.mine = nwSnap(); nwPut(st.outer); yield; st.outer = nwSnap(); nwApply(st.P); nwPut(st.mine); }   // pausa: il gioco ritrova tutto com'era, poi si riprende da qui
+function nwGrade(cv, t, opaque) {                                            // il colore dell'ora «cotto» nello sfondo una volta sola (soft-light): caldo di giorno, arancio-rosa al tramonto, freddo grigio-verde di notte
+  const G = [['255,205,135', .22], ['255,100,70', .38], ['45,75,95', .36]][t]; if (!G || !cv || !cv.width) return;
+  const x = cv.getContext('2d'); x.save(); x.setTransform(1, 0, 0, 1, 0, 0); let keep = null;
+  if (!opaque) { keep = document.createElement('canvas'); keep.width = cv.width; keep.height = cv.height; keep.getContext('2d').drawImage(cv, 0, 0); }
+  x.globalCompositeOperation = 'soft-light'; x.fillStyle = `rgba(${G[0]},${G[1]})`; x.fillRect(0, 0, cv.width, cv.height);
+  if (t === 1) { const gg = x.createLinearGradient(0, cv.height * .45, 0, cv.height); gg.addColorStop(0, 'rgba(90,40,120,0)'); gg.addColorStop(1, 'rgba(90,40,120,.34)'); x.fillStyle = gg; x.fillRect(0, 0, cv.width, cv.height); }   // ombre viola in basso
+  if (keep) { x.globalCompositeOperation = 'destination-in'; x.drawImage(keep, 0, 0); keep.width = keep.height = 0; }
+  x.restore();
+}
 function* nwBuildG(t, P) {                                                   // costruisce giorno, tramonto o notte a pezzi (un livello alla volta)
   const st = { outer: nwSnap(), P }; nwApply(P); TIME = t; const W = WD(); seed = W.seed || 7; LIGHTS = []; FLAMES = []; FLAGS = []; OBA = null; RAW = 1;
   try {
@@ -27,6 +36,7 @@ function* nwBuildG(t, P) {                                                   // 
     const hzc = hex(W.sky[t][3]).join(','), hz = g.createLinearGradient(0, 210, 0, HOR + 30); hz.addColorStop(0, `rgba(${hzc},0)`); hz.addColorStop(.8, `rgba(${hzc},${t === 2 ? .2 : .36})`); hz.addColorStop(1, `rgba(${hzc},0)`); g.fillStyle = hz; g.fillRect(0, 200, WW, 160);
     g.drawImage(gr, 0, OY, WW, H - OY);
     for (const c of [sky, far, hill, gr]) c.width = c.height = 0;
+    nwGrade(bg, t, true);
     yield* nwPause(st);
     const n0 = [LIGHTS.length, FLAMES.length, FLAGS.length];
     const S0 = S; S = Math.min(3, S * (P.spr || 1));                     // tana e castello si possono ingrandire: più definiti
@@ -34,7 +44,7 @@ function* nwBuildG(t, P) {                                                   // 
     yield* nwPause(st);
     const n1 = [LIGHTS.length, FLAMES.length, FLAGS.length];
     const castle = layer(WW, () => { g.save(); g.translate(CX, BASE); W.castle(); g.restore(); }, 1, [CX - 310, BASE - 660, CX + 330, BASE + 130]);
-    S = S0;
+    S = S0; nwGrade(lair, t, false); nwGrade(castle, t, false);
     [LIGHTS, FLAMES, FLAGS].forEach((arr, j) => { for (let i = n0[j]; i < arr.length; i++) arr[i].own = i < n1[j] ? 'L' : 'C'; });
     return { bg, lair, castle, lights: LIGHTS, flames: FLAMES, flags: FLAGS, oba: OBA };
   } finally { const o = st.outer, keep = [LIGHTS, FLAMES, FLAGS, OBA]; nwPut(o); [LIGHTS, FLAMES, FLAGS, OBA] = keep; }   // luci, fiamme e bandiere restano quelle appena fatte, come prima
