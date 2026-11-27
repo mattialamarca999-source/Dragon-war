@@ -4,15 +4,15 @@
    Ogni alone si disegna una volta sola (sprite) e poi si copia; il buio si calcola a risoluzione ridotta.
    Qualità: 3 alte, 2 medie, 1 basse; «auto» misura la fluidità in battaglia e si regola da sola. */
 let LQ_SET = (() => { try { return localStorage.getItem('dw_luci') || 'auto'; } catch (e) { return 'auto'; } })();
-let LQ = LQ_SET === 'auto' ? 3 : +LQ_SET || 3;
+let LQ = LQ_SET === 'auto' ? 2 : +LQ_SET || 2;                                  // in automatico si parte dalle medie: sale solo se il telefono è fluido
 const LQ_FT = [];
 function lqTick(rdt) {                                                       // automatico: se i fotogrammi rallentano, luci più leggere (e viceversa)
-  if (LQ_SET !== 'auto' || !running || paused || document.hidden) { LQ_FT.length = 0; return; }
-  LQ_FT.push(rdt); if (LQ_FT.length < 90) return;
-  const a = LQ_FT.slice().sort((x, y) => x - y), med = a[45]; LQ_FT.length = 0;
+  if (LQ_SET !== 'auto' || document.hidden || !NWON) { LQ_FT.length = 0; return; }   // anche nel menu, non solo in battaglia
+  LQ_FT.push(rdt); if (LQ_FT.length < 60) return;
+  const a = LQ_FT.slice().sort((x, y) => x - y), med = a[30]; LQ_FT.length = 0;
   if (med > 1 / 42 && LQ > 1) LQ--; else if (med < 1 / 57 && LQ < 3) LQ++;
 }
-function lqSet(v) { LQ_SET = v; LQ = v === 'auto' ? 3 : +v; try { localStorage.setItem('dw_luci', v); } catch (e) {} }
+function lqSet(v) { LQ_SET = v; LQ = v === 'auto' ? 2 : +v; try { localStorage.setItem('dw_luci', v); } catch (e) {} }
 const LX_SPR = {};
 function lxSpr(rgb, kind) {                                                  // gli aloni pronti: «led» (nucleo bianco + colore + bagliore), «soft», «hole» (per bucare il buio), «pool» (pozza a terra)
   const key = rgb + '|' + kind; let c = LX_SPR[key]; if (c) return c;
@@ -63,14 +63,10 @@ function nwLights() {                                                         //
   const ffPos = []; for (let i = 0; i < ffN; i++) { const f = LX_FF[i]; let [x, y] = lxFly(f, t); if (fire) { const dx = x - FX, dy = y - FY, dd = Math.hypot(dx, dy) + 1; x += dx / dd * 90 * fire; y += dy / dd * 60 * fire; } ffPos.push([x, y, lxFlash(f, t) * ffA, f]); }
   const sc = q >= 3 ? .5 : q === 2 ? .34 : .25, lw = Math.max(1, Math.ceil(W * sc)), lh = Math.max(1, Math.ceil(H * sc)), world = c => c.setTransform(k * sc, 0, 0, k * sc, -cam.x * k * sc, groundY * sc);
   if (!LXM) { LXM = document.createElement('canvas'); LXMC = LXM.getContext('2d'); LXA = document.createElement('canvas'); LXAC = LXA.getContext('2d'); }
-  // 1) il colore dell'ora, in una passata sola: mattina dorata, tramonto arancio e rosa, notte blu
-  if (q >= 2) { const wd = .26 * day * (1 - S), ws = .34 * S, wn = .16 * d, sum = wd + ws + wn;
-    if (sum > .02) { const mixc = i => Math.round(([255, 205, 130][i] * wd + [255, 105, 80][i] * ws + [40, 60, 170][i] * wn) / sum);
-      ctx.save(); ctx.globalCompositeOperation = 'soft-light'; ctx.fillStyle = `rgba(${mixc(0)},${mixc(1)},${mixc(2)},${Math.min(.6, sum)})`; ctx.fillRect(0, 0, W, H); ctx.restore(); } }
   // 2) il foglio dell'ombra: buio vero bucato dalle luci, più i bordi scuri
   const m = LXMC; lxBuf(LXM, m, lw, lh);
   if (d > .02) {
-    m.fillStyle = `rgba(4,5,22,${.4 * d})`; m.fillRect(0, 0, lw, lh);
+    m.fillStyle = `rgba(6,9,40,${.42 * d})`; m.fillRect(0, 0, lw, lh);
     world(m); m.globalCompositeOperation = 'destination-out'; const hole = lxSpr('0,0,0', 'hole');
     for (const l of src) lxDraw(m, hole, l.x, l.y, l.r * 2.6 * fl(l), 1);
     if (sp && !sp.noSun) lxDraw(m, hole, sp.moon.x, sp.moon.y, 260, .7);
@@ -79,10 +75,14 @@ function nwLights() {                                                         //
     for (const u of s.units) if (!u.dead) lxDraw(m, hole, u.x, dyAt(u.x, u.y) - 30 * CS, 64 * CS, .5);   // la luna illumina un po' chi combatte: si vede sempre bene
     m.setTransform(1, 0, 0, 1, 0, 0); m.globalCompositeOperation = 'source-over';
   }
+  if (S > .02) { m.fillStyle = `rgba(110,40,90,${.1 * S})`; m.fillRect(0, 0, lw, lh); }   // il colore dell'ora dentro il foglio dell'ombra: tramonto viola-rosa
   m.globalAlpha = lerp(.32, .62, d) + .08 * S; m.drawImage(lxVig(), 0, 0, lw, lh); m.globalAlpha = 1;
   ctx.save(); ctx.drawImage(LXM, 0, 0, lw, lh, 0, 0, W, H); ctx.restore();
   // 3) il foglio della luce (si somma): sole, raggi, riflessi, aloni, luce sui personaggi, lucciole
   const a = LXAC; lxBuf(LXA, a, lw, lh); a.globalCompositeOperation = 'lighter';
+  const wd0 = day * (1 - S);                                                  // il colore dell'ora dentro il foglio della luce: mattina dorata, tramonto arancio
+  if (wd0 > .02) { a.fillStyle = `rgba(255,190,110,${.07 * wd0})`; a.fillRect(0, 0, lw, lh); }
+  if (S > .02) { const gg = a.createLinearGradient(0, 0, 0, lh); gg.addColorStop(0, `rgba(255,120,70,${.2 * S})`); gg.addColorStop(1, `rgba(255,90,90,${.04 * S})`); a.fillStyle = gg; a.fillRect(0, 0, lw, lh); }
   let sunS = null;
   if (sp && !sp.noSun && d < .95) {
     const ws = S * (1 - d), wd = (1 - S) * (1 - d), A = clamp01(ws + wd);

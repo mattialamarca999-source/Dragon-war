@@ -38,7 +38,7 @@ const DEP = (x, z) => .78 * Math.sin(Math.PI * Math.max(0, Math.min(1, (x - LX) 
 ''' + chars + r'''
 // --- luce del gioco, ombre a terra e lampi di colore ---
 const _F = F, _L = L, _V = V, _glowB = glowB, _rim = rim;
-const tint = c => { if (RAW || typeof c !== 'string' || c.length !== 7 || c[0] !== '#') return c; const Lt = NG_LIGHT(); return Lt.shadow ? mix(c, Lt.shadow, NG_CHAR() ? (Lt.amtC || 0) : (Lt.amtB || 0)) : c; };
+const tint = c => { if (RAW || typeof c !== 'string' || c.length !== 7 || c[0] !== '#') return c; const Lt = SPR_FIX ? SPR_DAY : NG_LIGHT(); return Lt.shadow ? mix(c, Lt.shadow, NG_CHAR() ? (Lt.amtC || 0) : (Lt.amtB || 0)) : c; };
 F = (p, col, glow) => _F(p, tint(col), NG_LIGHT().dark > .5 ? glow : glow);
 L = (p, col, w) => _L(p, tint(col), w);
 V = (p, col, cx, cy, r, ow) => _V(p, tint(col), cx, cy, r, ow);
@@ -65,7 +65,7 @@ function draw(k, c, o) {                                                    // o
   const m = NG_MODE(); if (m === 'normal') g = c; else { PCOL = m === 'shadow' ? 'rgba(20,12,36,.22)' : NG_FLASH(); g = proxyOf(c); }
   c.save(); c.rotate((o.lean || 0) * .5); const sq = o.sq || 0; c.scale(1 + sq, 1 - sq); fn(p); c.restore(); g = null; return true;
 }
-return { draw, has: k => !!(SUB[k] || DRAW[k]), nw: { ensure: nwEnsure, prep: nwPrep, ready: () => !!NWS && NWS.sets.some(Boolean), back: nwBack, owned: nwOwned, front: nwFront, pt: nwPt, lights: nwLightList, sun: nwSunPos }, dragon: ngDragon, skin: id => !!SKINS[id], frame: () => { SPR_NEW = 0; }, sprInfo: () => ({ n: SPR.size, px: SPR_PX }) };
+return { draw, has: k => !!(SUB[k] || DRAW[k]), nw: { ensure: nwEnsure, prep: nwPrep, ready: () => !!NWS && NWS.sets.some(Boolean), back: nwBack, owned: nwOwned, front: nwFront, pt: nwPt, lights: nwLightList, sun: nwSunPos }, sprOff: v => { SPR_OFF = v; }, dragon: ngDragon, skin: id => !!SKINS[id], frame: () => { SPR_NEW = 0; }, sprInfo: () => ({ n: SPR.size, px: SPR_PX }) };
 })();
 const NG_H = ''' + json.dumps(NH) + r''';
 const NG_OLD = Object.assign({}, DRAW), NG_SKIN = new Set(Object.keys(LOOKS).filter(id => !LOOKS[id].tint && !LOOKS[id].filter));   // le skin con gli accessori restano col disegno di prima

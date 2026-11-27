@@ -46,13 +46,15 @@ patch('game.html', [
   "  const lk0 = look !== undefined ? look : DW.U[key] && DW.U[key].side === 0 && save.look ? save.look[key] || null : null, mk = key + '|' + lk0 + '|' + cvs.width + 'x' + cvs.height, hit = ICON_MEMO.get(mk);\n"
   "  const ic = cvs.getContext('2d'); ic.setTransform(1, 0, 0, 1, 0, 0);\n"
   "  if (hit) { ic.clearRect(0, 0, cvs.width, cvs.height); ic.drawImage(hit, 0, 0); return; }\n"
-  "  drawIcon0(cvs, key, look); const c2 = document.createElement('canvas'); c2.width = cvs.width; c2.height = cvs.height; c2.getContext('2d').drawImage(cvs, 0, 0);\n"
+  "  if (NG.sprOff) NG.sprOff(1); try { drawIcon0(cvs, key, look); } finally { if (NG.sprOff) NG.sprOff(0); }   // l'icona si disegna direttamente (più veloce)\n  const c2 = document.createElement('canvas'); c2.width = cvs.width; c2.height = cvs.height; c2.getContext('2d').drawImage(cvs, 0, 0);\n"
   "  ICON_MEMO.set(mk, c2); if (ICON_MEMO.size > 500) ICON_MEMO.delete(ICON_MEMO.keys().next().value);\n"
   "}\n"
+  "const idleDo = fn => window.requestIdleCallback ? requestIdleCallback(fn, {timeout:150}) : setTimeout(fn, 70);   // lavoro di sottofondo solo nei momenti liberi tra un fotogramma e l'altro\n"
   "function iconWarm() {                                                       // dopo l'apertura, piano piano: le icone della squadra pronte prima di servire\n"
-  "  const todo = DW.ROSTER.map(k => [k]).concat(GOODS.concat(Object.keys(DW.ELITE)).map(k => [vis(k)]), Object.entries(LOOKS).map(([id, L]) => [L.k === 'drago' ? 'goblin' : L.k, L.k === 'drago' ? null : id])), scratch = document.createElement('canvas'); scratch.width = 112; scratch.height = 104;   // cattivi, buoni e boss, aspetti speciali\n"
-  "  const step = () => { const t0 = performance.now(); do { const [k, lk] = todo.shift(); if (DW.U[k] || k === 'drago') drawIcon(scratch, k, lk); } while (todo.length && performance.now() - t0 < 8); if (todo.length) setTimeout(step, 40); else setTimeout(sqBuildIdle, 200); };   // pochi millesimi alla volta: pezzi piccoli; alla fine si prepara anche la griglia della squadra\n"
-  "  setTimeout(step, 2500);\n"
+  "  const todo = DW.ROSTER.map(k => [k]).concat(Object.entries(LOOKS).map(([id, L]) => [L.k === 'drago' ? 'goblin' : L.k, L.k === 'drago' ? null : id]), GOODS.concat(Object.keys(DW.ELITE)).map(k => [vis(k)])), scratch = document.createElement('canvas'); scratch.width = 112; scratch.height = 104;   // cattivi, buoni e boss, aspetti speciali\n"
+  "  const step = dl => { if (running && !paused) return setTimeout(() => idleDo(step), 1500);   // in battaglia si aspetta: tutto il telefono per la battaglia\n"
+  "    const t0 = performance.now(), bud = dl && dl.timeRemaining ? Math.max(2, Math.min(6, dl.timeRemaining() - 1)) : 3; do { const [k, lk] = todo.shift(); if (DW.U[k] || k === 'drago') drawIcon(scratch, k, lk); } while (todo.length && performance.now() - t0 < bud); if (todo.length) idleDo(step); else idleDo(sqBuildIdle); };   // pochi millesimi alla volta: pezzi piccoli; alla fine si prepara anche la griglia della squadra\n"
+  "  setTimeout(() => idleDo(step), 3000);\n"
   "}\n"
   "function drawIcon0(cvs, key, look) {                                        // icona di un personaggio, sempre alla luce del giorno (con il suo aspetto)", 'const ICON_MEMO = new Map();'),
  ("new ResizeObserver(resize).observe($('stage'));", "new ResizeObserver(resize).observe($('stage'));\nif (!GALLERY) iconWarm();", 'iconWarm();'),
@@ -99,7 +101,7 @@ patch('game.html', [
   "  }\n"
   "  return DW.ROSTER.every(k => sqCards[k]);\n"
   "}\n"
-  "function sqBuildIdle() { if (!$('squad').hidden) return; if (!sqBuild(12)) setTimeout(sqBuildIdle, 60); }   // mentre sei nel menu: 12 carte alla volta\n"
+  "function sqBuildIdle(dl) { if (!$('squad').hidden) return; if (running && !paused) return setTimeout(() => idleDo(sqBuildIdle), 1500); const bud = dl && dl.timeRemaining ? Math.max(2, Math.min(6, dl.timeRemaining() - 1)) : 3; if (!sqBuild(12, DW.ROSTER, bud)) idleDo(sqBuildIdle); }   // mentre sei nel menu, nei momenti liberi\n"
   "function renderDecks() {", 'function sqBuild(n)'),
  ("  for (const [kk, c] of Object.entries(sqCards)) { const at = sqSel.indexOf(kk), bd = c.querySelector('.badge'); c.classList.toggle('sel', at >= 0); bd.hidden = at < 0; bd.textContent = at + 1; }",
   "  for (const [kk, c] of Object.entries(sqCards)) { const at = sqSel.indexOf(kk), bd = c.querySelector('.badge'); c.classList.toggle('sel', at >= 0); bd.hidden = at < 0; if (at >= 0) setTx(bd, at + 1); }", 'if (at >= 0) setTx(bd, at + 1);'),
@@ -169,7 +171,7 @@ if 'WANTED_TOK' not in g:
     body = g[a:e].replace("  keys.forEach((k, i) => {", "  const mk = (k, i) => {", 1)
     g = g[:a] + body + ("\n  };\n"
         "  let i = 0; const tok = WANTED_TOK = {};                                    // i manifesti arrivano a pezzi: subito i primi 12, poi gli altri senza bloccare\n"
-        "  const step = first => { if (WANTED_TOK !== tok || $('wanted').hidden) return; const t0 = performance.now(); while (i < keys.length && (first ? i < 12 : performance.now() - t0 < 8)) { mk(keys[i], i); i++; } if (i < keys.length) setTimeout(step, 30); };\n"
+        "  const step = first => { if (WANTED_TOK !== tok || $('wanted').hidden) return; const t0 = performance.now(); while (i < keys.length && (first ? i < 12 && (i < 4 || performance.now() - t0 < 25) : performance.now() - t0 < 8)) { mk(keys[i], i); i++; } if (i < keys.length) setTimeout(step, 30); };\n"
         "  step(true);\n}\nlet WANTED_TOK = null;") + g[e + len("\n  });\n}"):]
     open('game.html', 'w').write(g)
 if 'FORGE_TOK' not in g:
@@ -190,7 +192,7 @@ if 'ALB_TOK' not in g:
     e = g.index(end_mark, a)
     body = g[a:e].replace("  ALB.forEach((pg, i) => {", "  const tok = ALB_TOK = {}; let ai = 0;\n  const mkA = (pg, i) => {", 1)
     g = g[:a] + body + ("    list.appendChild(sec);\n  };\n"
-        "  const stepA = first => { if (ALB_TOK !== tok || !list.isConnected) return; const t0 = performance.now(); while (ai < ALB.length && (first ? !fast || ai < 2 : performance.now() - t0 < 8)) { mkA(ALB[ai], ai); ai++; } if (ai < ALB.length) setTimeout(stepA, 30); };   // subito le prime 2 pagine, le altre a pezzi\n"
+        "  const stepA = first => { if (ALB_TOK !== tok || !list.isConnected) return; const t0 = performance.now(); while (ai < ALB.length && (first ? !fast || ai < 1 || (ai < 2 && performance.now() - t0 < 25) : performance.now() - t0 < 8)) { mkA(ALB[ai], ai); ai++; } if (ai < ALB.length) setTimeout(stepA, 30); };   // subito le prime 2 pagine, le altre a pezzi\n"
         "  stepA(true);\n}") + g[e + len(end_mark):]
     g = g.replace("function renderAlbum() {", "let ALB_TOK = null;\nfunction renderAlbum(fast) {                                                // fast: appena aperto l'Album (dopo un Ritira si rifà tutto subito, la pagina non salta)", 1)
     g = g.replace("function showAlbum() { toScene(); $('album').hidden = false; renderAlbum(); }", "function showAlbum() { toScene(); $('album').hidden = false; renderAlbum(true); }", 1)

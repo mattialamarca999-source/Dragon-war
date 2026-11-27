@@ -763,7 +763,7 @@ button:focus-visible{outline:3px solid #5aa0ff;outline-offset:2px}
         <div class="fgSel">
           <select id="sqOwn" aria-label="Quali cattivi"><option value="all">Tutti</option><option value="own">Sbloccati</option><option value="lock">Da sbloccare</option></select>
           <select id="sqRar" aria-label="Rarità"><option value="-1">Ogni rarità</option><option value="0">Comune</option><option value="1">Raro</option><option value="2">Epico</option><option value="3">Mitico</option><option value="4">Leggendario</option></select>
-          <select id="sqSort" aria-label="Ordina"><option value="cost">Meno cari</option><option value="cost-">Più cari</option><option value="lv">Più potenziati</option></select>
+          <select id="sqSort" aria-label="Ordina"><option value="cost">Meno cari</option><option value="cost-">Più cari</option><option value="lv">Più potenziati</option><option value="lv-">Meno potenziati</option></select>
         </div>
       </div>
       <div class="sqGrid" id="sqGrid"></div>
@@ -778,7 +778,7 @@ button:focus-visible{outline:3px solid #5aa0ff;outline-offset:2px}
         <div class="fgSel">
           <select id="fgOwn" aria-label="Quali cattivi"><option value="all">Tutti</option><option value="own">Sbloccati</option><option value="lock">Da sbloccare</option></select>
           <select id="fgRar" aria-label="Rarità"><option value="-1">Ogni rarità</option><option value="0">Comune</option><option value="1">Raro</option><option value="2">Epico</option><option value="3">Mitico</option><option value="4">Leggendario</option></select>
-          <select id="fgSort" aria-label="Ordina"><option value="cost">Meno cari</option><option value="cost-">Più cari</option><option value="lv">Più potenziati</option></select>
+          <select id="fgSort" aria-label="Ordina"><option value="cost">Meno cari</option><option value="cost-">Più cari</option><option value="lv">Più potenziati</option><option value="lv-">Meno potenziati</option></select>
         </div>
       </div>
       <div class="fgList" id="forgeList"></div>
@@ -4377,15 +4377,15 @@ const lightCv = document.createElement('canvas'); const lctx = lightCv.getContex
    Ogni alone si disegna una volta sola (sprite) e poi si copia; il buio si calcola a risoluzione ridotta.
    Qualità: 3 alte, 2 medie, 1 basse; «auto» misura la fluidità in battaglia e si regola da sola. */
 let LQ_SET = (() => { try { return localStorage.getItem('dw_luci') || 'auto'; } catch (e) { return 'auto'; } })();
-let LQ = LQ_SET === 'auto' ? 3 : +LQ_SET || 3;
+let LQ = LQ_SET === 'auto' ? 2 : +LQ_SET || 2;                                  // in automatico si parte dalle medie: sale solo se il telefono è fluido
 const LQ_FT = [];
 function lqTick(rdt) {                                                       // automatico: se i fotogrammi rallentano, luci più leggere (e viceversa)
-  if (LQ_SET !== 'auto' || !running || paused || document.hidden) { LQ_FT.length = 0; return; }
-  LQ_FT.push(rdt); if (LQ_FT.length < 90) return;
-  const a = LQ_FT.slice().sort((x, y) => x - y), med = a[45]; LQ_FT.length = 0;
+  if (LQ_SET !== 'auto' || document.hidden || !NWON) { LQ_FT.length = 0; return; }   // anche nel menu, non solo in battaglia
+  LQ_FT.push(rdt); if (LQ_FT.length < 60) return;
+  const a = LQ_FT.slice().sort((x, y) => x - y), med = a[30]; LQ_FT.length = 0;
   if (med > 1 / 42 && LQ > 1) LQ--; else if (med < 1 / 57 && LQ < 3) LQ++;
 }
-function lqSet(v) { LQ_SET = v; LQ = v === 'auto' ? 3 : +v; try { localStorage.setItem('dw_luci', v); } catch (e) {} }
+function lqSet(v) { LQ_SET = v; LQ = v === 'auto' ? 2 : +v; try { localStorage.setItem('dw_luci', v); } catch (e) {} }
 const LX_SPR = {};
 function lxSpr(rgb, kind) {                                                  // gli aloni pronti: «led» (nucleo bianco + colore + bagliore), «soft», «hole» (per bucare il buio), «pool» (pozza a terra)
   const key = rgb + '|' + kind; let c = LX_SPR[key]; if (c) return c;
@@ -4436,14 +4436,10 @@ function nwLights() {                                                         //
   const ffPos = []; for (let i = 0; i < ffN; i++) { const f = LX_FF[i]; let [x, y] = lxFly(f, t); if (fire) { const dx = x - FX, dy = y - FY, dd = Math.hypot(dx, dy) + 1; x += dx / dd * 90 * fire; y += dy / dd * 60 * fire; } ffPos.push([x, y, lxFlash(f, t) * ffA, f]); }
   const sc = q >= 3 ? .5 : q === 2 ? .34 : .25, lw = Math.max(1, Math.ceil(W * sc)), lh = Math.max(1, Math.ceil(H * sc)), world = c => c.setTransform(k * sc, 0, 0, k * sc, -cam.x * k * sc, groundY * sc);
   if (!LXM) { LXM = document.createElement('canvas'); LXMC = LXM.getContext('2d'); LXA = document.createElement('canvas'); LXAC = LXA.getContext('2d'); }
-  // 1) il colore dell'ora, in una passata sola: mattina dorata, tramonto arancio e rosa, notte blu
-  if (q >= 2) { const wd = .26 * day * (1 - S), ws = .34 * S, wn = .16 * d, sum = wd + ws + wn;
-    if (sum > .02) { const mixc = i => Math.round(([255, 205, 130][i] * wd + [255, 105, 80][i] * ws + [40, 60, 170][i] * wn) / sum);
-      ctx.save(); ctx.globalCompositeOperation = 'soft-light'; ctx.fillStyle = `rgba(${mixc(0)},${mixc(1)},${mixc(2)},${Math.min(.6, sum)})`; ctx.fillRect(0, 0, W, H); ctx.restore(); } }
   // 2) il foglio dell'ombra: buio vero bucato dalle luci, più i bordi scuri
   const m = LXMC; lxBuf(LXM, m, lw, lh);
   if (d > .02) {
-    m.fillStyle = `rgba(4,5,22,${.4 * d})`; m.fillRect(0, 0, lw, lh);
+    m.fillStyle = `rgba(6,9,40,${.42 * d})`; m.fillRect(0, 0, lw, lh);
     world(m); m.globalCompositeOperation = 'destination-out'; const hole = lxSpr('0,0,0', 'hole');
     for (const l of src) lxDraw(m, hole, l.x, l.y, l.r * 2.6 * fl(l), 1);
     if (sp && !sp.noSun) lxDraw(m, hole, sp.moon.x, sp.moon.y, 260, .7);
@@ -4452,10 +4448,14 @@ function nwLights() {                                                         //
     for (const u of s.units) if (!u.dead) lxDraw(m, hole, u.x, dyAt(u.x, u.y) - 30 * CS, 64 * CS, .5);   // la luna illumina un po' chi combatte: si vede sempre bene
     m.setTransform(1, 0, 0, 1, 0, 0); m.globalCompositeOperation = 'source-over';
   }
+  if (S > .02) { m.fillStyle = `rgba(110,40,90,${.1 * S})`; m.fillRect(0, 0, lw, lh); }   // il colore dell'ora dentro il foglio dell'ombra: tramonto viola-rosa
   m.globalAlpha = lerp(.32, .62, d) + .08 * S; m.drawImage(lxVig(), 0, 0, lw, lh); m.globalAlpha = 1;
   ctx.save(); ctx.drawImage(LXM, 0, 0, lw, lh, 0, 0, W, H); ctx.restore();
   // 3) il foglio della luce (si somma): sole, raggi, riflessi, aloni, luce sui personaggi, lucciole
   const a = LXAC; lxBuf(LXA, a, lw, lh); a.globalCompositeOperation = 'lighter';
+  const wd0 = day * (1 - S);                                                  // il colore dell'ora dentro il foglio della luce: mattina dorata, tramonto arancio
+  if (wd0 > .02) { a.fillStyle = `rgba(255,190,110,${.07 * wd0})`; a.fillRect(0, 0, lw, lh); }
+  if (S > .02) { const gg = a.createLinearGradient(0, 0, 0, lh); gg.addColorStop(0, `rgba(255,120,70,${.2 * S})`); gg.addColorStop(1, `rgba(255,90,90,${.04 * S})`); a.fillStyle = gg; a.fillRect(0, 0, lw, lh); }
   let sunS = null;
   if (sp && !sp.noSun && d < .95) {
     const ws = S * (1 - d), wd = (1 - S) * (1 - d), A = clamp01(ws + wd);
@@ -11188,6 +11188,7 @@ function ngDragon(c, o) {                                                    // 
   return [16 + 30 * cr - 13 * sr, -58 + bob + 30 * sr + 13 * cr, 16 + 10 * cr + 6 * sr, -58 + bob - 6 * cr + 10 * sr];   // bocca e occhiali
 }
 // --- immagini pronte (sprite): ogni posa si disegna una volta sola, poi si incolla; ombre e lampi di colore si ricavano dalla stessa immagine ---
+let SPR_PROBE = null, SPR_FIX = 0, SPR_OFF = 0; const SPR_DAY = { shadow: '#2a2140', amtC: .36, amtB: .55 };   // la luce fissa con cui si disegnano le immagini pronte
 const TAU = Math.PI * 2, SPR = new Map(), KB = {}; let SPR_PX = 0, SPR_NEW = 0;
 const SPR_MAX = 1.8e7, SPR_BUDGET = 8;                                       // memoria massima (pixel) e pose nuove per fotogramma
 function sprPose(k, o) {                                                    // la posa "arrotondata": pochi fotogrammi per camminata, respiro e attacco
@@ -11201,7 +11202,8 @@ function sprPose(k, o) {                                                    // l
 }
 function sprBox(k, o, fn) {                                                  // quanto spazio occupa il personaggio (provato in 4 pose, a bassa risoluzione)
   const id = k + '|' + (o.look || '') + '|' + (SUB[k] ? (o.id || 0) % 6 : ''); if (KB[id]) return KB[id];
-  const q = .5, W = 480, Hh = 400, OX = 240, OY = 320, cv = document.createElement('canvas'); cv.width = W * q; cv.height = Hh * q; const g2 = cv.getContext('2d'), old = g;
+  const q = .5, W = 480, Hh = 400, OX = 240, OY = 320, cv = SPR_PROBE || (SPR_PROBE = document.createElement('canvas')); cv.width = W * q; cv.height = Hh * q;   // un foglio solo, sempre lo stesso
+  const g2 = cv.getContext('2d', { willReadFrequently: true }), old = g; g2.setTransform(1, 0, 0, 1, 0, 0); g2.clearRect(0, 0, cv.width, cv.height);   // letto dal processore: niente attese della scheda video
   g = g2; RAW = 1;
   try { for (const ps of [{ t: 1, ph: 0, walking: false, atk: -1, u: 0, mood: 0 }, { t: 1, ph: 1.6, walking: true, atk: -1, u: 0, mood: 1 }, { t: .6, ph: 0, walking: false, atk: .5, u: 1, mood: 2 }, { t: .6, ph: 0, walking: false, atk: .5, u: -1, mood: 3 }]) {
       g2.setTransform(q, 0, 0, q, OX * q, OY * q); fn(Object.assign({ blink: 1, id: o.id || 0, look: o.look, hpf: o.hpf, hyde: o.hyde, van: o.van }, ps)); } } finally { g = old; RAW = 0; }
@@ -11216,15 +11218,16 @@ function sprSil(e, col) {                                                     //
   SPR_PX += s.width * s.height; return e.sil[col] = s;
 }
 function sprDraw(k, c, o, fn) {
+  if (SPR_OFF) return false;                                                   // icone: disegnate una volta sola, l'immagine pronta non serve
   const m = NG_MODE(), tm = c.getTransform(), sc = Math.hypot(tm.a, tm.b); if (!(sc > 0)) return false;
-  const qi = Math.round(Math.log2(sc) * 6), qs = Math.pow(2, qi / 6), Lt = NG_LIGHT();
-  const [p, pk] = sprPose(k, o), key = k + '|' + pk + '|' + qi + '|' + (Lt.shadow || '') + Math.round((NG_CHAR() ? Lt.amtC : Lt.amtB || 0) * 24);
+  const qi = Math.ceil(Math.log2(sc) * 3 - .15), qs = Math.pow(2, qi / 3), Lt = NG_LIGHT();   // 3 grandezze per raddoppio, sempre un po' più nitida del necessario: meno immagini da tenere
+  const [p, pk] = sprPose(k, o), key = k + '|' + pk + '|' + qi;              // la luce del momento NON entra nel nome: l'immagine resta buona dal giorno alla notte
   let e = SPR.get(key);
   if (e) { SPR.delete(key); SPR.set(key, e); }
   else {
     if (m !== 'normal' || SPR_NEW >= SPR_BUDGET) return false;                // niente immagine pronta: si disegna come prima
     SPR_NEW++; const b = sprBox(k, o, fn), cv = document.createElement('canvas'); cv.width = Math.max(1, Math.ceil((b[2] - b[0]) * qs)); cv.height = Math.max(1, Math.ceil((b[3] - b[1]) * qs));
-    const g2 = cv.getContext('2d'), old = g; g2.setTransform(qs, 0, 0, qs, -b[0] * qs, -b[1] * qs); g = g2; try { fn(p); } finally { g = old; }
+    const g2 = cv.getContext('2d'), old = g; g2.setTransform(qs, 0, 0, qs, -b[0] * qs, -b[1] * qs); g = g2; SPR_FIX = 1; try { fn(p); } finally { g = old; SPR_FIX = 0; }   // sempre coi colori del giorno: di sera e di notte scurisce il velo delle luci
     e = { cv, b, sil: {} }; SPR.set(key, e); SPR_PX += cv.width * cv.height;
     for (const [k2, e2] of SPR) { if (SPR_PX <= SPR_MAX) break; SPR.delete(k2); SPR_PX -= e2.cv.width * e2.cv.height; for (const s of Object.values(e2.sil)) SPR_PX -= s.width * s.height; }
   }
@@ -11236,7 +11239,7 @@ function sprDraw(k, c, o, fn) {
 
 // --- luce del gioco, ombre a terra e lampi di colore ---
 const _F = F, _L = L, _V = V, _glowB = glowB, _rim = rim;
-const tint = c => { if (RAW || typeof c !== 'string' || c.length !== 7 || c[0] !== '#') return c; const Lt = NG_LIGHT(); return Lt.shadow ? mix(c, Lt.shadow, NG_CHAR() ? (Lt.amtC || 0) : (Lt.amtB || 0)) : c; };
+const tint = c => { if (RAW || typeof c !== 'string' || c.length !== 7 || c[0] !== '#') return c; const Lt = SPR_FIX ? SPR_DAY : NG_LIGHT(); return Lt.shadow ? mix(c, Lt.shadow, NG_CHAR() ? (Lt.amtC || 0) : (Lt.amtB || 0)) : c; };
 F = (p, col, glow) => _F(p, tint(col), NG_LIGHT().dark > .5 ? glow : glow);
 L = (p, col, w) => _L(p, tint(col), w);
 V = (p, col, cx, cy, r, ow) => _V(p, tint(col), cx, cy, r, ow);
@@ -11263,7 +11266,7 @@ function draw(k, c, o) {                                                    // o
   const m = NG_MODE(); if (m === 'normal') g = c; else { PCOL = m === 'shadow' ? 'rgba(20,12,36,.22)' : NG_FLASH(); g = proxyOf(c); }
   c.save(); c.rotate((o.lean || 0) * .5); const sq = o.sq || 0; c.scale(1 + sq, 1 - sq); fn(p); c.restore(); g = null; return true;
 }
-return { draw, has: k => !!(SUB[k] || DRAW[k]), nw: { ensure: nwEnsure, prep: nwPrep, ready: () => !!NWS && NWS.sets.some(Boolean), back: nwBack, owned: nwOwned, front: nwFront, pt: nwPt, lights: nwLightList, sun: nwSunPos }, dragon: ngDragon, skin: id => !!SKINS[id], frame: () => { SPR_NEW = 0; }, sprInfo: () => ({ n: SPR.size, px: SPR_PX }) };
+return { draw, has: k => !!(SUB[k] || DRAW[k]), nw: { ensure: nwEnsure, prep: nwPrep, ready: () => !!NWS && NWS.sets.some(Boolean), back: nwBack, owned: nwOwned, front: nwFront, pt: nwPt, lights: nwLightList, sun: nwSunPos }, sprOff: v => { SPR_OFF = v; }, dragon: ngDragon, skin: id => !!SKINS[id], frame: () => { SPR_NEW = 0; }, sprInfo: () => ({ n: SPR.size, px: SPR_PX }) };
 })();
 const NG_H = {"goblin": 72, "orco": 158, "strega": 141, "cavaliere": 126, "arciere": 102, "fionda": 84, "topi": 48, "lupo": 113, "scheletri": 92, "trollponte": 112, "ragno": 50, "zombie": 101, "fuocofatuo": 79, "diavoletto": 82, "rospo": 36, "cornacchia": 77, "gargoyle": 86, "sciame": 90, "lupetti": 55, "scimmie": 115, "gattovolpe": 99, "gnomo": 86, "spaventapasseri": 122, "retopi": 112, "pandizenzero": 57, "mummia": 102, "pupazzo": 79, "matrigna": 138, "reginacuori": 122, "stregone": 147, "gothel": 122, "sirena": 94, "lumacone": 52, "fantasma": 97, "coccodrillo": 37, "ladroni": 105, "barbablu": 123, "omino": 80, "babajaga": 187, "stregamare": 106, "morgana": 109, "grifone": 107, "spirito": 177, "bestia": 86, "ciclope": 184, "senzatesta": 135, "dracula": 119, "medusa": 114, "pescecane": 73, "alberich": 71, "trollspecchio": 101, "mordred": 127, "lupomannaro": 115, "frankenstein": 133, "hyde": 126, "stregatto": 69, "stregaovest": 92, "sherekhan": 66, "krampus": 136, "jabberwocky": 127, "kraken": 141, "idra": 88, "bandersnatch": 83, "zucca": 116, "marzapane": 107, "gigantegh": 185, "uncino": 136, "mangiafuoco": 162, "tremotino": 82, "reginacattiva": 123, "reginanevi": 128, "basilisco": 120, "cavaliereverde": 162, "diavolo": 146, "dragonero": 120, "gigante": 185, "ecate": 120, "circe": 112, "minotauro": 196, "fenice": 119, "soldatino": 113, "principe": 109, "cacciatore": 128, "spiritista": 116, "porcellino": 88, "fata": 102, "re": 168, "bimbo": 55, "hanselgretel": 54, "nano": 69, "raperonzolo": 106, "pifferaio": 132, "musicanti": 127, "carrozza": 109, "ranocchio": 60, "peterpan": 123, "cappuccetto": 78, "robinhood": 122, "gattostivali": 78, "biancaneve": 104, "pinocchio": 100, "merlino": 146, "alice": 98, "wendy": 102, "giglio": 113, "cappellaio": 130, "brucaliffo": 115, "lepre": 99, "alibaba": 112, "sinbad": 135, "guardia": 139, "renna": 110, "fiammiferaia": 75, "pupazzoneve": 70, "cavcristallo": 124, "gemello": 102, "gemelli": 102, "pisello": 113, "tappeto": 94, "aladino": 113, "kai": 101, "gerda": 104, "pollicino": 57, "dragotempesta": 122, "jack": 113, "jackre": 121, "arpa": 98, "arpaincantata": 106, "gallina": 74, "cavnuvole": 136, "yeti": 154, "cobrabianco": 125, "mowgli": 106, "mowglire": 121, "baloo": 123, "bagheera": 64, "bagheerare": 64, "hathi": 102, "hathire": 102, "momotaro": 114, "momotarore": 139, "cane": 67, "canere": 69, "scimmiamomo": 71, "scimmiare": 71, "fagiano": 97, "reoni": 171, "reonifuria": 180, "topo": 38, "scheletro": 92, "pipsciame": 67, "pipistrello": 67, "lupetto": 46, "scimmia": 115, "capoladroni": 105, "ladrone": 71, "matrigna_m": 138, "sorella": 81, "reginacuori_q": 122, "carta": 95, "burattino": 40, "corvo": 77};
 const NG_OLD = Object.assign({}, DRAW), NG_SKIN = new Set(Object.keys(LOOKS).filter(id => !LOOKS[id].tint && !LOOKS[id].filter));   // le skin con gli accessori restano col disegno di prima
@@ -11275,13 +11278,16 @@ function drawIcon(cvs, key, look) {
   const lk0 = look !== undefined ? look : DW.U[key] && DW.U[key].side === 0 && save.look ? save.look[key] || null : null, mk = key + '|' + lk0 + '|' + cvs.width + 'x' + cvs.height, hit = ICON_MEMO.get(mk);
   const ic = cvs.getContext('2d'); ic.setTransform(1, 0, 0, 1, 0, 0);
   if (hit) { ic.clearRect(0, 0, cvs.width, cvs.height); ic.drawImage(hit, 0, 0); return; }
-  drawIcon0(cvs, key, look); const c2 = document.createElement('canvas'); c2.width = cvs.width; c2.height = cvs.height; c2.getContext('2d').drawImage(cvs, 0, 0);
+  if (NG.sprOff) NG.sprOff(1); try { drawIcon0(cvs, key, look); } finally { if (NG.sprOff) NG.sprOff(0); }   // l'icona si disegna direttamente (più veloce)
+  const c2 = document.createElement('canvas'); c2.width = cvs.width; c2.height = cvs.height; c2.getContext('2d').drawImage(cvs, 0, 0);
   ICON_MEMO.set(mk, c2); if (ICON_MEMO.size > 500) ICON_MEMO.delete(ICON_MEMO.keys().next().value);
 }
+const idleDo = fn => window.requestIdleCallback ? requestIdleCallback(fn, {timeout:150}) : setTimeout(fn, 70);   // lavoro di sottofondo solo nei momenti liberi tra un fotogramma e l'altro
 function iconWarm() {                                                       // dopo l'apertura, piano piano: le icone della squadra pronte prima di servire
-  const todo = DW.ROSTER.map(k => [k]).concat(GOODS.concat(Object.keys(DW.ELITE)).map(k => [vis(k)]), Object.entries(LOOKS).map(([id, L]) => [L.k === 'drago' ? 'goblin' : L.k, L.k === 'drago' ? null : id])), scratch = document.createElement('canvas'); scratch.width = 112; scratch.height = 104;   // cattivi, buoni e boss, aspetti speciali
-  const step = () => { const t0 = performance.now(); do { const [k, lk] = todo.shift(); if (DW.U[k] || k === 'drago') drawIcon(scratch, k, lk); } while (todo.length && performance.now() - t0 < 8); if (todo.length) setTimeout(step, 40); else setTimeout(sqBuildIdle, 200); };   // pochi millesimi alla volta: pezzi piccoli; alla fine si prepara anche la griglia della squadra
-  setTimeout(step, 2500);
+  const todo = DW.ROSTER.map(k => [k]).concat(Object.entries(LOOKS).map(([id, L]) => [L.k === 'drago' ? 'goblin' : L.k, L.k === 'drago' ? null : id]), GOODS.concat(Object.keys(DW.ELITE)).map(k => [vis(k)])), scratch = document.createElement('canvas'); scratch.width = 112; scratch.height = 104;   // cattivi, buoni e boss, aspetti speciali
+  const step = dl => { if (running && !paused) return setTimeout(() => idleDo(step), 1500);   // in battaglia si aspetta: tutto il telefono per la battaglia
+    const t0 = performance.now(), bud = dl && dl.timeRemaining ? Math.max(2, Math.min(6, dl.timeRemaining() - 1)) : 3; do { const [k, lk] = todo.shift(); if (DW.U[k] || k === 'drago') drawIcon(scratch, k, lk); } while (todo.length && performance.now() - t0 < bud); if (todo.length) idleDo(step); else idleDo(sqBuildIdle); };   // pochi millesimi alla volta: pezzi piccoli; alla fine si prepara anche la griglia della squadra
+  setTimeout(() => idleDo(step), 3000);
 }
 function drawIcon0(cvs, key, look) {                                        // icona di un personaggio, sempre alla luce del giorno (con il suo aspetto)
   const ic = cvs.getContext('2d'), real = ctx, was = L.p;
@@ -11773,7 +11779,7 @@ function renderAlbum(fast) {                                                // f
     bt.onclick = () => { if (got || !albDone(i)) return; save.album.push(i); lookGive(pg.look); persist(); passGive(Object.assign({look:pg.look}, pg.prize), `Album · ${pg.n}`); renderAlbum(); paintMenuDots(); };
     list.appendChild(sec);
   };
-  const stepA = first => { if (ALB_TOK !== tok || !list.isConnected) return; const t0 = performance.now(); while (ai < ALB.length && (first ? !fast || ai < 2 : performance.now() - t0 < 8)) { mkA(ALB[ai], ai); ai++; } if (ai < ALB.length) setTimeout(stepA, 30); };   // subito le prime 2 pagine, le altre a pezzi
+  const stepA = first => { if (ALB_TOK !== tok || !list.isConnected) return; const t0 = performance.now(); while (ai < ALB.length && (first ? !fast || ai < 1 || (ai < 2 && performance.now() - t0 < 25) : performance.now() - t0 < 8)) { mkA(ALB[ai], ai); ai++; } if (ai < ALB.length) setTimeout(stepA, 30); };   // subito le prime 2 pagine, le altre a pezzi
   stepA(true);
 }
 $('menuAlbum').onclick = showAlbum; $('drLeave').onclick = () => leaveGame(); $('albumBack').onclick = () => showMenu();
@@ -11791,7 +11797,7 @@ function showWanted() {
     grid.appendChild(d);
   };
   let i = 0; const tok = WANTED_TOK = {};                                    // i manifesti arrivano a pezzi: subito i primi 12, poi gli altri senza bloccare
-  const step = first => { if (WANTED_TOK !== tok || $('wanted').hidden) return; const t0 = performance.now(); while (i < keys.length && (first ? i < 12 : performance.now() - t0 < 8)) { mk(keys[i], i); i++; } if (i < keys.length) setTimeout(step, 30); };
+  const step = first => { if (WANTED_TOK !== tok || $('wanted').hidden) return; const t0 = performance.now(); while (i < keys.length && (first ? i < 12 && (i < 4 || performance.now() - t0 < 25) : performance.now() - t0 < 8)) { mk(keys[i], i); i++; } if (i < keys.length) setTimeout(step, 30); };
   step(true);
 }
 let WANTED_TOK = null;
@@ -12155,7 +12161,7 @@ function sqBuild(n, list = DW.ROSTER, ms = 8) {                            // la
   }
   return DW.ROSTER.every(k => sqCards[k]);
 }
-function sqBuildIdle() { if (!$('squad').hidden) return; if (!sqBuild(12)) setTimeout(sqBuildIdle, 60); }   // mentre sei nel menu: 12 carte alla volta
+function sqBuildIdle(dl) { if (!$('squad').hidden) return; if (running && !paused) return setTimeout(() => idleDo(sqBuildIdle), 1500); const bud = dl && dl.timeRemaining ? Math.max(2, Math.min(6, dl.timeRemaining() - 1)) : 3; if (!sqBuild(12, DW.ROSTER, bud)) idleDo(sqBuildIdle); }   // mentre sei nel menu, nei momenti liberi
 function renderDecks() {
   const box = $('sqDecks'); box.hidden = sqMax !== DW.DECK; box.innerHTML = '';
   DECK_NAME.forEach((nm, i) => {
@@ -12278,13 +12284,15 @@ function forgeFiltered(F = fgF) {
   });
   const lvOf = kk => isUnlocked(kk) ? unitLv(kk) : 0;
   if (fgF.sort === 'cost-') ks = ks.slice().reverse();                          // DW.ROSTER è già in ordine di costo
-  else if (fgF.sort === 'lv') ks = ks.slice().sort((a, b) => lvOf(b) - lvOf(a));
+  else if (fgF.sort === 'lv' || fgF.sort === 'lv-') { const sg = fgF.sort === 'lv' ? 1 : -1, own = kk => isUnlocked(kk) ? 1 : 0;   // prima il livello, poi le stelle, poi il costo; quelli da sbloccare sempre in fondo
+    ks = ks.slice().sort((a, b) => (own(b) - own(a)) || sg * (lvOf(b) - lvOf(a)) || sg * (evoOf(b) - evoOf(a)) || sg * (DW.costOf(b) - DW.costOf(a))); }
   return ks;
 }
 $('fgQ').oninput = () => { fgF.q = $('fgQ').value; renderForge(true); };
 $('fgOwn').onchange = () => { fgF.own = $('fgOwn').value; renderForge(true); };
 $('fgRar').onchange = () => { fgF.rar = +$('fgRar').value; renderForge(true); };
-$('fgSort').onchange = () => { fgF.sort = $('fgSort').value; renderForge(true); };
+$('fgSort').onchange = () => { fgF.sort = $('fgSort').value; try { localStorage.setItem('dw_fgsort', fgF.sort); } catch (e) {} renderForge(true); };
+try { const v = localStorage.getItem('dw_fgsort'); if (v && [...$('fgSort').options].some(o => o.value === v)) { fgF.sort = v; $('fgSort').value = v; } } catch (e) {}   // l'ordine scelto nella Fucina resta
 function sqFilter() {                                                      // nel mazzo: le carte che non c'entrano si nascondono, le altre si mettono in ordine
   const ks = forgeFiltered(sqF), pos = new Map(ks.map((k, i) => [k, i]));
   for (const [kk, c] of Object.entries(sqCards)) { c.hidden = !pos.has(kk); c.style.order = pos.has(kk) ? pos.get(kk) : 999; }
@@ -12293,7 +12301,8 @@ function sqFilter() {                                                      // ne
 $('sqQ').oninput = () => { sqF.q = $('sqQ').value; sqFilter(); };
 $('sqOwn').onchange = () => { sqF.own = $('sqOwn').value; sqFilter(); };
 $('sqRar').onchange = () => { sqF.rar = +$('sqRar').value; sqFilter(); };
-$('sqSort').onchange = () => { sqF.sort = $('sqSort').value; sqFilter(); };
+$('sqSort').onchange = () => { sqF.sort = $('sqSort').value; try { localStorage.setItem('dw_sqsort', sqF.sort); } catch (e) {} sqFilter(); };
+try { const v = localStorage.getItem('dw_sqsort'); if (v && [...$('sqSort').options].some(o => o.value === v)) { sqF.sort = v; $('sqSort').value = v; } } catch (e) {}
 /* ---------- la scheda del cattivo: si apre toccandolo nella Fucina (con il potenziamento) o tenendolo premuto nel mazzo ---------- */
 const UC_RCOL = ['#3f9a2e', '#3d8ee0', '#9a5ad8', '#e0483a', '#e8a020'];
 let ucKey = null, ucCtx = '';

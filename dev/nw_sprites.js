@@ -1,4 +1,5 @@
 // --- immagini pronte (sprite): ogni posa si disegna una volta sola, poi si incolla; ombre e lampi di colore si ricavano dalla stessa immagine ---
+let SPR_PROBE = null, SPR_FIX = 0, SPR_OFF = 0; const SPR_DAY = { shadow: '#2a2140', amtC: .36, amtB: .55 };   // la luce fissa con cui si disegnano le immagini pronte
 const TAU = Math.PI * 2, SPR = new Map(), KB = {}; let SPR_PX = 0, SPR_NEW = 0;
 const SPR_MAX = 1.8e7, SPR_BUDGET = 8;                                       // memoria massima (pixel) e pose nuove per fotogramma
 function sprPose(k, o) {                                                    // la posa "arrotondata": pochi fotogrammi per camminata, respiro e attacco
@@ -12,7 +13,8 @@ function sprPose(k, o) {                                                    // l
 }
 function sprBox(k, o, fn) {                                                  // quanto spazio occupa il personaggio (provato in 4 pose, a bassa risoluzione)
   const id = k + '|' + (o.look || '') + '|' + (SUB[k] ? (o.id || 0) % 6 : ''); if (KB[id]) return KB[id];
-  const q = .5, W = 480, Hh = 400, OX = 240, OY = 320, cv = document.createElement('canvas'); cv.width = W * q; cv.height = Hh * q; const g2 = cv.getContext('2d'), old = g;
+  const q = .5, W = 480, Hh = 400, OX = 240, OY = 320, cv = SPR_PROBE || (SPR_PROBE = document.createElement('canvas')); cv.width = W * q; cv.height = Hh * q;   // un foglio solo, sempre lo stesso
+  const g2 = cv.getContext('2d', { willReadFrequently: true }), old = g; g2.setTransform(1, 0, 0, 1, 0, 0); g2.clearRect(0, 0, cv.width, cv.height);   // letto dal processore: niente attese della scheda video
   g = g2; RAW = 1;
   try { for (const ps of [{ t: 1, ph: 0, walking: false, atk: -1, u: 0, mood: 0 }, { t: 1, ph: 1.6, walking: true, atk: -1, u: 0, mood: 1 }, { t: .6, ph: 0, walking: false, atk: .5, u: 1, mood: 2 }, { t: .6, ph: 0, walking: false, atk: .5, u: -1, mood: 3 }]) {
       g2.setTransform(q, 0, 0, q, OX * q, OY * q); fn(Object.assign({ blink: 1, id: o.id || 0, look: o.look, hpf: o.hpf, hyde: o.hyde, van: o.van }, ps)); } } finally { g = old; RAW = 0; }
@@ -27,15 +29,16 @@ function sprSil(e, col) {                                                     //
   SPR_PX += s.width * s.height; return e.sil[col] = s;
 }
 function sprDraw(k, c, o, fn) {
+  if (SPR_OFF) return false;                                                   // icone: disegnate una volta sola, l'immagine pronta non serve
   const m = NG_MODE(), tm = c.getTransform(), sc = Math.hypot(tm.a, tm.b); if (!(sc > 0)) return false;
-  const qi = Math.round(Math.log2(sc) * 6), qs = Math.pow(2, qi / 6), Lt = NG_LIGHT();
-  const [p, pk] = sprPose(k, o), key = k + '|' + pk + '|' + qi + '|' + (Lt.shadow || '') + Math.round((NG_CHAR() ? Lt.amtC : Lt.amtB || 0) * 24);
+  const qi = Math.ceil(Math.log2(sc) * 3 - .15), qs = Math.pow(2, qi / 3), Lt = NG_LIGHT();   // 3 grandezze per raddoppio, sempre un po' più nitida del necessario: meno immagini da tenere
+  const [p, pk] = sprPose(k, o), key = k + '|' + pk + '|' + qi;              // la luce del momento NON entra nel nome: l'immagine resta buona dal giorno alla notte
   let e = SPR.get(key);
   if (e) { SPR.delete(key); SPR.set(key, e); }
   else {
     if (m !== 'normal' || SPR_NEW >= SPR_BUDGET) return false;                // niente immagine pronta: si disegna come prima
     SPR_NEW++; const b = sprBox(k, o, fn), cv = document.createElement('canvas'); cv.width = Math.max(1, Math.ceil((b[2] - b[0]) * qs)); cv.height = Math.max(1, Math.ceil((b[3] - b[1]) * qs));
-    const g2 = cv.getContext('2d'), old = g; g2.setTransform(qs, 0, 0, qs, -b[0] * qs, -b[1] * qs); g = g2; try { fn(p); } finally { g = old; }
+    const g2 = cv.getContext('2d'), old = g; g2.setTransform(qs, 0, 0, qs, -b[0] * qs, -b[1] * qs); g = g2; SPR_FIX = 1; try { fn(p); } finally { g = old; SPR_FIX = 0; }   // sempre coi colori del giorno: di sera e di notte scurisce il velo delle luci
     e = { cv, b, sil: {} }; SPR.set(key, e); SPR_PX += cv.width * cv.height;
     for (const [k2, e2] of SPR) { if (SPR_PX <= SPR_MAX) break; SPR.delete(k2); SPR_PX -= e2.cv.width * e2.cv.height; for (const s of Object.values(e2.sil)) SPR_PX -= s.width * s.height; }
   }
